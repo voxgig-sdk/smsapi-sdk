@@ -1,0 +1,1556 @@
+---
+paths:
+  /contacts/groups:
+    get:
+      summary: Get groups
+      tags:
+      - contacts/groups
+      parameters:
+      - name: with
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - contacts_count
+            - permission_send
+            - no_group
+            - phone_number
+        in: query
+        required: false
+        description: Search/expose extra parameters
+      - name: name
+        schema:
+          type: object
+        in: query
+        required: false
+        description: Search by group name(s)
+        examples:
+          group_name_like:
+            value: '{"name" : "group name"}'
+          group_name_equals:
+            value: '{"name" : "eq(group name)"}'
+          group_name_equals_case_insensitive:
+            value: '{"name" : "eqi(group name)"}'
+          group_names_like:
+            value: '{"name" : ["group 1 name", "group 2 name"]}'
+          group_names_equals:
+            value: '{"name" : ["eq(group 1 name)", "eq(group 2 name)"]}'
+          group_names_equals_case_insensitive:
+            value: '{"name" : ["eqi(group 1 name)", "eqi(group 2 name)"]}'
+      responses:
+        200:
+          $ref: '#/components/responses/GroupsCollection'
+    post:
+      summary: Create group
+      tags:
+      - contacts/groups
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateGroup'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        400:
+          $ref: '#/components/responses/BadRequestError'
+        409:
+          $ref: '#/components/responses/ConflictError'
+    delete:
+      summary: Delete all groups
+      tags:
+      - contacts/groups
+      responses:
+        204:
+          description: Groups deleted
+  /contacts/groups/{groupId}:
+    get:
+      summary: Get group
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: Edit group
+      tags:
+      - contacts/groups
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EditGroup'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        403:
+          $ref: '#/components/responses/ForbiddenError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Delete group
+      tags:
+      - contacts/groups
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteGroup'
+      responses:
+        202:
+          description: Command accepted
+        204:
+          description: Group deleted
+        304:
+          description: Group not modified
+        403:
+          $ref: '#/components/responses/ForbiddenError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/groups/{groupId}/permissions:
+    get:
+      summary: List group permissions
+      tags:
+      - contacts/groups
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      responses:
+        200:
+          $ref: '#/components/responses/GroupPermissionsCollection'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    post:
+      summary: Add group permission
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateGroupPermission'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPermission'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/groups/{groupId}/permissions/{username}:
+    get:
+      summary: Get user group permission
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      - $ref: '#/components/parameters/username'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPermission'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: Edit user group permission
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      - $ref: '#/components/parameters/username'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateGroupPermission'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPermission'
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPermission'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Delete user group permission
+      tags:
+      - contacts/groups
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      - $ref: '#/components/parameters/username'
+      responses:
+        204:
+          description: Permission deleted
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/groups/{groupId}/members/{contactId}:
+    put:
+      summary: Pin contact to group
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      - $ref: '#/components/parameters/contactId'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    get:
+      summary: Check if contact is in group
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      - $ref: '#/components/parameters/contactId'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Unpin contact from group
+      tags:
+      - contacts/groups
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      - $ref: '#/components/parameters/contactId'
+      responses:
+        204:
+          description: Contact to group association deleted
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/groups/{groupId}/members:
+    put:
+      summary: Move contact to group by query
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MoveContactToGroupByQuery'
+      responses:
+        202:
+          description: Command accepted
+        204:
+          description: Command executed
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    post:
+      summary: Add contact to group by query
+      tags:
+      - contacts/groups
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddContactToGroupByQuery'
+      responses:
+        202:
+          description: Command accepted
+        204:
+          description: Command executed
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Unpin contacts from group by query
+      tags:
+      - contacts/groups
+      parameters:
+      - $ref: '#/components/parameters/groupId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UnpinContactFromGroupByQuery'
+      responses:
+        202:
+          description: Command accepted
+        204:
+          description: Command executed
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts:
+    get:
+      summary: List contacts
+      tags:
+      - contacts
+      parameters:
+      - name: q
+        schema:
+          type: string
+        in: query
+        required: false
+        description: Search text on standard fields (first name, last name, phone
+          number, email, city)
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - name: order_by
+        schema:
+          type: string
+          enum:
+          - first_name
+          - last_name
+          - date_updated
+          - date_created
+        in: query
+        required: false
+      - $ref: '#/components/parameters/phoneNumberQuery'
+      - $ref: '#/components/parameters/emailAddressQuery'
+      - $ref: '#/components/parameters/firstNameQuery'
+      - $ref: '#/components/parameters/lastNameQuery'
+      - name: group_id
+        schema:
+          type: array
+          items:
+            type: string
+        in: query
+        required: false
+        description: Search by group
+      - name: gender
+        schema:
+          type: string
+          enum:
+          - undefined
+          - male
+          - female
+        in: query
+        required: false
+        description: Search by gender
+      - name: birthday_date
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/Date'
+        in: query
+        required: false
+        description: Search by birthday date
+        examples:
+          birthday_date_equals:
+            value: "2022-06-24"
+          birthday_date_less_than:
+            value: lt(2022-06-24)
+          birthday_date_less_than_or_equal:
+            value: lte(2022-06-24)
+          birthday_date_greater_than:
+            value: gt(2022-06-24)
+          birthday_date_greater_than_or_equal:
+            value: gte(2022-06-24)
+          birthday_date_between:
+            value: between(2022-06-24, 2022-06-25)
+      responses:
+        200:
+          $ref: '#/components/responses/ContactsCollection'
+    post:
+      summary: Create contacts
+      tags:
+      - contacts
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateContact'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Delete all contacts
+      tags:
+      - contacts
+      responses:
+        202:
+          description: Contacts deleted
+  /contacts/{contactId}:
+    get:
+      summary: Get contact
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: Edit contacts
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateContact'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Delete contact
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      responses:
+        204:
+          description: Contact deleted
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/{contactId}/groups:
+    get:
+      summary: Get groups related to contact
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      responses:
+        200:
+          $ref: '#/components/responses/GroupsCollection'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    post:
+      summary: Assign contact to group
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties:
+                description: Group id
+                $ref: '#/components/schemas/Id'
+              example:
+                1: 0f0f0f0f0f0f0f0f0f0f0f0f
+                2: 0f0f0f0f0f0f0f0f0f0f0f0f
+            examples:
+              assign_contact_to_groups:
+                summary: Assign contact to many groups at once
+      responses:
+        200:
+          description: No contact-group association created, contact not assigned
+            to any new group
+          $ref: '#/components/responses/EmptyCollection'
+        201:
+          $ref: '#/components/responses/GroupsCollection'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/{contactId}/groups/{groupId}:
+    get:
+      summary: Get group related to contact
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      - $ref: '#/components/parameters/groupId'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: Assign contact to group
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      - $ref: '#/components/parameters/groupId'
+      responses:
+        200:
+          $ref: '#/components/responses/GroupsCollection'
+        201:
+          $ref: '#/components/responses/GroupsCollection'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Unpin contact from group
+      tags:
+      - contacts
+      parameters:
+      - $ref: '#/components/parameters/contactId'
+      - $ref: '#/components/parameters/groupId'
+      responses:
+        204:
+          description: Contact to group association deleted
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/trash:
+    head:
+      summary: Elements in trash
+      description: Header "X-Result-Count"
+      tags:
+      - contacts/trash
+      responses:
+        204:
+          description: Response in header "X-Result-Count"
+          headers:
+            X-Result-Count:
+              description: Trash amount
+              schema:
+                type: integer
+    delete:
+      summary: Clean trash
+      tags:
+      - contacts/trash
+      responses:
+        202:
+          description: Command accepted - trash will be deleted
+        204:
+          description: Command not accepted - no trash
+  /contacts/trash/restore:
+    put:
+      summary: Restore trash
+      tags:
+      - contacts/trash
+      responses:
+        202:
+          description: Command accepted - trash will be restored
+        204:
+          description: Commad not accepted - no trash
+  /contacts/fields:
+    get:
+      summary: List fields
+      tags:
+      - contacts/fields
+      responses:
+        200:
+          $ref: '#/components/responses/FieldsCollection'
+    post:
+      summary: Create field
+      tags:
+      - contacts/fields
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateField'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Field'
+  /contacts/fields/{fieldId}:
+    put:
+      summary: Edit field
+      tags:
+      - contacts/fields
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateField'
+      parameters:
+      - $ref: '#/components/parameters/fieldId'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Field'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Delete field
+      tags:
+      - contacts/fields
+      parameters:
+      - $ref: '#/components/parameters/fieldId'
+      responses:
+        204:
+          description: Contact field deleted
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /contacts/fields/{fieldId}/options:
+    get:
+      summary: List field options
+      tags:
+      - contacts/fields
+      parameters:
+      - $ref: '#/components/parameters/fieldId'
+      responses:
+        200:
+          $ref: '#/components/responses/FieldOptionsCollection'
+        501:
+          $ref: '#/components/responses/NotImplementedError'
+  /contacts/fields/available:
+    get:
+      summary: List available build-in and user-defined fields
+      tags:
+      - contacts/fields
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FieldAvailable'
+components:
+  securitySchemes:
+    token:
+      type: http
+      scheme: bearer
+      in: header
+      bearerFormat: JWT
+  schemas:
+    Contact:
+      required:
+      - id
+      - gender
+      - date_created
+      - date_updated
+      - groups
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        first_name:
+          $ref: '#/components/schemas/FirstName'
+        last_name:
+          $ref: '#/components/schemas/LastName'
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        email:
+          $ref: '#/components/schemas/EmailAddress'
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthday_date:
+          $ref: '#/components/schemas/Date'
+        description:
+          $ref: '#/components/schemas/Description'
+        city:
+          $ref: '#/components/schemas/City'
+        country:
+          $ref: '#/components/schemas/Country'
+        source:
+          $ref: '#/components/schemas/Source'
+        date_created:
+          $ref: '#/components/schemas/DateTime'
+        date_updated:
+          $ref: '#/components/schemas/DateTime'
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+    GroupPermission:
+      required:
+      - group_id
+      - username
+      - write
+      - read
+      - send
+      properties:
+        group_id:
+          $ref: '#/components/schemas/Id'
+        username:
+          $ref: '#/components/schemas/Username'
+        write:
+          $ref: '#/components/schemas/WritePermission'
+        read:
+          $ref: '#/components/schemas/ReadPermission'
+        send:
+          $ref: '#/components/schemas/SendPermission'
+    Group:
+      required:
+      - id
+      - name
+      - description
+      - contacts_count
+      - date_created
+      - date_updated
+      - created_by
+      - contact_expire_after
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          $ref: '#/components/schemas/GroupName'
+        description:
+          $ref: '#/components/schemas/Description'
+        contacts_count:
+          type: integer
+          nullable: true
+        date_created:
+          $ref: '#/components/schemas/DateTime'
+        date_updated:
+          $ref: '#/components/schemas/DateTime'
+        created_by:
+          $ref: '#/components/schemas/Username'
+        idx:
+          $ref: '#/components/schemas/Idx'
+        contact_expire_after:
+          $ref: '#/components/schemas/ContactExpireAfter'
+          nullable: true
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupPermission'
+    CreateContact:
+      required:
+      - phone_number
+      - email
+      properties:
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        email:
+          $ref: '#/components/schemas/EmailAddress'
+        first_name:
+          $ref: '#/components/schemas/FirstName'
+        last_name:
+          $ref: '#/components/schemas/LastName'
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthday_date:
+          $ref: '#/components/schemas/Date'
+        description:
+          $ref: '#/components/schemas/Description'
+        city:
+          $ref: '#/components/schemas/City'
+        country:
+          $ref: '#/components/schemas/Country'
+        source:
+          $ref: '#/components/schemas/Source'
+        idx:
+          $ref: '#/components/schemas/Idx'
+        undelivered_messages:
+          type: string
+          format: integer
+        device:
+          type: string
+        browser:
+          type: string
+        operating_system:
+          type: string
+    UpdateContact:
+      properties:
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        email:
+          $ref: '#/components/schemas/EmailAddress'
+        first_name:
+          $ref: '#/components/schemas/FirstName'
+        last_name:
+          $ref: '#/components/schemas/LastName'
+        gender:
+          $ref: '#/components/schemas/Gender'
+        birthday_date:
+          $ref: '#/components/schemas/Date'
+        description:
+          $ref: '#/components/schemas/Description'
+        city:
+          $ref: '#/components/schemas/City'
+        source:
+          $ref: '#/components/schemas/Source'
+    Export:
+      require:
+      - id
+      - status
+      - date_created
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        status:
+          type: string
+          enum:
+          - new
+          - queue
+          - progress
+          - done
+          - error
+        date_created:
+          $ref: '#/components/schemas/DateTime'
+        filter:
+          type: object
+    Token:
+      properties:
+        token:
+          type: string
+        expiration_date:
+          $ref: '#/components/schemas/DateTime'
+    Field:
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/FieldType'
+    FieldOption:
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    CreateField:
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: Name
+        type:
+          $ref: '#/components/schemas/FieldType'
+          default: text
+          description: Type
+    UpdateField:
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: Name
+    CreateGroup:
+      required:
+      - name
+      properties:
+        name:
+          $ref: '#/components/schemas/GroupName'
+        description:
+          $ref: '#/components/schemas/Description'
+        idx:
+          $ref: '#/components/schemas/Idx'
+        contact_expire_after:
+          $ref: '#/components/schemas/ContactExpireAfter'
+    EditGroup:
+      required:
+      - name
+      properties:
+        name:
+          $ref: '#/components/schemas/GroupName'
+        description:
+          $ref: '#/components/schemas/Description'
+        idx:
+          $ref: '#/components/schemas/Idx'
+        contact_expire_after:
+          $ref: '#/components/schemas/ContactExpireAfter'
+    DeleteGroup:
+      properties:
+        delete_contacts:
+          type: boolean
+          description: Delete contacts assigned to this group
+    CreateGroupPermission:
+      required:
+      - username
+      properties:
+        username:
+          $ref: '#/components/schemas/Username'
+        read:
+          $ref: '#/components/schemas/ReadPermission'
+        write:
+          $ref: '#/components/schemas/WritePermission'
+        send:
+          $ref: '#/components/schemas/SendPermission'
+    UpdateGroupPermission:
+      properties:
+        read:
+          $ref: '#/components/schemas/ReadPermission'
+        write:
+          $ref: '#/components/schemas/WritePermission'
+        send:
+          $ref: '#/components/schemas/SendPermission'
+    MoveContactToGroupByQuery:
+      properties:
+        q:
+          type: string
+          description: Search text on standart fields
+        phone_number:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumber'
+          description: Search by phone_number
+        email:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+          description: Search by email
+        first_name:
+          type: array
+          items:
+            $ref: '#/components/schemas/FirstName'
+          description: Search by first name
+        last_name:
+          type: array
+          items:
+            $ref: '#/components/schemas/LastName'
+          description: Search by last name
+        group_id:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          description: Search by group
+        gender:
+          $ref: '#/components/schemas/Gender'
+          description: Search by gender
+        birthday_date:
+          type: array
+          items:
+            $ref: '#/components/schemas/Date'
+          description: Search by birthday date
+    AddContactToGroupByQuery:
+      properties:
+        q:
+          type: string
+          description: Search text on standart fields
+        phone_number:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumber'
+          description: Search by phone_number
+        email:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+          description: Search by email
+        first_name:
+          type: array
+          items:
+            $ref: '#/components/schemas/FirstName'
+          description: Search by first name
+        last_name:
+          type: array
+          items:
+            $ref: '#/components/schemas/LastName'
+          description: Search by last name
+        group_id:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          description: Search by group
+        gender:
+          $ref: '#/components/schemas/Gender'
+          description: Search by gender
+        birthday_date:
+          type: array
+          items:
+            $ref: '#/components/schemas/Date'
+          description: Search by birthday date
+    UnpinContactFromGroupByQuery:
+      properties:
+        q:
+          type: string
+          description: Search text on standart fields
+        phone_number:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumber'
+          description: Search by phone_number
+        email:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+          description: Search by email
+        first_name:
+          type: array
+          items:
+            $ref: '#/components/schemas/FirstName'
+          description: Search by first name
+        last_name:
+          type: array
+          items:
+            $ref: '#/components/schemas/LastName'
+          description: Search by last name
+        group_id:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          description: Search by group
+        gender:
+          $ref: '#/components/schemas/Gender'
+          description: Search by gender
+        birthday_date:
+          type: array
+          items:
+            $ref: '#/components/schemas/Date'
+          description: Search by birthday date
+    Import:
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - new
+          - queue
+          - progress
+          - done
+          - error
+          - stop
+        skip_rows:
+          $ref: '#/components/schemas/Counter'
+        imported_contacts:
+          $ref: '#/components/schemas/Counter'
+        processed_amount:
+          $ref: '#/components/schemas/Counter'
+        approximate_amount:
+          $ref: '#/components/schemas/Counter'
+        group_id:
+          $ref: '#/components/schemas/Id'
+          nullable: true
+        charset:
+          type: string
+        date_created:
+          $ref: '#/components/schemas/DateTime'
+        columns:
+          type: array
+          items:
+            type: string
+        data_importer:
+          type: string
+          enum:
+          - COMPLEX
+          - NUMBERS
+        on_conflict:
+          type: string
+          enum:
+          - ADD
+          - SKIP
+          - OVERWRITE
+          - ERROR
+        country_code:
+          type: integer
+          nullable: true
+    CreateImport:
+      required:
+      - file
+      properties:
+        file:
+          type: file
+          description: File
+    UpdateImport:
+      properties:
+        status:
+          type: string
+          enum:
+          - new
+          - queue
+          - stop
+        skip_rows:
+          type: integer
+        group_id:
+          type: integer
+        country_code:
+          type: integer
+    ImportPreview:
+      properties:
+        rows:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+    FieldAvailable:
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/FieldType'
+        built_in:
+          type: boolean
+        options:
+          type: array
+          nullable: true
+          items:
+            type: string
+    FieldType:
+      type: string
+      enum:
+      - text
+      - date
+      - email
+      - phone_number
+      - number
+    ImportColumnsAvailable:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Collection:
+      type: object
+      required:
+      - size
+      - collection
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            type: object
+    Id:
+      type: string
+      format: oid
+      pattern: '[0-9a-fA-F]{24}'
+      description: Object ID
+      example: 0f0f0f0f0f0f0f0f0f0f0f0f
+    DateTime:
+      type: string
+      format: date-time
+      example: "2017-07-21T17:32:28Z"
+    Date:
+      type: string
+      format: date
+      example: "2017-07-21"
+    Counter:
+      type: integer
+      minimum: 0
+    PhoneNumber:
+      type: string
+      pattern: '[0-9]{8,16}'
+    FirstName:
+      type: string
+      example: John
+    LastName:
+      type: string
+      example: Doe
+    EmailAddress:
+      type: string
+      format: email
+      example: john.doe@example.com
+    Gender:
+      type: string
+      enum:
+      - undefined
+      - male
+      - female
+    Description:
+      type: string
+      example: Resource description
+    City:
+      type: string
+      example: Example City
+    Country:
+      type: string
+      example: Example Country
+    Source:
+      type: string
+      example: Example Source
+    Username:
+      type: string
+      example: example_username
+    ReadPermission:
+      type: boolean
+      default: false
+      example: false
+      description: Has read permission
+    SendPermission:
+      type: boolean
+      default: false
+      example: false
+      description: Has send permission
+    WritePermission:
+      type: boolean
+      default: false
+      example: false
+      description: Has write permission
+    Idx:
+      type: string
+      example: example-user-provided-id-123
+      description: User provided resource id
+    ContactExpireAfter:
+      type: integer
+      description: Contact expire after days
+    GroupName:
+      type: string
+      example: Example Group
+      description: Group name
+    ErrorTag:
+      type: string
+      pattern: '[a-z_]+'
+      example: invalid_request_data
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: One or more of the given values is invalid.
+        error:
+          $ref: '#/components/schemas/ErrorTag'
+        developer_description:
+          type: string
+          nullable: true
+        errors:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/ErrorItem'
+    ErrorItem:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          $ref: '#/components/schemas/ErrorTag'
+        path:
+          type: string
+          example: select_fields
+          nullable: true
+        value:
+          type: string
+          example: color
+          nullable: true
+  parameters:
+    contactId:
+      name: contactId
+      schema:
+        $ref: '#/components/schemas/Id'
+      in: path
+      required: true
+      description: Contact ID
+    groupId:
+      name: groupId
+      schema:
+        $ref: '#/components/schemas/Id'
+      in: path
+      required: true
+      description: Group ID
+    exportId:
+      name: exportId
+      schema:
+        $ref: '#/components/schemas/Id'
+      in: path
+      required: true
+      description: Export ID
+    fieldId:
+      name: fieldId
+      schema:
+        $ref: '#/components/schemas/Id'
+      in: path
+      required: true
+      description: Field ID
+    username:
+      name: username
+      schema:
+        $ref: '#/components/schemas/Username'
+      required: true
+      description: Username
+    importId:
+      name: importId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    phoneNumberQuery:
+      name: phone_number
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/PhoneNumber'
+      in: query
+      required: false
+      description: Search by phone number(s)
+    emailAddressQuery:
+      name: email
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/EmailAddress'
+      in: query
+      required: false
+      description: Search by email address(es)
+    firstNameQuery:
+      name: first_name
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/FirstName'
+      in: query
+      required: false
+      description: Search by first name(s)
+    lastNameQuery:
+      name: last_name
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/LastName'
+      in: query
+      required: false
+      description: Search by last name(s)
+    limit:
+      name: limit
+      schema:
+        type: integer
+        default: 5
+      in: query
+      required: false
+    offset:
+      name: offset
+      schema:
+        type: integer
+        default: 0
+      in: query
+      required: false
+  responses:
+    EmptyCollection:
+      description: Empty collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  description: Always empty
+                  type: array
+                  items:
+                    type: object
+                  minItems: 0
+                  maxItems: 0
+    GroupsCollection:
+      description: Groups collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Group'
+    GroupPermissionsCollection:
+      description: Group permissions collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/GroupPermission'
+    ExportsCollection:
+      description: Exports collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Export'
+    FieldsCollection:
+      description: Fields collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Field'
+    FieldOptionsCollection:
+      description: Field options collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FieldOption'
+    ContactsCollection:
+      description: Contacts collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Contact'
+    ImportsCollection:
+      description: Imports collection
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Import'
+    NotFoundError:
+      description: Entity not found error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotImplementedError:
+      description: Feature not implemented error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ConflictError:
+      description: Entity conflict error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequestError:
+      description: Invalid request data error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ForbiddenError:
+      description: Access forbidden error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnsupportedMediaTypeError:
+      description: Unsupported media type error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MethodNotAllowedError:
+      description: Method not allowed error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+openapi: 3.0.0
+schemes:
+- https
+security:
+- token: []
+info:
+  version: 1.0.0
+  title: "SMSAPI REST API \u2013 Contacts"
+  description: |-
+    [SMSAPI.com main page](https://www.smsapi.com/)
+
+    [API documentation](https://www.smsapi.com/docs)
+    ### URL adresses
+    API URL adresses:
+    * `https://api.smsapi.com/` - for secure SSL connections
+    * `https://api2.smsapi.com/` - backup for secure SSL connections
+
+    ### Authentication
+    Authentication at SMSAPI utilizes OAuth 2 mechanism. You can generate OAuth token in our customer panel [API Tokens](https://ssl.smsapi.com/react/oauth/manage). Authentication header will be necessary in request to our API.
+
+    `Authorization: Bearer <token>`
+host: api.smsapi.com
+servers:
+- url: https://api.smsapi.com
+...

@@ -1,0 +1,82 @@
+# Entity: field_available
+
+main: kit: entity: field_available: {
+
+  alias: field: {}
+
+  fields: {
+    built_in: {
+      h: "Built In"
+      n: "built_in"
+      r: false
+      t: "`$BOOLEAN`"
+    }
+    id: {
+      fo: "oid"
+      h: "Id"
+      n: "id"
+      r: false
+      sh: "Object ID"
+      t: "`$STRING`"
+    }
+    name: {
+      h: "Name"
+      n: "name"
+      r: false
+      t: "`$STRING`"
+    }
+    options: {
+      h: "Options"
+      n: "options"
+      r: false
+      t: "`$ARRAY`"
+    }
+    type: {
+      h: "Type"
+      n: "type"
+      r: false
+      t: "`$STRING`"
+    }
+  }
+
+  id: {
+    field: "id"
+    name: "id"
+  }
+
+  name: "field_available"
+  op: {
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /contacts/fields/available"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/contacts/fields/available"
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "fields"
+            }
+            {
+              lit: "available"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

@@ -1,0 +1,53 @@
+{
+  "existing": {
+    "permission": {
+      "PERMISSION00": {
+        "group_id": "GROUP01",
+        "id": "PERMISSION00",
+        "read": true,
+        "send": false,
+        "username": "s40",
+        "write": false
+      },
+      "PERMISSION01": {
+        "group_id": "GROUP01",
+        "id": "PERMISSION01",
+        "read": true,
+        "send": false,
+        "username": "s7c",
+        "write": false
+      },
+      "PERMISSION02": {
+        "group_id": "GROUP01",
+        "id": "PERMISSION02",
+        "read": true,
+        "send": false,
+        "username": "sb8",
+        "write": false
+      }
+    }
+  },
+  "new": {
+    "permission": {
+      "permission_ref01": {
+        "group_id": "GROUP01",
+        "read": true,
+        "send": false,
+        "username": "sf4",
+        "write": false
+      }
+    }
+  },
+  "requests": {
+    "POST /contacts/groups/{groupId}/permissions": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /contacts/groups/{groupId}/permissions/{username}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# BasicShipmentCountryVolumeFlow
+
+main: kit: flow: BasicShipmentCountryVolumeFlow:
+{
+  entity: "shipment_country_volume",
+  kind: "basic",
+  name: "BasicShipmentCountryVolumeFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "shipment_country_volume_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicShipmentCountryVolumeFlow"
+}

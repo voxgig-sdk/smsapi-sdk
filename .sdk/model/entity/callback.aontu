@@ -1,0 +1,390 @@
+# Entity: callback
+
+main: kit: entity: callback: {
+
+  alias: field: {}
+
+  fields: {
+    active: {
+      h: "Active"
+      n: "active"
+      r: false
+      t: "`$BOOLEAN`"
+    }
+    api_version: {
+      h: "Api Version"
+      n: "api_version"
+      r: false
+      sh: "Version of the callback output format."
+      t: "`$INTEGER`"
+    }
+    id: {
+      fo: "oid"
+      h: "Id"
+      n: "id"
+      r: false
+      sh: "Object ID"
+      t: "`$STRING`"
+    }
+    invalid: {
+      h: "Invalid"
+      n: "invalid"
+      r: false
+      t: "`$BOOLEAN`"
+    }
+    receiver: {
+      h: "Receiver"
+      n: "receiver"
+      r: false
+      t: "`$OBJECT`"
+    }
+    receiver_type: {
+      h: "Receiver Type"
+      n: "receiver_type"
+      r: false
+      t: "`$STRING`"
+    }
+    type: {
+      h: "Type"
+      n: "type"
+      r: false
+      t: "`$STRING`"
+    }
+    url: {
+      fo: "url"
+      h: "Url"
+      n: "url"
+      op: {
+        update: {
+          req: true
+          type: "`$STRING`"
+        }
+      }
+      r: false
+      sh: "WHATWG URL compliant"
+      t: "`$STRING`"
+    }
+  }
+
+  id: {
+    field: "id"
+    name: "id"
+  }
+
+  name: "callback"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /callbacks"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/callbacks"
+          s: [
+            {
+              lit: "callbacks"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /callbacks"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/callbacks"
+          s: [
+            {
+              lit: "callbacks"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+      ]
+    }
+    load: {
+      name: "load"
+      points: [
+        {
+          co: {
+            id: "GET /callbacks/{id}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/callbacks/{id}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "callbacks"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "GET /callbacks/{id}/commands/test"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/callbacks/{id}/commands/test"
+          q: {
+            "$action": "command_test"
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "callbacks"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "commands"
+            }
+            {
+              lit: "test"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    remove: {
+      name: "remove"
+      points: [
+        {
+          co: {
+            id: "DELETE /callbacks/{id}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "DELETE"
+          o: "/callbacks/{id}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "callbacks"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    update: {
+      name: "update"
+      points: [
+        {
+          co: {
+            id: "PUT /callbacks/{id}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/callbacks/{id}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "callbacks"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "PUT /callbacks/{id}/commands/activate"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/callbacks/{id}/commands/activate"
+          q: {
+            "$action": "command_activate"
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "callbacks"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "commands"
+            }
+            {
+              lit: "activate"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "PUT /callbacks/{id}/commands/deactivate"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/callbacks/{id}/commands/deactivate"
+          q: {
+            "$action": "command_deactivate"
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "callbacks"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "commands"
+            }
+            {
+              lit: "deactivate"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

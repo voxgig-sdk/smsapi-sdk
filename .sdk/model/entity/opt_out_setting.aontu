@@ -1,0 +1,74 @@
+# Entity: opt_out_setting
+
+main: kit: entity: opt_out_setting: {
+
+  alias: field: {}
+
+  fields: {
+    brand: {
+      h: "Brand"
+      n: "brand"
+      r: false
+      t: "`$STRING`"
+    }
+  }
+
+  name: "opt_out_setting"
+  op: {
+    load: {
+      name: "load"
+      points: [
+        {
+          co: {
+            id: "GET /opt_outs/settings"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/opt_outs/settings"
+          s: [
+            {
+              lit: "opt_outs"
+            }
+            {
+              lit: "settings"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    update: {
+      name: "update"
+      points: [
+        {
+          co: {
+            id: "PUT /opt_outs/settings"
+            source: "openapi3"
+            version: 2
+          }
+          m: "PUT"
+          o: "/opt_outs/settings"
+          s: [
+            {
+              lit: "opt_outs"
+            }
+            {
+              lit: "settings"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

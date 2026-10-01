@@ -1,0 +1,18 @@
+# BasicSmsdoFlow
+
+main: kit: flow: BasicSmsdoFlow:
+{
+  entity: "smsdo",
+  kind: "basic",
+  name: "BasicSmsdoFlow",
+  step: [
+    {
+      i: {
+        ref: "smsdo_ref01"
+      }
+
+      o: "create"
+    }
+  ],
+  "key$": "BasicSmsdoFlow"
+}

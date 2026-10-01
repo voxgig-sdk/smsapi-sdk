@@ -1,0 +1,52 @@
+# BasicSendernameFlow
+
+main: kit: flow: BasicSendernameFlow:
+{
+  entity: "sendername",
+  kind: "basic",
+  name: "BasicSendernameFlow",
+  step: [
+    {
+      i: {
+        ref: "sendername_ref01"
+      }
+
+      o: "create"
+    }
+
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "sendername_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "sendername_ref01",
+        srcdatavar: "sendername_ref01_data",
+        suffix: "_dt0"
+      }
+
+      m: {
+        id: "sendername01"
+      }
+
+      o: "load",
+      v: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-sendername_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicSendernameFlow"
+}

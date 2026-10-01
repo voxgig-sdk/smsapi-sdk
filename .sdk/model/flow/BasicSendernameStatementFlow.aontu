@@ -1,0 +1,22 @@
+# BasicSendernameStatementFlow
+
+main: kit: flow: BasicSendernameStatementFlow:
+{
+  entity: "sendername_statement",
+  kind: "basic",
+  name: "BasicSendernameStatementFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "sendername_statement_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicSendernameStatementFlow"
+}

@@ -1,0 +1,436 @@
+# Entity: subuser
+
+main: kit: entity: subuser: {
+
+  alias: field: {}
+
+  fields: {
+    active: {
+      h: "Active"
+      n: "active"
+      r: false
+      t: "`$BOOLEAN`"
+    }
+    credentials: {
+      h: "Credentials"
+      n: "credentials"
+      op: {
+        update: {
+          req: false
+          type: "`$OBJECT`"
+        }
+      }
+      r: true
+      t: "`$OBJECT`"
+    }
+    description: {
+      h: "Description"
+      n: "description"
+      r: false
+      t: "`$STRING`"
+    }
+    id: {
+      fo: "oid"
+      h: "Id"
+      n: "id"
+      r: false
+      sh: "Object ID"
+      t: "`$STRING`"
+    }
+    points: {
+      h: "Points"
+      n: "points"
+      r: false
+      t: "`$OBJECT`"
+    }
+    username: {
+      h: "Username"
+      n: "username"
+      r: false
+      t: "`$STRING`"
+    }
+  }
+
+  id: {
+    field: "id"
+    name: "id"
+  }
+
+  name: "subuser"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /subusers"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/subusers"
+          s: [
+            {
+              lit: "subusers"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /subusers/{id}/shares/sendernames"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/subusers/{id}/shares/sendernames"
+          q: {
+            "$action": "share_sendername"
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "shares"
+            }
+            {
+              lit: "sendernames"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.senders`"
+          }
+        }
+        {
+          co: {
+            id: "GET /subusers/{id}/shares/templates"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/subusers/{id}/shares/templates"
+          q: {
+            "$action": "share_template"
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "shares"
+            }
+            {
+              lit: "templates"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.templates`"
+          }
+        }
+        {
+          co: {
+            id: "GET /subusers"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            query: [
+              {
+                k: "query"
+                n: "q"
+                or: "q"
+                r: false
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/subusers"
+          q: {
+            exist: [
+              "q"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+      ]
+    }
+    load: {
+      name: "load"
+      points: [
+        {
+          co: {
+            id: "GET /subusers/{id}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/subusers/{id}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    remove: {
+      name: "remove"
+      points: [
+        {
+          co: {
+            id: "DELETE /subusers/{id}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "DELETE"
+          o: "/subusers/{id}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    update: {
+      name: "update"
+      points: [
+        {
+          co: {
+            id: "PUT /subusers/{id}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/subusers/{id}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "PUT /subusers/{id}/shares/sendernames"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/subusers/{id}/shares/sendernames"
+          q: {
+            "$action": "share_sendername"
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "shares"
+            }
+            {
+              lit: "sendernames"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "PUT /subusers/{id}/shares/templates"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/subusers/{id}/shares/templates"
+          q: {
+            "$action": "share_template"
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "subusers"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "shares"
+            }
+            {
+              lit: "templates"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

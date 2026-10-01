@@ -1,0 +1,147 @@
+// Generated direct-call tests for the available entity (mirrors the
+// go TestDirect generator; the live-mode path uses idmap-provided IDs).
+
+#![allow(unused_variables, unused_imports, dead_code)]
+
+mod common;
+
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use common::*;
+
+use smsapi_sdk::core::helpers::{getp, ja, jo, json_thunk, setp, to_int, to_map};
+use smsapi_sdk::utility::voxgigstruct as vs;
+use smsapi_sdk::{Value, SmsapiSDK};
+
+struct AvailableDirectSetup {
+    client: Rc<SmsapiSDK>,
+    calls: Rc<RefCell<Vec<Value>>>,
+    live: bool,
+    idmap: Value,
+}
+
+fn available_direct_setup(mockres: Value) -> AvailableDirectSetup {
+    load_env_local();
+
+    let calls: Rc<RefCell<Vec<Value>>> = Rc::new(RefCell::new(Vec::new()));
+
+    let env = env_override(jo(vec![
+        ("SMSAPI_TEST_AVAILABLE_ENTID", Value::empty_map()),
+        ("SMSAPI_TEST_LIVE", Value::str("FALSE")),
+        ("SMSAPI_APIKEY", Value::str("")),
+    ]));
+
+    let live = getp(&env, "SMSAPI_TEST_LIVE") == Value::str("TRUE");
+
+    if live {
+        // live_client_options() FIRST, so the generated entries below win:
+        // sdk-test-control.json's test.client.options adds to the live
+        // client, it does not redirect it.
+        let client = SmsapiSDK::new(to_map(&vs::merge(
+            &ja(vec![
+                live_client_options(),
+                jo(vec![("apikey", getp(&env, "SMSAPI_APIKEY"))]),
+            ]),
+            None,
+        )));
+        let idmap = match to_map(&getp(&env, "SMSAPI_TEST_AVAILABLE_ENTID")) {
+            Value::Map(m) => Value::Map(m),
+            _ => Value::empty_map(),
+        };
+        return AvailableDirectSetup {
+            client,
+            calls,
+            live: true,
+            idmap,
+        };
+    }
+
+    let c = calls.clone();
+    let mock_fetch = Value::func(move |_inj, args, _r, _s| {
+        let url = vs::get_elem(args, &Value::Num(0.0), Value::Noval);
+        let init = vs::get_elem(args, &Value::Num(1.0), Value::Noval);
+        c.borrow_mut().push(jo(vec![("url", url), ("init", init)]));
+        let data = if mockres.is_noval() || mockres.is_null() {
+            jo(vec![("id", Value::str("direct01"))])
+        } else {
+            mockres.clone()
+        };
+        jo(vec![
+            ("status", Value::Num(200.0)),
+            ("statusText", Value::str("OK")),
+            ("headers", Value::empty_map()),
+            ("json", json_thunk(data)),
+        ])
+    });
+
+    let client = SmsapiSDK::new(jo(vec![
+        ("base", Value::str("http://localhost:8080")),
+        ("system", jo(vec![("fetch", mock_fetch)])),
+    ]));
+
+    AvailableDirectSetup {
+        client,
+        calls,
+        live: false,
+        idmap: Value::empty_map(),
+    }
+}
+
+#[test]
+fn available_direct_list() {
+    let setup = available_direct_setup(ja(vec![
+        jo(vec![("id", Value::str("direct01"))]),
+        jo(vec![("id", Value::str("direct02"))]),
+    ]));
+    let mode = if setup.live { "live" } else { "unit" };
+    let (skip, reason) = is_control_skipped("direct", "direct-list-available", mode);
+    if skip {
+        eprintln!(
+            "skip: {}",
+            if reason.is_empty() {
+                "skipped via sdk-test-control.json".to_string()
+            } else {
+                reason
+            }
+        );
+        return;
+    }
+    let client = setup.client.clone();
+
+    let params = Value::empty_map();
+
+    let result = client
+        .direct(jo(vec![
+            ("path", Value::str("sms/templates/available")),
+            ("method", Value::str("GET")),
+            ("params", params.clone()),
+        ]))
+        .expect("direct failed");
+
+    if setup.live {
+        // Live mode is lenient: synthetic IDs frequently 4xx and the
+        // list-response shape varies wildly across public APIs.
+        if getp(&result, "ok") != Value::Bool(true) {
+            eprintln!("skip: list call not ok (likely synthetic IDs against live API)");
+            return;
+        }
+        let status = to_int(&getp(&result, "status"));
+        if !(200..300).contains(&status) {
+            eprintln!("skip: expected 2xx status, got {}", status);
+            return;
+        }
+    } else {
+        assert_eq!(getp(&result, "ok"), Value::Bool(true), "expected ok true");
+        assert_eq!(to_int(&getp(&result, "status")), 200, "expected status 200");
+
+        let data = getp(&result, "data");
+        assert!(
+            matches!(data, Value::List(_)),
+            "expected data to be an array"
+        );
+        assert_eq!(vs::size(&data), 2, "expected 2 items");
+
+        assert_eq!(setup.calls.borrow().len(), 1, "expected 1 call");
+    }
+}

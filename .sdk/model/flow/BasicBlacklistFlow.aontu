@@ -1,0 +1,45 @@
+# BasicBlacklistFlow
+
+main: kit: flow: BasicBlacklistFlow:
+{
+  entity: "blacklist",
+  kind: "basic",
+  name: "BasicBlacklistFlow",
+  step: [
+    {
+      i: {
+        ref: "blacklist_ref01"
+      }
+
+      o: "create"
+    }
+
+    {
+      i: {
+        ref: "blacklist_ref01",
+        srcdatavar: "blacklist_ref01_data",
+        suffix: "_dt0"
+      }
+
+      o: "load",
+      v: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-blacklist_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "blacklist_ref01",
+        suffix: "_rm0"
+      }
+
+      o: "remove"
+    }
+  ],
+  "key$": "BasicBlacklistFlow"
+}

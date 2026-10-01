@@ -1,0 +1,22 @@
+# BasicOptOutFlow
+
+main: kit: flow: BasicOptOutFlow:
+{
+  entity: "opt_out",
+  kind: "basic",
+  name: "BasicOptOutFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "opt_out_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicOptOutFlow"
+}

@@ -1,0 +1,101 @@
+# Entity: shipment_country_volume
+
+main: kit: entity: shipment_country_volume: {
+
+  alias: field: {}
+
+  fields: {
+    country_code: {
+      h: "Country Code"
+      n: "country_code"
+      r: false
+      t: "`$STRING`"
+    }
+    country_limit: {
+      h: "Country Limit"
+      n: "country_limit"
+      r: false
+      t: "`$INTEGER`"
+    }
+    country_name: {
+      h: "Country Name"
+      n: "country_name"
+      r: false
+      t: "`$STRING`"
+    }
+    usage: {
+      h: "Usage"
+      n: "usage"
+      r: false
+      t: "`$INTEGER`"
+    }
+  }
+
+  name: "shipment_country_volume"
+  op: {
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /shipment/country_volumes"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            header: [
+              {
+                ex: "application/json"
+                k: "header"
+                n: "accept"
+                or: "Accept"
+                r: false
+                t: "`$STRING`"
+              }
+            ]
+            query: [
+              {
+                k: "query"
+                n: "month"
+                or: "month"
+                r: false
+                t: "`$STRING`"
+              }
+              {
+                k: "query"
+                n: "year"
+                or: "year"
+                r: false
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/shipment/country_volumes"
+          q: {
+            exist: [
+              "accept"
+              "month"
+              "year"
+            ]
+          }
+          s: [
+            {
+              lit: "shipment"
+            }
+            {
+              lit: "country_volumes"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

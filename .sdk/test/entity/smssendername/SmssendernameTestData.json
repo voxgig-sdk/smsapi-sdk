@@ -1,0 +1,38 @@
+{
+  "existing": {
+    "smssendername": {
+      "SMSSENDERNAME00": {
+        "sendername_id": "SENDERNAME01",
+        "sender": "SENDER01",
+        "id": "SMSSENDERNAME00"
+      },
+      "SMSSENDERNAME01": {
+        "sendername_id": "SENDERNAME01",
+        "sender": "SENDER01",
+        "id": "SMSSENDERNAME01"
+      },
+      "SMSSENDERNAME02": {
+        "sendername_id": "SENDERNAME01",
+        "sender": "SENDER01",
+        "id": "SMSSENDERNAME02"
+      }
+    }
+  },
+  "new": {
+    "smssendername": {
+      "smssendername_ref01": {}
+    }
+  },
+  "requests": {
+    "POST /sms/sendernames/{sender}/commands/make_default": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /sms/sendernames/{sender}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

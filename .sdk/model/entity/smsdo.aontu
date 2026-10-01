@@ -1,0 +1,211 @@
+# Entity: smsdo
+
+main: kit: entity: smsdo: {
+
+  alias: field: {}
+
+  fields: {
+    allow_duplicates: {
+      h: "Allow Duplicates"
+      n: "allow_duplicates"
+      r: false
+      sh: "When parameter allow_duplicates is set to \"1\" allows to send message to duplicated numbers in one request (useful i.e."
+      t: "`$INTEGER`"
+    }
+    check_idx: {
+      h: "Check Idx"
+      n: "check_idx"
+      r: false
+      sh: "When parameter check_idx is set to „1” prevents from sending more than one message with the same idx in last 24h."
+      t: "`$ANY`"
+      union: {
+        branches: 3
+        count: 1
+        depth: 0
+      }
+    }
+    date: {
+      h: "Date"
+      n: "date"
+      r: false
+      sh: "Date in UNIX timestamp (&date=1287734110) or in ISO 8601 (&date=2012-05-10T08:40:27+00:00) when message will be sent (&date=1287734110)."
+      t: "`$ANY`"
+      union: {
+        branches: 2
+        count: 1
+        depth: 0
+      }
+    }
+    date_validate: {
+      h: "Date Validate"
+      n: "date_validate"
+      r: false
+      sh: "When parameter date_validate is set to \"1\" checks if date if given in proper format."
+      t: "`$INTEGER`"
+    }
+    details: {
+      h: "Details"
+      n: "details"
+      r: false
+      sh: "When details parameter is set to \"1\" more details in response will be displayed (message length and sms count)."
+      t: "`$ANY`"
+      union: {
+        branches: 2
+        count: 1
+        depth: 0
+      }
+    }
+    encoding: {
+      h: "Encoding"
+      n: "encoding"
+      r: false
+      sh: "This parameter describes the encoding of the message text."
+      t: "`$STRING`"
+    }
+    expiration_date: {
+      h: "Expiration Date"
+      n: "expiration_date"
+      r: false
+      sh: "Message expiration date (in UNIX timestamp or in ISO 8601) is a date after which message won't be delivered if it wasn't delivered yet."
+      t: "`$ANY`"
+      union: {
+        branches: 2
+        count: 1
+        depth: 0
+      }
+    }
+    fallback: {
+      h: "Fallback"
+      n: "fallback"
+      r: false
+      sh: "Enable fallback in case sms sending fails"
+      t: "`$ARRAY`"
+    }
+    fast: {
+      h: "Fast"
+      n: "fast"
+      r: false
+      sh: "Setting this parameter to „1” will result in sending message with the highest priority which ensures the quickest possible time of delivery."
+      t: "`$INTEGER`"
+    }
+    flash: {
+      h: "Flash"
+      n: "flash"
+      r: false
+      sh: "Sending a message in flash mode can be activated by setting this parameter to \"1\"."
+      t: "`$INTEGER`"
+    }
+    format: {
+      h: "Format"
+      n: "format"
+      r: false
+      sh: "Parameter &format=json causes, that response is sending in JSON format."
+      t: "`$STRING`"
+    }
+    from: {
+      h: "From"
+      n: "from"
+      r: false
+      sh: "Name of the sender."
+      t: "`$STRING`"
+    }
+    group: {
+      h: "Group"
+      n: "group"
+      r: false
+      sh: "Name of the group from the contacts database to which message should be sent to."
+      t: "`$STRING`"
+    }
+    idx: {
+      h: "Idx"
+      n: "idx"
+      r: false
+      sh: "Optional custom value sent with SMS and sent back in CALLBACK."
+      t: "`$STRING`"
+    }
+    max_parts: {
+      h: "Max Parts"
+      n: "max_parts"
+      r: false
+      sh: "Defines maximum message parts allowed, maximum value allowed is 6."
+      t: "`$INTEGER`"
+    }
+    message: {
+      h: "Message"
+      n: "message"
+      r: false
+      sh: "The message text."
+      t: "`$STRING`"
+    }
+    normalize: {
+      h: "Normalize"
+      n: "normalize"
+      r: false
+      sh: "When parameter normalize is set to „1” special chars in message will be replaced with their equivalents (ê-e, ñ-n, ý-y ...)."
+      t: "`$INTEGER`"
+    }
+    notify_url: {
+      h: "Notify Url"
+      n: "notify_url"
+      r: false
+      sh: "Parameter allows to set CALLBACK URL for message from request."
+      t: "`$STRING`"
+    }
+    test: {
+      h: "Test"
+      n: "test"
+      r: false
+      sh: "When parameter test is set to \"1\" message won't be sent but response will be displayed, there is no charge for such test messages."
+      t: "`$ANY`"
+      union: {
+        branches: 3
+        count: 1
+        depth: 0
+      }
+    }
+    time_restriction: {
+      h: "Time Restriction"
+      n: "time_restriction"
+      r: false
+      sh: "Sets the behavior when you try to ship in hours / dates that do not match the settings in your account."
+      t: "`$STRING`"
+    }
+    to: {
+      h: "To"
+      n: "to"
+      r: false
+      sh: "Recipients' mobile phone numbers (i.e."
+      t: "`$STRING`"
+    }
+  }
+
+  name: "smsdo"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /sms.do"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/sms.do"
+          s: [
+            {
+              lit: "sms.do"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

@@ -1,0 +1,82 @@
+// Smsapi SDK utility: prepareQuery - reqmatch keys that are not path
+// params become query parameters.
+
+using Voxgig.Struct;
+
+namespace SmsapiSdk.Util;
+
+public static partial class SdkUtility
+{
+    internal static Dictionary<string, object?> PrepareQueryUtil(Context ctx)
+    {
+        var point = ctx.Point;
+        var reqmatch = ctx.Reqmatch ?? new Dictionary<string, object?>();
+
+        var paramnames = new List<object?>();
+        if (point != null && StructUtils.GetProp(point, "params") is List<object?> pl)
+        {
+            paramnames.AddRange(pl);
+        }
+        // A path parameter travels in the path. The generated config lists them
+        // as args.params, which PrepareParams reads; params is the older list.
+        if (point != null &&
+            StructUtils.GetPath(point, StructUtils.Jt("args", "params")) is List<object?> apl)
+        {
+            foreach (var pd in apl)
+            {
+                if (StructUtils.GetProp(pd, "name") is string name)
+                {
+                    paramnames.Add(name);
+                }
+            }
+        }
+
+        // A header parameter travels in the headers, which PrepareHeaders
+        // fills.
+        if (point != null &&
+            StructUtils.GetPath(point, StructUtils.Jt("args", "header")) is List<object?> ahl)
+        {
+            foreach (var hd in ahl)
+            {
+                if (StructUtils.GetProp(hd, "name") is string hname)
+                {
+                    paramnames.Add(hname);
+                }
+            }
+        }
+
+        // A query parameter travels under the name the definition gives it,
+        // its orig, which the model may have renamed for the caller.
+        var wire = new Dictionary<string, string>();
+        if (point != null &&
+            StructUtils.GetPath(point, StructUtils.Jt("args", "query")) is List<object?> aql)
+        {
+            foreach (var qd in aql)
+            {
+                if (StructUtils.GetProp(qd, "name") is string qname &&
+                    StructUtils.GetProp(qd, "orig") is string qorig && qorig != "")
+                {
+                    wire[qname] = qorig;
+                }
+            }
+        }
+
+        var query = new Dictionary<string, object?>();
+        foreach (var item in StructUtils.Items(reqmatch))
+        {
+            var key = item[0] as string ?? "";
+            var val = item[1];
+            if (val != null && "$action" != key && !ContainsStr(paramnames, key))
+            {
+                query[wire.TryGetValue(key, out var wkey) ? wkey : key] = val;
+            }
+        }
+
+        return query;
+    }
+
+    private static bool ContainsStr(List<object?> list, string s)
+    {
+        return list.Any(v => v is string vs && vs == s);
+    }
+}

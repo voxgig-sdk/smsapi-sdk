@@ -1,0 +1,27 @@
+{
+  "existing": {
+    "mfa": {
+      "MFA00": {
+        "id": "MFA00"
+      },
+      "MFA01": {
+        "id": "MFA01"
+      },
+      "MFA02": {
+        "id": "MFA02"
+      }
+    }
+  },
+  "new": {
+    "mfa": {
+      "mfa_ref01": {}
+    }
+  },
+  "requests": {
+    "POST /mfa/codes/verifications": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

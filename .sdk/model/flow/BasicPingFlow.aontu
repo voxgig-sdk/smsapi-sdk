@@ -1,0 +1,22 @@
+# BasicPingFlow
+
+main: kit: flow: BasicPingFlow:
+{
+  entity: "ping",
+  kind: "basic",
+  name: "BasicPingFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "ping_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicPingFlow"
+}

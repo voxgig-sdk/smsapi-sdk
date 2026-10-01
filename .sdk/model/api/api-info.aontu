@@ -1,0 +1,44 @@
+# API Information
+
+
+main: {
+  kit: {
+    info: {
+      description: `[SMSAPI.com main page](https://www.smsapi.com/)
+
+[API documentation](https://www.smsapi.com/docs)
+### URL adresses
+API URL adresses:
+* \`https://api.smsapi.com/\` - for secure SSL connections
+* \`https://api2.smsapi.com/\` - backup for secure SSL connections
+
+### Authorization
+Authorization at SMSAPI utilizes OAuth 2 mechanism.
+You can generate OAuth token in our customer panel [API Tokens](https://ssl.smsapi.com/react/oauth/manage).
+Authorization header will be necessary in request to our API.
+
+\`Authorization: Bearer <token>\`
+`
+      security: {
+        in: "header"
+        name: "Authorization"
+        prefix: "Bearer"
+        scheme: "token"
+        type: "http"
+      }
+      servers: [
+        {
+          url: "https://api.smsapi.com"
+        }
+        {
+          url: "https://api2.smsapi.com"
+        }
+      ]
+      summary: "[SMSAPI.com main page](https://www.smsapi.com/)"
+      title: "SMSAPI REST API"
+      version: "1.0.0"
+      website: "https://smsapi.com"
+    }
+  }
+}
+

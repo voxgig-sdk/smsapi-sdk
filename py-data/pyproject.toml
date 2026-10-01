@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voxgig-sdk-smsapi-sdk-data"
+version = "0.0.1"
+description = "Unofficial generated Python Data SDK for the SMSAPI REST public API. Not affiliated with or endorsed by the upstream API provider."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+keywords = ["voxgig", "sdk", "generated-sdk", "openapi", "api-client", "smsapi", "pandas", "dataframe", "notebook", "colab"]
+dependencies = [
+    "voxgig-sdk-smsapi-sdk",
+    "pandas>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/voxgig-sdk/smsapi-sdk"
+Repository = "https://github.com/voxgig-sdk/smsapi-sdk"
+Issues = "https://github.com/voxgig-sdk/smsapi-sdk/issues"
+
+# A single package, deliberately. Emitting auth/fetch/frames as top-level
+# modules would put names that are both real PyPI distributions and common
+# notebook scratch files onto sys.path, where Colab's working directory wins.
+[tool.setuptools.packages.find]
+include = ["smsapi_data*"]

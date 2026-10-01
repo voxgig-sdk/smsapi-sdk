@@ -1,0 +1,6331 @@
+---
+components:
+  securitySchemes:
+    token:
+      type: http
+      scheme: bearer
+      in: header
+      bearerFormat: JWT
+  schemas:
+    FileContentLocation:
+      required:
+      - file_id
+      properties:
+        file_id:
+          type: string
+    ErrorTag:
+      type: string
+      pattern: '[a-z_]+'
+      example: invalid_request_data
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: One or more of the given values is invalid.
+        error:
+          $ref: '#/components/schemas/ErrorTag'
+        developer_description:
+          type: string
+          nullable: true
+        errors:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/ErrorItem'
+    ErrorItem:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          $ref: '#/components/schemas/ErrorTag'
+        path:
+          type: string
+          example: select_fields
+          nullable: true
+        value:
+          type: string
+          example: color
+          nullable: true
+    ErrorCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Error'
+    Date:
+      type: string
+      format: date
+      example: "2017-07-21"
+    YearMonth:
+      type: string
+      format: date
+      example: 2017-07
+    Money:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+    Currency:
+      type: string
+      required: true
+      example: EUR
+    DateNullable:
+      type: string
+      format: date
+      example: "2017-07-21"
+      nullable: true
+    DateTime:
+      type: string
+      format: date-time
+      example: "2017-07-21T17:32:28Z"
+    DateTimeNullable:
+      type: string
+      format: date-time
+      example: "2017-07-21T17:32:28Z"
+      nullable: true
+    DateTimeRange:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/DateTime'
+        to:
+          $ref: '#/components/schemas/DateTime'
+    DateTimeRangeInput:
+      type: object
+      description: Request-side date range. Accepts a date (2025-01-15) or a full
+        RFC3339 datetime; normalized server-side.
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+    Hour24:
+      type: integer
+      minimum: 0
+      maximum: 24
+    Hour24Range:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/Hour24'
+        to:
+          $ref: '#/components/schemas/Hour24'
+    Id:
+      type: string
+      format: oid
+      pattern: '[0-9a-fA-F]{24}'
+      description: Object ID
+      example: 0f0f0f0f0f0f0f0f0f0f0f0f
+    Idx:
+      type: string
+      nullable: true
+      example: example-user-provided-id-123
+    Lang:
+      type: string
+      pattern: '[a-z]{2}'
+      example: pl
+    IdCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Id'
+    Email:
+      type: string
+      format: email
+    EmailCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Email'
+    EmailNullable:
+      allOf:
+      - $ref: '#/components/schemas/Email'
+      - nullable: true
+    Url:
+      type: string
+      format: url
+      description: WHATWG URL compliant
+      example: https://smsapi.pl
+    Method:
+      type: string
+      enum:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+    PhoneNumber:
+      type: string
+      pattern: '[0-9]{8,16}'
+      example: "48327201200"
+    LinkCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Link'
+    Link:
+      type: object
+      properties:
+        name:
+          type: string
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    PhoneNumberNullable:
+      allOf:
+      - $ref: '#/components/schemas/PhoneNumber'
+      - nullable: true
+    IPv4:
+      type: string
+      pattern: '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+      example: 0.0.0.0
+    IPv4Range:
+      type: string
+      pattern: '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}-[0-9]{1,3}'
+      example: 0.0.0.0-255
+    EmptyString:
+      type: string
+      pattern: ""
+    DownloadFileToken:
+      type: string
+      example: PgOwAlfZFzRh5MeU5Sm7t6R6eOhsAUl45ouynRc1BCW1q21uPcma0TlozEa2E4aos77Q1dYschd8XDoy3JsS1xlQUnORO86Yic44
+      description: Download token used with "files/{token}" endpoint to download files,
+        valid only for couple of seconds
+    OptionsResponse:
+      type: object
+      properties:
+        put:
+          type: object
+          properties:
+            available_fields:
+              description: Shows fields available to edit
+              type: array
+              items:
+                type: string
+              example:
+              - example_select_field
+              - example_select_field.sub_field
+            selects:
+              type: object
+              $ref: '#/components/schemas/OptionsResponseExampleSelectFields'
+            rules:
+              type: object
+        get:
+          type: object
+          properties:
+            available_fields:
+              description: Shows fields available to display
+              type: array
+              items:
+                type: string
+              example:
+              - example_select_field
+              - example_select_field.sub_field
+            selects:
+              type: object
+              $ref: '#/components/schemas/OptionsResponseExampleSelectFields'
+        post:
+          type: object
+          properties:
+            available_fields:
+              description: Shows fields available to add
+              type: array
+              items:
+                type: string
+              example:
+              - example_select_field
+              - example_select_field.sub_field
+            selects:
+              type: object
+              $ref: '#/components/schemas/OptionsResponseExampleSelectFields'
+            rules:
+              type: object
+        _extra:
+          type: object
+    OptionsResponseExampleSelectFields:
+      type: object
+      properties:
+        example_select_field:
+          type: object
+          $ref: '#/components/schemas/OptionsResponseSelectPresenterCollection'
+        example_select_field.sub_field:
+          type: object
+          $ref: '#/components/schemas/OptionsResponseSelectPresenterCollection'
+    OptionsResponseSelectPresenterCollection:
+      type: array
+      items:
+        oneOf:
+        - $ref: '#/components/schemas/OptionsResponseSelectPresenterString'
+        - $ref: '#/components/schemas/OptionsResponseSelectPresenterInteger'
+        - $ref: '#/components/schemas/OptionsResponseSelectPresenterFloat'
+        - $ref: '#/components/schemas/OptionsResponseSelectPresenterBool'
+    OptionsResponseSelectPresenterString:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+    OptionsResponseSelectPresenterInteger:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: integer
+    OptionsResponseSelectPresenterFloat:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: number
+          format: float
+    OptionsResponseSelectPresenterBool:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: boolean
+    UnixTimestamp:
+      type: integer
+      example: 1712570310
+      description: UNIX timestamp
+    SmsParts:
+      type: integer
+      minimum: 1
+      maximum: 10
+    Points:
+      type: number
+      format: float
+      example: 0.165
+    Collection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            type: object
+    BlacklistPhoneNumbers:
+      allOf:
+      - $ref: '#/components/schemas/Collection'
+      - type: object
+        required:
+        - size
+        - collection
+        properties:
+          collection:
+            type: array
+            items:
+              $ref: '#/components/schemas/BlacklistPhoneNumber'
+    BlacklistPhoneNumber:
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        expire_at:
+          $ref: '#/components/schemas/DateNullable'
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+    CreateBlacklistPhoneNumber:
+      type: object
+      properties:
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        expire_at:
+          $ref: '#/components/schemas/DateNullable'
+    Callback:
+      type: object
+      required:
+      - url
+      - type
+      properties:
+        url:
+          $ref: '#/components/schemas/Url'
+        api_version:
+          $ref: '#/components/schemas/CallbackApiVersion'
+        type:
+          type: string
+          enum:
+          - sms_dlr
+          - sms_mo
+          - mms_dlr
+          - mms_mo
+          - vms_dlr
+          - bulk
+          - hlr
+          - short_url
+      discriminator:
+        propertyName: type
+        mapping:
+          sms_mo: CallbackMo
+          mms_mo: CallbackMo
+          vms_mo: CallbackMo
+          sms_dlr: CallbackDlr
+          mms_dlr: CallbackDlr
+          vms_dlr: CallbackDlr
+          hlr: CallbackHlr
+          bulk: CallbackBulk
+          short_url: CallbackShortUrl
+    CallbackMo:
+      allOf:
+      - $ref: '#/components/schemas/Callback'
+      type: object
+      required:
+      - receiver_type
+      properties:
+        type:
+          enum:
+          - sms_mo
+          - mms_mo
+        receiver_type:
+          type: string
+          enum:
+          - all
+          - 2way
+          - number
+        receiver_number:
+          type: string
+      example:
+        url: https://smsapi.pl
+        type: sms_mo
+        receiver_type: number
+        receiver_number: "123123123"
+    CallbackDlr:
+      allOf:
+      - $ref: '#/components/schemas/Callback'
+      type: object
+      properties:
+        type:
+          enum:
+          - sms_dlr
+          - mms_dlr
+          - vms_dlr
+      example:
+        url: https://smsapi.pl
+        type: sms_dlr
+    CallbackHlr:
+      allOf:
+      - $ref: '#/components/schemas/Callback'
+      type: object
+      properties:
+        type:
+          enum:
+          - hlr
+      example:
+        url: https://smsapi.pl
+        type: hlr
+    CallbackBulk:
+      allOf:
+      - $ref: '#/components/schemas/Callback'
+      type: object
+      properties:
+        type:
+          enum:
+          - bulk
+      example:
+        url: https://smsapi.pl
+        type: bulk
+    CallbackShortUrl:
+      allOf:
+      - $ref: '#/components/schemas/Callback'
+      type: object
+      properties:
+        type:
+          enum:
+          - short_url
+      example:
+        url: https://smsapi.pl
+        type: short_url
+    UpdateCallback:
+      type: object
+      required:
+      - url
+      properties:
+        url:
+          $ref: '#/components/schemas/Url'
+        api_version:
+          $ref: '#/components/schemas/CallbackApiVersion'
+    CallbackCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/CallbackResponse'
+    CallbackResponse:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        url:
+          $ref: '#/components/schemas/Url'
+        api_version:
+          $ref: '#/components/schemas/CallbackApiVersion'
+        type:
+          type: string
+          enum:
+          - sms_dlr
+          - sms_mo
+          - mms_dlr
+          - mms_mo
+          - vms_dlr
+          - bulk
+          - hlr
+          - short_url
+        receiver:
+          type: object
+          nullable: true
+          properties:
+            type:
+              type: string
+              enum:
+              - all
+              - 2way
+              - number
+            number:
+              type: string
+              nullable: true
+        active:
+          type: boolean
+        invalid:
+          type: boolean
+          nullable: true
+      example:
+        id: 0f0f0f0f0f0f0f0f0f0f0f0f
+        active: true
+        invalid: true
+        url: https://smsapi.pl
+        api_version: 1
+        type: sms_mo
+        receiver:
+          type: number
+          number: "123123123"
+    CallbackApiVersion:
+      type: integer
+      description: |
+        Version of the callback output format. Supported values depend on the callback type; when omitted on creation the default version of the given type is used.
+      example: 1
+    CallbackTestResult:
+      type: object
+      properties:
+        test_result:
+          type: boolean
+        connection_failed:
+          type: boolean
+        invalid_encoding:
+          type: boolean
+        http_response_status:
+          type: integer
+          nullable: true
+        http_response_body:
+          type: string
+          nullable: true
+    CallbackOptions:
+      type: object
+      properties:
+        post:
+          $ref: '#/components/schemas/CallbackPostOptions'
+    CallbackPostOptions:
+      type: object
+      properties:
+        type:
+          type: array
+          items:
+            $ref: '#/components/schemas/CallbackTypeOptions'
+        receiver_type:
+          type: array
+          items:
+            $ref: '#/components/schemas/CallbackReceiverTypeOptions'
+        receiver_number:
+          type: array
+          items:
+            $ref: '#/components/schemas/CallbackReceiverNumberOptions'
+        receive_numbers:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CallbackReceiveNumbersOptions'
+    CallbackTypeOptions:
+      type: string
+      enum:
+      - sms_dlr
+      - sms_mo
+      - mms_dlr
+      - mms_mo
+      - vms_dlr
+      - bulk
+      - hlr
+      - short_url
+    CallbackReceiverTypeOptions:
+      type: string
+      enum:
+      - all
+      - 2way
+      - number
+    CallbackReceiverNumberOptions:
+      type: string
+    CallbackReceiveNumbersOptions:
+      type: array
+      properties:
+        sms:
+          type: string
+        mms:
+          type: string
+    ProfileDocumentsSettings:
+      properties:
+        csv_delimiter:
+          type: string
+          enum:
+          - ;
+          - ','
+          - |2+
+
+          - ':'
+    ProfileSmsSettingsGet:
+      properties:
+        max_parts:
+          type: string
+        mail2sms:
+          type: boolean
+        sms_expiration_time:
+          type: string
+          description: 0 or multiple of 3600, max 86400
+        replace_special_chars:
+          type: boolean
+        footer:
+          type: string
+      required:
+      - max_parts
+      - footer
+      - replace_special_chars
+      - sms_expiration_time
+    ProfileSmsSettingsUpdate:
+      properties:
+        max_parts:
+          type: number
+          format: integer
+        mail2sms:
+          anyOf:
+          - type: boolean
+          - type: integer
+        sms_expiration_time:
+          type: number
+          format: integer
+          description: 0 or multiple of 3600, max 86400
+        replace_special_chars:
+          anyOf:
+          - type: boolean
+          - type: integer
+    ProfileNotificationsSettings:
+      properties:
+        minimum_points_threshold:
+          description: Send notifications if points amount fall below this number
+          type: number
+          format: double
+        notification_email_addresses:
+          type: array
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/Email'
+            - $ref: '#/components/schemas/EmptyString'
+        notification_phone_numbers:
+          type: array
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/PhoneNumber'
+            - $ref: '#/components/schemas/EmptyString'
+    RegionalSettings:
+      type: object
+      required:
+      - language
+      properties:
+        language:
+          type: string
+          example: en-en
+          pattern: ^\D{2}(-\D{2})?$
+        timezone:
+          type: string
+          example: Europe/Warsaw
+        datetime_format:
+          type: string
+          example: d.m.Y H:i:s
+    RegionalSettingsOptions:
+      type: object
+      properties:
+        put:
+          type: object
+          properties:
+            available_fields:
+              type: array
+              items:
+                type: string
+              example:
+              - language
+              - timezone
+              - datetime_format
+            selects:
+              type: object
+              properties:
+                language:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                        example: English
+                      value:
+                        type: string
+                        example: en-en
+                timezone:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                        example: Europe/Warsaw
+                      value:
+                        type: string
+                        example: Europe/Warsaw
+                datetime_format:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                        example: yyyy-mm-dd hh:mm:ss
+                      value:
+                        type: string
+                        example: Y-m-d H:i:s
+    AvailableLanguages:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
+    Language:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: string
+          example: pl
+          pattern: ^\D{2}
+        name:
+          type: string
+          example: Polski
+        tag:
+          type: string
+          example: pl-pl
+    Profile:
+      required:
+      - name
+      - email
+      - username
+      - phone_number
+      - payment_type
+      - user_type
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        phone_number:
+          anyOf:
+          - $ref: '#/components/schemas/PhoneNumber'
+          - $ref: '#/components/schemas/EmptyString'
+        payment_type:
+          type: string
+          enum:
+          - prepaid
+          - postpaid
+          - subscription
+          - trial
+          - undefined
+        user_type:
+          type: string
+          enum:
+          - native
+          - subuser
+        points:
+          type: number
+          format: float
+    MessagesSettings:
+      properties:
+        hour_limit:
+          type: object
+          properties:
+            from:
+              anyOf:
+              - type: integer
+              - type: string
+            to:
+              anyOf:
+              - type: integer
+              - type: string
+        day_of_week_limit:
+          type: object
+          properties:
+            from:
+              type: string
+            to:
+              type: string
+        default_country_code:
+          type: integer
+          nullable: true
+    UserLegacy:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        username:
+          type: string
+    UserLegacyCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserLegacy'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+    UserCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+    ConsentProposal:
+      properties:
+        purpose:
+          type: string
+        content:
+          type: string
+        clause:
+          type: string
+          nullable: true
+    Consent:
+      properties:
+        purpose:
+          type: string
+        content:
+          type: string
+        clause:
+          type: string
+          nullable: true
+    RecallConsentByToken:
+      type: object
+      properties:
+        token:
+          type: string
+        g-recaptcha-response:
+          type: string
+    ConsumerProtection:
+      type: object
+      required:
+      - declaration_type
+      properties:
+        declaration_type:
+          type: string
+          enum:
+          - professional
+          - consumer
+    FirstName:
+      type: object
+      properties:
+        name:
+          type: string
+        normalized:
+          type: string
+          description: First name witout special chars
+        vocative:
+          type: string
+        sex:
+          type: string
+          enum:
+          - male
+          - female
+    DiscountGroup:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    DiscountCode:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        is_used:
+          type: boolean
+          description: Is code already used
+        used_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date when code was used
+    DiscountCodes:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscountCode'
+    CreateDiscountGroup:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: integer
+          enum:
+          - 0
+          - 1
+          - 2
+          description: 'Discount code generation type:   * 0 - 0-9,A-Z   * 1 0-9   *
+            2 A-Z'
+        length:
+          type: integer
+          description: Length of generated codes
+        count:
+          type: integer
+        date_expire:
+          type: string
+          format: date-time
+        phone_alert:
+          type: string
+          description: Phone number to send sms to when codes are being exhausted
+        free_alert:
+          type: integer
+          description: Codes count treshold to send sms/mail notification
+        email_alert:
+          type: string
+          description: Email for low codes count notification
+    HlrCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+          example: 1
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hlr'
+    Hlr:
+      type: object
+      properties:
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        id:
+          $ref: '#/components/schemas/Id'
+        country:
+          oneOf:
+          - $ref: '#/components/schemas/HlrLookupCountry'
+          - type: "null"
+        network:
+          oneOf:
+          - $ref: '#/components/schemas/HlrLookupNetwork'
+          - type: "null"
+        cost:
+          $ref: '#/components/schemas/Points'
+        sent_at:
+          $ref: '#/components/schemas/DateTime'
+        lookup_status:
+          $ref: '#/components/schemas/HlrLookupStatus'
+        lookup_by:
+          $ref: '#/components/schemas/User'
+        interface:
+          $ref: '#/components/schemas/HlrInterface'
+        error_code:
+          type: string
+          nullable: true
+        ported:
+          oneOf:
+          - $ref: '#/components/schemas/HlrPorted'
+          - type: "null"
+        idx:
+          $ref: '#/components/schemas/Idx'
+        _links:
+          $ref: '#/components/schemas/HlrLinksCollection'
+    HlrLookupCountry:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Poland
+        mcc:
+          type: integer
+          minimum: 1
+          example: 260
+    HlrLookupNetwork:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Plus GSM
+        mnc:
+          type: integer
+          minimum: 1
+          example: 1
+    HlrLookupStatus:
+      type: string
+      enum:
+      - in_progress
+      - active
+      - inactive
+      - unverified
+      example: active
+    HlrInterface:
+      type: string
+      enum:
+      - www
+      - api
+      example: www
+    HlrPorted:
+      type: object
+      properties:
+        mcc:
+          type: integer
+          example: 3
+    HlrLinksCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/HlrLink'
+    HlrLink:
+      $ref: '#/components/schemas/Link'
+    HlrBulk:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        requested_at:
+          $ref: '#/components/schemas/DateTimeNullable'
+        process_status:
+          $ref: '#/components/schemas/HlrBulkStatus'
+        requested_by:
+          $ref: '#/components/schemas/User'
+        statistics:
+          $ref: '#/components/schemas/HlrBulkStatistics'
+        cost:
+          $ref: '#/components/schemas/Points'
+        notify_email:
+          $ref: '#/components/schemas/EmailNullable'
+        _links:
+          $ref: '#/components/schemas/HlrBulkLinksCollection'
+    HlrBulkStatus:
+      type: string
+      enum:
+      - draft
+      - pending
+      - queue
+      - progress
+      - sent
+      - partly_sent
+      - finished
+      example: queue
+    HlrBulkStatistics:
+      type: object
+      properties:
+        all_mobile_numbers:
+          type: integer
+          example: 300
+        checked_mobile_numbers:
+          type: integer
+          example: 100
+        active_mobile_numbers:
+          type: integer
+          example: 99
+    HlrBulkLinksCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/HlrBulkLink'
+    HlrBulkLink:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - process
+          - report
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    CreateMFACode:
+      type: object
+      required:
+      - phone_number
+      properties:
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        from:
+          $ref: '#/components/schemas/Sender'
+        content:
+          $ref: '#/components/schemas/CustomMessageContent'
+        fast:
+          anyOf:
+          - type: boolean
+          - type: integer
+            enum:
+            - 0
+            - 1
+          default: true
+    MFACode:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        from:
+          allOf:
+          - $ref: '#/components/schemas/Sender'
+          - nullable: true
+    VerifyMFACode:
+      type: object
+      required:
+      - code
+      - phone_number
+      properties:
+        code:
+          type: string
+        phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+    CustomMessageContent:
+      type: string
+      pattern: ^.*\[\%code\%\].*$
+      description: Custom content that must contain placeholder [%code%]
+    NewsletterSmsCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsletterSms'
+    NewsletterSms:
+      type: object
+      properties:
+        id:
+          type: string
+        settings:
+          type: object
+          schema:
+            $ref: '#/components/schemas/Settings'
+        layouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Layout'
+        fields:
+          type: object
+          properties:
+            phone_number:
+              type: object
+              schema:
+                $ref: '#/components/schemas/Field'
+            email:
+              type: object
+              schema:
+                $ref: '#/components/schemas/Field'
+            gender:
+              type: object
+              schema:
+                $ref: '#/components/schemas/Field'
+            first_name:
+              type: object
+              schema:
+                $ref: '#/components/schemas/Field'
+            last_name:
+              type: object
+              schema:
+                $ref: '#/components/schemas/Field'
+            birthday:
+              type: object
+              schema:
+                $ref: '#/components/schemas/Field'
+        note:
+          type: string
+          nullable: true
+        notify_owner_phone_number:
+          type: string
+          nullable: true
+          schema:
+            $ref: '#/components/schemas/PhoneNumber'
+    Settings:
+      type: object
+      properties:
+        width:
+          type: integer
+        height:
+          type: integer
+        font_color:
+          type: string
+        font_family:
+          type: string
+        background_color:
+          type: string
+        button_color:
+          type: string
+        radio_button_color:
+          type: string
+        footer:
+          type: string
+        header:
+          type: string
+        company_name:
+          type: string
+        logo:
+          type: string
+    Layout:
+      type: object
+      properties:
+        name:
+          type: string
+        content:
+          type: string
+    Field:
+      type: object
+      properties:
+        show:
+          type: boolean
+        require:
+          type: boolean
+    SmsSettings:
+      type: object
+      properties:
+        sender:
+          type: string
+        normalize:
+          type: boolean
+        phone_number_subscribe_limit:
+          type: integer
+        sms_verification_content:
+          type: string
+        sms_subscribe_content:
+          type: string
+        sms_unsubscribe_content:
+          type: string
+    UpdateNewsletterSms:
+      type: object
+      properties:
+        settings[width]:
+          type: integer
+        settings[height]:
+          type: integer
+        settings[font_color]:
+          type: string
+        settings[background_color]:
+          type: string
+        settings[button_color]:
+          type: string
+        settings[radio_button_color]:
+          type: string
+        settings[footer]:
+          type: string
+        settings[header]:
+          type: string
+        layouts[0][name]:
+          type: string
+          enum:
+          - subscribe_form
+          - subscribe_verification
+          - subscribe_success
+          - unsubscribe_form
+          - unsubscribe_verification
+          - unsubscribe_groups
+          - inactive
+        layouts[0][content]:
+          type: string
+        note:
+          type: string
+          nullable: true
+        notify_owner_phone_number:
+          type: string
+          nullable: true
+          schema:
+            $ref: '#/components/schemas/PhoneNumber'
+    UpdateNewsletterSmsSettings:
+      type: object
+      properties:
+        sender:
+          type: integer
+        normalize:
+          type: boolean
+        sms_verification_content:
+          type: string
+        sms_subscribe_content:
+          type: string
+        sms_unsubscribe_content:
+          type: string
+        phone_number_subscribe_limit:
+          type: integer
+    NewsletterSmsAgreement:
+      type: object
+      required:
+      - id
+      - newsletter_sms_id
+      - contacts_group_id
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        newsletter_sms_id:
+          $ref: '#/components/schemas/Id'
+        contacts_group_id:
+          $ref: '#/components/schemas/Id'
+        content:
+          type: string
+        required:
+          type: boolean
+    NewsletterSmsAgreements:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsletterSmsAgreement'
+    CreateNewsletterSmsAgreement:
+      type: object
+      properties:
+        contacts_group_id:
+          $ref: '#/components/schemas/Id'
+        content:
+          type: string
+        required:
+          type: boolean
+    UpdateNewsletterSmsAgreement:
+      type: object
+      properties:
+        contacts_group_id:
+          $ref: '#/components/schemas/Id'
+        content:
+          type: string
+        required:
+          type: boolean
+    ConnectedClientCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectedClient'
+    ConnectedClient:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        last_authorization:
+          type: string
+          format: date-time
+          nullable: true
+    ScopesCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+    PersonalTokenCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonalToken'
+    Scope:
+      type: object
+      properties:
+        scope:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    PersonalToken:
+      type: object
+      properties:
+        id:
+          type: string
+        access_token:
+          type: string
+        name:
+          type: string
+        active:
+          type: boolean
+        scope:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+        description:
+          type: string
+        last_authorization:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    CreatePersonalToken:
+      type: object
+      properties:
+        description:
+          type: string
+        expiration_date:
+          type: string
+        scopes:
+          oneOf:
+          - type: string
+            description: Space-separated list of scopes
+          - type: array
+            items:
+              type: string
+    UpdatePersonalToken:
+      type: object
+      properties:
+        description:
+          type: string
+        expiration_date:
+          type: string
+        scopes:
+          oneOf:
+          - type: string
+            description: Space-separated list of scopes
+          - type: array
+            items:
+              type: string
+    OptOutCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptOut'
+    OptOut:
+      properties:
+        id:
+          type: string
+        phoneNumber:
+          type: integer
+        date:
+          type: string
+          format: date-time
+        _links:
+          $ref: '#/components/schemas/OptOutLinkCollection'
+    OptOutLinkCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/OptOutLink'
+    OptOutLink:
+      $ref: '#/components/schemas/Link'
+    OptOutSettings:
+      type: object
+      properties:
+        brand:
+          type: string
+          minLength: 0
+          maxLength: 255
+    BillingSummaryItem:
+      type: object
+      properties:
+        comment:
+          type: string
+    PaymentsEntriesCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentEntry'
+    PaymentEntry:
+      properties:
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        embedded:
+          $ref: '#/components/schemas/PaymentEntryPayload'
+        _links:
+          $ref: '#/components/schemas/BillingSummaryLinks'
+    PaymentEntryPayload:
+      type: object
+      properties:
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+        payment:
+          $ref: '#/components/schemas/Payment'
+        charge:
+          $ref: '#/components/schemas/Charge'
+        balance_change:
+          $ref: '#/components/schemas/BalanceChange'
+        partial_paid_invoice:
+          $ref: '#/components/schemas/PartialPaidInvoice'
+        coupon_reward:
+          $ref: '#/components/schemas/CouponReward'
+    Payment:
+      type: object
+      properties:
+        description:
+          type: string
+        paid_date:
+          type: string
+          format: date-time
+    Invoice:
+      type: object
+      properties:
+        paid:
+          type: boolean
+        invoice_hash:
+          type: string
+        invoice_no:
+          type: string
+        due_date:
+          type: string
+          format: date
+    BalanceChange:
+      type: object
+      properties:
+        credits:
+          type: string
+    PartialPaidInvoice:
+      type: object
+      properties:
+        paid:
+          $ref: '#/components/schemas/Money'
+        missing_amount:
+          $ref: '#/components/schemas/Money'
+    CouponReward:
+      type: object
+      properties:
+        payment_request_id:
+          type: string
+          description: Unique identifier of the payment request.
+          example: 68F8921C336236003CE907C3
+        bonus_credits:
+          type: float
+          description: Bonus credits granted for this payment.
+          example: 20.5
+    BillingSummaryLinks:
+      type: array
+      items:
+        $ref: '#/components/schemas/BillingSummaryLink'
+    BillingSummaryLink:
+      type: object
+      properties:
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    Ping:
+      type: object
+      required:
+      - authorized
+      - unavailable
+      properties:
+        authorized:
+          type: boolean
+        unavailable:
+          type: array
+          items:
+            type: string
+    UserRcsSenderCollection:
+      allOf:
+      - $ref: '#/components/schemas/Collection'
+      - type: object
+        properties:
+          collection:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserRcsSender'
+    UserRcsSender:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        sender:
+          type: string
+    SendRcsMessage:
+      type: object
+      required:
+      - phone_number
+      - sender
+      properties:
+        phone_number:
+          type: string
+          description: Recipient phone number (e.g. 48123456789).
+          example: "48123456789"
+        sender:
+          allOf:
+          - $ref: '#/components/schemas/Id'
+          - description: RCS sender ID (object ID of the agent/sender the user has
+              access to).
+        text:
+          type: string
+          maxLength: 3072
+          description: Plain text message content. Will be converted to RCS format.
+            Either text or content must be provided.
+          example: Hello! This is a test RCS message.
+        content:
+          type: object
+          description: RCS message content in RCS JSON format. Either text or content
+            must be provided.
+          example:
+            text: Hello! This is a test RCS message.
+    SentRcsMessage:
+      type: object
+      properties:
+        id:
+          allOf:
+          - $ref: '#/components/schemas/Id'
+          - description: ID assigned to the sent RCS message.
+    RcsMessage:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        recipient:
+          type: string
+          description: Recipient phone number (without +).
+          example: "48500100100"
+        sender:
+          type: string
+          description: Sender name
+        senderId:
+          type: string
+          description: Sender id
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiredAt:
+          type: string
+          format: date-time
+          nullable: true
+        messageType:
+          type: string
+          nullable: true
+          description: RCS message type (basic, single, ...).
+        interface:
+          type: string
+          nullable: true
+          description: Interface through which the message was sent (www, api, ...).
+    ReceiverNumber:
+      type: object
+      required:
+      - number
+      properties:
+        number:
+          type: string
+          pattern: ^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)?$
+        type:
+          type: string
+          enum:
+          - SMS
+          - SMS/MMS
+    ReceiverNumbers:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ReceiverNumber'
+    RecommendedAccountCollection:
+      type: object
+      required:
+      - size
+      - collection
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecommendedAccount'
+    RecommendedAccount:
+      type: object
+      required:
+      - name
+      - points
+      properties:
+        name:
+          type: string
+        points:
+          type: number
+    SentSmsCollection:
+      type: object
+      required:
+      - size
+      - collection
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/SentSms'
+    SentSms:
+      type: object
+      required:
+      - id
+      - sendername
+      - interface
+      - status
+      - points
+      - body
+      - to
+      properties:
+        id:
+          type: string
+        idx:
+          type: string
+          nullable: true
+        sendername:
+          type: string
+        sent_by:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          nullable: true
+        interface:
+          type: string
+        status:
+          type: string
+        send_at:
+          type: string
+          format: date-time
+          nullable: true
+        points:
+          type: number
+          format: float
+        parts:
+          type: integer
+          nullable: true
+        body:
+          type: string
+        to:
+          type: string
+    SmsStatus:
+      type: string
+      enum:
+      - delivered
+      - expired
+      - failed
+      - queued
+      - unknown
+      - sent
+      - undelivered
+      - stopped
+    SmsStatusCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/SmsStatus'
+    LegacySmsToSend:
+      type: object
+      properties:
+        to:
+          type: string
+          description: Recipients' mobile phone numbers (i.e. 44123456789,48512513514).
+        message:
+          type: string
+          description: The message text. Content of one message is normally 160 characters
+            per single SMS or 70 in case of using at least one special character (polish
+            characters are considered to be special characters). The maximal message
+            is set to 918 normal characters or 402 if special chars are used and it
+            is being sent as one block of 6 messages joined together and charged as
+            six messages Detailed information about special characters are given in
+            documentation.
+        from:
+          type: string
+          description: Name of the sender. As a default the sender name is set to
+            "Test". Only verified names are being accepted (&from=active_name). Sender
+            name may be set after logging into Customer Portal on Sendernames.
+        normalize:
+          type: integer
+          description: "When parameter normalize is set to \u201E1\u201D special chars
+            in message will be replaced with their equivalents (\xEA-e, \xF1-n, \xFD-y
+            ...)."
+        group:
+          type: string
+          description: Name of the group from the contacts database to which message
+            should be sent to.
+        encoding:
+          type: string
+          description: "This parameter describes the encoding of the message text.
+            If another encoding is needed parameter encoding should have following
+            value; for UTF-8 - it should be &encoding=utf-8, for iso-8859-2 (latin2)
+            \u2013 it should be &encoding=iso-8859-2, for Windows-1250 \u2013 it should
+            be &encoding=windows-1250."
+        flash:
+          type: integer
+          description: Sending a message in flash mode can be activated by setting
+            this parameter to "1". Flash SMS are automatically presented on the mobile
+            screen and have to be manually saved to be stored in inbox.
+        test:
+          oneOf:
+          - type: integer
+          - type: boolean
+          - type: string
+          description: When parameter test is set to "1" message won't be sent but
+            response will be displayed, there is no charge for such test messages.
+        details:
+          oneOf:
+          - type: integer
+          - type: boolean
+          description: When details parameter is set to "1" more details in response
+            will be displayed (message length and sms count).
+        date:
+          oneOf:
+          - type: integer
+          - type: string
+          description: Date in UNIX timestamp (&date=1287734110) or in ISO 8601 (&date=2012-05-10T08:40:27+00:00)
+            when message will be sent (&date=1287734110). Setting a past date will
+            result in sending message instantly.
+        date_validate:
+          type: integer
+          description: When parameter date_validate is set to "1" checks if date if
+            given in proper format. Returns ERROR:54 if not.
+        time_restriction:
+          type: string
+          description: Sets the behavior when you try to ship in hours / dates that
+            do not match the settings in your account. Available values are follow
+            - act according to settings,ignore - ignore settings and nearest_available
+            - schedule shipment in the nearest allowed time.
+          enum:
+          - follow
+          - ignore
+          - nearest_available
+        allow_duplicates:
+          type: integer
+          description: When parameter allow_duplicates is set to "1" allows to send
+            message to duplicated numbers in one request (useful i.e. for parametrized
+            message contents).
+        idx:
+          type: string
+          description: Optional custom value sent with SMS and sent back in CALLBACK.
+        check_idx:
+          oneOf:
+          - type: integer
+          - type: boolean
+          - type: string
+          description: "When parameter check_idx is set to \u201E1\u201D prevents
+            from sending more than one message with the same idx in last 24h. When
+            this parameter is set and message with the same idx was already sent error
+            53 is returned."
+        max_parts:
+          type: integer
+          description: Defines maximum message parts allowed, maximum value allowed
+            is 6. ERROR:12 will be returned when the message has more parts than defined.
+            Default value can be set in Customer Portal.
+        fast:
+          type: integer
+          description: "Setting this parameter to \u201E1\u201D will result in sending
+            message with the highest priority which ensures the quickest possible
+            time of delivery. Fast messages costs 50% more than normal message. Attention!
+            Mass and marketing messages must not be sent with fast parameter."
+        notify_url:
+          type: string
+          description: Parameter allows to set CALLBACK URL for message from request.
+            This parameter may be used when there is no default CALLBACK URL for this
+            user or when it should be different than default one (notify_url has higher
+            priority than default callback).
+        expiration_date:
+          oneOf:
+          - type: integer
+          - type: string
+          description: Message expiration date (in UNIX timestamp or in ISO 8601)
+            is a date after which message won't be delivered if it wasn't delivered
+            yet. The difference between date sent and expiration date shouldn't be
+            less than 15 minutes and more than 72 hours (we recommend using minimum
+            1 hour and maximum 12 hours difference). Time will be set with tolerance
+            +/- 5 minutes.
+        format:
+          type: string
+          description: Parameter &format=json causes, that response is sending in
+            JSON format.
+          enum:
+          - json
+        fallback:
+          type: array
+          description: Enable fallback in case sms sending fails
+          nullable: true
+          items:
+            allOf:
+            - $ref: '#/components/schemas/FallbackDefinition'
+    FallbackDefinition:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - vms
+        include_sender_and_date:
+          type: integer
+          description: VMS fallback only. When set to "1" the voice message is prefixed
+            with the sender name (from) and the send date, so the reader announces
+            who sent the message and when before reading its content. For ECO and
+            2WAY senders the sender name is omitted and only the send date is announced.
+    LegacySendSmsResponse:
+      required:
+      - count
+      - list
+      properties:
+        count:
+          type: integer
+          description: Amount of all smses sent
+        length:
+          type: integer
+          example: 7
+          description: Length of first sms text sent, available when "details" flag
+            was used
+        message:
+          type: string
+          example: Example Message
+          description: Content of first sms text sent, available when "details" flag
+            was used
+        parts:
+          $ref: '#/components/schemas/SmsParts'
+          description: Total number of parts to which first sent message was split
+            into, available when "details" flag was used
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - points
+            - number
+            - date_sent
+            - submitted_number
+            - status
+            - error
+            - idx
+            - parts
+            properties:
+              id:
+                type: string
+                example: "7074294081650020450"
+                description: Message's id
+              points:
+                $ref: '#/components/schemas/Points'
+                description: Price of delivery
+              number:
+                $ref: '#/components/schemas/PhoneNumber'
+                description: Recipient's number with country prefix
+              date_sent:
+                $ref: '#/components/schemas/UnixTimestamp'
+                description: Date of send
+              submitted_number:
+                $ref: '#/components/schemas/PhoneNumber'
+                description: Phone number from request
+              status:
+                type: string
+                enum:
+                - QUEUE
+                description: Message's status
+              error:
+                type: string
+                nullable: true
+                description: Error, deprecated, always null
+              idx:
+                $ref: '#/components/schemas/Idx'
+                nullable: true
+                description: IDX if given in request
+              parts:
+                $ref: '#/components/schemas/SmsParts'
+                description: Total number of parts to which message is split into
+        fallbacks:
+          type: object
+          description: Results of fallback channels triggered when SMS sending failed
+          properties:
+            vms:
+              $ref: '#/components/schemas/LegacyFallbackResult'
+    LegacyFallbackResult:
+      type: object
+      required:
+      - count
+      - list
+      properties:
+        count:
+          type: integer
+          description: Amount of fallback messages sent
+        list:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - idx
+            - date_sent
+            - points
+            properties:
+              id:
+                type: string
+                example: 0862688734829233910
+                description: Fallback message's id
+              idx:
+                $ref: '#/components/schemas/Idx'
+                nullable: true
+                description: IDX if given in request
+              date_sent:
+                $ref: '#/components/schemas/UnixTimestamp'
+                description: Date of send
+              points:
+                $ref: '#/components/schemas/Points'
+                description: Price of delivery
+    LegacySendSmsErrorResponse:
+      required:
+      - error
+      - message
+      properties:
+        error:
+          type: integer
+          description: Error code representation
+        message:
+          type: string
+          description: Error description
+        invalid_numbers:
+          type: array
+          description: Recipient numbers for which the message could not be sent,
+            each with its own error reason.
+          items:
+            $ref: '#/components/schemas/InvalidNumber'
+    InvalidNumber:
+      type: object
+      required:
+      - number
+      - submitted_number
+      - message
+      properties:
+        number:
+          $ref: '#/components/schemas/PhoneNumber'
+        submitted_number:
+          type: string
+          description: The phone number exactly as submitted in the request
+          example: +48 500 100 200
+        message:
+          type: string
+          description: Reason the number could not be sent to
+          example: You have reached the monthly limit.
+        error_code:
+          type: integer
+          description: Machine-readable error code for this recipient, matching the
+            top-level `error` code values. Not yet populated for every rejection reason
+            - check `message` as a fallback until fully implemented.
+          example: 96
+    SmsBulkCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmsBulk'
+    SmsBulk:
+      type: object
+      properties:
+        id:
+          type: string
+        info:
+          type: string
+        sendername:
+          type: string
+        interface:
+          type: string
+        status:
+          type: string
+          enum:
+          - sent
+          - finished
+          - queue
+          - queued
+          - progress
+          - pausing
+          - paused
+          - stopped
+        sent_at:
+          type: string
+          format: date-time
+        points:
+          type: number
+          format: float
+        preview:
+          type: string
+        name:
+          type: string
+        sent_by:
+          $ref: '#/components/schemas/UserLegacy'
+        statistics:
+          $ref: '#/components/schemas/SmsBulkStatistics'
+        sending_options:
+          $ref: '#/components/schemas/SendingOptions'
+        _links:
+          $ref: '#/components/schemas/SmsBulkLinkCollection'
+        _embedded:
+          type: object
+          nullable: true
+          properties:
+            sms_report:
+              $ref: '#/components/schemas/SmsReport'
+    SendingOptions:
+      type: object
+      properties:
+        bandwidth:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/SendingBandwidth'
+        restriction:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/Hour24Range'
+    SendingBandwidth:
+      type: object
+      properties:
+        value:
+          type: integer
+          minimum: 60
+          maximum: 5000000
+        per_unit:
+          type: string
+          enum:
+          - hour
+    SmsBulkLinkCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/SmsBulkLink'
+    SmsBulkLink:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - file
+          - pause
+          - resume
+          - stop
+          - generate_report
+          - report_file
+          - summary
+          - generate_summary
+          - generate_report
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    SmsBulkStatistics:
+      type: object
+      properties:
+        delivered_messages:
+          type: integer
+          format: int32
+        sent_messages:
+          type: integer
+          format: int32
+        all_messages:
+          type: integer
+          format: int32
+        short_url_clicks:
+          type: integer
+          format: int32
+    Prices:
+      type: object
+      properties:
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Price'
+        size:
+          type: integer
+    Price:
+      type: object
+      properties:
+        price:
+          $ref: '#/components/schemas/Money'
+        country:
+          $ref: '#/components/schemas/MccCountry'
+        network:
+          $ref: '#/components/schemas/MncNetwork'
+        changed_at:
+          type: string
+          format: date
+          nullable: true
+        _embedded:
+          $ref: '#/components/schemas/TariffCountryServicesEmbedded'
+    ProfilePricingType:
+      type: string
+      enum:
+      - pro
+      - eco
+      - sms
+      - 2way
+      - vms
+      - hlr
+      - mms
+      example: eco
+    PriceCollection:
+      type: object
+      properties:
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Price'
+        size:
+          type: integer
+    TariffCountryServicesEmbedded:
+      type: object
+      uniqueItems: true
+      properties:
+        services:
+          $ref: '#/components/schemas/TariffCountryServices'
+    TariffCountryServices:
+      type: object
+      properties:
+        receiving_numbers:
+          type: boolean
+        alphanumeric_sendernames:
+          type: boolean
+        details:
+          type: string
+    MoneyRange:
+      type: object
+      properties:
+        begin:
+          $ref: '#/components/schemas/Money'
+        end:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/Money'
+    MccCountry:
+      type: object
+      properties:
+        name:
+          type: string
+        mcc:
+          type: integer
+    MncNetwork:
+      type: object
+      properties:
+        name:
+          type: string
+        mnc:
+          type: integer
+    ThresholdCollection:
+      type: object
+      properties:
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Threshold'
+        size:
+          type: integer
+    Threshold:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          $ref: '#/components/schemas/Money'
+        range:
+          $ref: '#/components/schemas/MoneyRange'
+    UserLogsCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserLog'
+    UserLog:
+      properties:
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        date:
+          $ref: '#/components/schemas/Date'
+        message:
+          $ref: '#/components/schemas/UserLogDetails'
+        type:
+          type: string
+        ip:
+          $ref: '#/components/schemas/IPv4'
+        number_of_requests:
+          type: integer
+    UserLogDetails:
+      properties:
+        request:
+          type: string
+          nullable: true
+        response:
+          type: string
+          nullable: true
+        error:
+          type: string
+          nullable: true
+    AccountTaxId:
+      type: string
+      pattern: ^[A-Z]{2}.*$
+      description: Account tax registry id, vat number
+      example: PL9691566736
+    AccountTax:
+      type: object
+      properties:
+        country_code:
+          type: string
+          nullable: true
+        vat_number:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        street:
+          type: string
+          nullable: true
+        post_code:
+          type: string
+          nullable: true
+    AccountInvoiceDetails:
+      type: object
+      properties:
+        company_name:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        country:
+          oneOf:
+          - $ref: '#/components/schemas/Country'
+          - type: "null"
+        vat_number:
+          type: string
+          nullable: true
+        post_code:
+          type: string
+          nullable: true
+        recipient:
+          type: string
+          nullable: true
+    RequestChangeInvoiceDetailsRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        vat_number:
+          type: string
+        post_code:
+          type: string
+        cui:
+          allOf:
+          - $ref: '#/components/schemas/Cui'
+          nullable: true
+    BookkeeperContact:
+      type: object
+      properties:
+        email_address:
+          description: Email to contact with bookkeeper
+          type: string
+        phone_number:
+          description: Phonenumber to contact with bookkeeper
+          anyOf:
+          - $ref: '#/components/schemas/PhoneNumber'
+          - $ref: '#/components/schemas/EmptyString'
+    AuthLocationCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthLocation'
+    AuthLocation:
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        ip:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+    ResetLoginPassword:
+      type: object
+      required:
+      - login
+      properties:
+        login:
+          type: string
+    SecuritySettings:
+      properties:
+        ip_whitelist:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/IPv4'
+            - $ref: '#/components/schemas/IPv4Range'
+        session_lifetime:
+          type: integer
+        security_level:
+          type: string
+    UpdateLoginPassword:
+      type: object
+      required:
+      - new_password
+      - password_confirm
+      - old_password
+      properties:
+        new_password:
+          type: string
+        password_confirm:
+          type: string
+        old_password:
+          type: string
+    UserAuthDeviceCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserAuthDevice'
+    UserAuthDevice:
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        os:
+          type: string
+        browser:
+          type: string
+        browser_version:
+          type: string
+        trusted:
+          type: boolean
+          nullable: true
+        last_logged_at:
+          $ref: '#/components/schemas/DateTime'
+    RandomApiPasswords:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/RandomApiPassword'
+    RandomApiPassword:
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        password:
+          type: string
+          nullable: true
+        mask:
+          type: string
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+    CreateApiPassword:
+      type: object
+      properties:
+        plain_password:
+          type: string
+    IpApiAccessCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpApiAccess'
+    IpApiAccess:
+      properties:
+        credential_id:
+          type: string
+        credential_type:
+          type: string
+          enum:
+          - md5
+          - oauth
+          - smpp
+        credential_mask:
+          type: string
+          deprecated: true
+        credential_info:
+          type: string
+          description: Approximate information about credentials, it can by token
+            mask or username.
+          example: s4k***** - Token mask when only token is available, smpp_username
+            - Username when use credentials with username and password
+        ip:
+          $ref: '#/components/schemas/IPv4'
+        counter:
+          type: integer
+        last_hit_at:
+          $ref: '#/components/schemas/DateTime'
+        first_hit_at:
+          $ref: '#/components/schemas/DateTime'
+    AutoCharge:
+      type: object
+      required:
+      - system_id
+      - points_threshold
+      - amount
+      - currency
+      properties:
+        system_id:
+          description: Charge method system_id
+          type: string
+        points_threshold:
+          description: Trigger when points reach this or below this level
+          type: number
+          format: integer
+        amount:
+          description: Amount to recharge
+          type: number
+          format: double
+        currency:
+          $ref: '#/components/schemas/ChargesCurrency'
+    ProInvoiceCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProInvoice'
+    ProInvoiceRequestBody:
+      type: object
+      required:
+      - amount
+      - currency
+      properties:
+        amount:
+          description: Charge amount
+          oneOf:
+          - type: number
+            format: double
+          - type: string
+        currency:
+          type: string
+          enum:
+          - EUR
+          - PLN
+          - USD
+        coupon:
+          type: string
+    ProInvoice:
+      type: object
+      description: _links "cancel"
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        transfer_title:
+          type: string
+        bank_account:
+          type: string
+        amount:
+          type: number
+          format: float
+        provision_amount:
+          description: provision rate
+          type: number
+          format: float
+        vat_amount:
+          description: vat rate
+          type: number
+          format: float
+        currency:
+          $ref: '#/components/schemas/ChargesCurrency'
+        points:
+          type: number
+          format: float
+        status:
+          type: string
+        _links:
+          $ref: '#/components/schemas/LinkCollection'
+    ChargeCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Charge'
+    ChargeMethodCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargeMethod'
+        required:
+        - size
+        - collection
+    Charge:
+      type: object
+      required:
+      - id
+      - created_at
+      - system_id
+      - amount
+      - provision_amount
+      - vat_amount
+      - points
+      - status
+      properties:
+        id:
+          type: string
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        system_id:
+          type: string
+          enum:
+          - bank_transfer
+          - espago
+          - paypal
+        amount:
+          type: string
+        provision_amount:
+          description: provision rate
+          type: string
+        vat_amount:
+          description: vat rate
+          type: string
+        currency:
+          $ref: '#/components/schemas/Currency'
+        points:
+          type: string
+        status:
+          type: string
+          enum:
+          - new
+          - in_progress
+          - rejected
+          - refunded
+          - error
+          - completed
+    ChargeMethod:
+      type: object
+      properties:
+        system_id:
+          type: string
+          enum:
+          - bank_transfer
+          - espago
+          - paypal
+          - quick_transfer
+        amount_range:
+          schema:
+            $ref: '#/components/schemas/AmountRange'
+        provision_rate:
+          description: provision rate
+          type: number
+          format: float
+        currency:
+          $ref: '#/components/schemas/Currency'
+        required:
+        - system_id
+        - amount_range
+        - provision_rate
+        - currency
+    AmountRange:
+      description: payment amount range
+      type: object
+      properties:
+        min:
+          type: number
+          format: float
+        max:
+          type: number
+          format: float
+        required:
+        - min
+        example:
+          min: 30
+    CreditCardCollection:
+      type: object
+      required:
+      - size
+      - collection
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditCard'
+    CreditCard:
+      type: object
+      required:
+      - card_id
+      - created_at
+      - last_four_digits
+      - is_primary
+      properties:
+        card_id:
+          type: string
+          description: Id
+        first_name:
+          type: string
+          nullable: true
+        last_name:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: Creation time
+        last_four_digits:
+          type: string
+          description: Last 4 numers of card
+        expiration_year:
+          type: number
+          nullable: true
+        expiration_month:
+          type: number
+          nullable: true
+        is_primary:
+          type: boolean
+    BonusCouponsCollection:
+      type: object
+      required:
+      - size
+      - collection
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/BonusCoupons'
+    BonusCoupons:
+      type: object
+      required:
+      - name
+      - bonus
+      - usable
+      properties:
+        name:
+          type: string
+          description: name
+        bonus:
+          type: number
+          description: bonus %
+        usable:
+          type: boolean
+          description: coupon can be used
+        message:
+          type: string
+          description: error info
+          nullable: true
+        expiration_date:
+          $ref: '#/components/schemas/DateTimeNullable'
+        recharge_range:
+          type: object
+          required:
+          - from
+          - to
+          properties:
+            from:
+              type: integer
+              description: minimal accepted recharge amount
+            to:
+              type: integer
+              description: maximal accepted recharge amount
+              nullable: true
+        first_payment_only:
+          type: boolean
+          description: only first payment
+    ChargeAccount:
+      type: object
+      required:
+      - charge_id
+      - amount
+      - currency
+      properties:
+        charge_id:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          $ref: '#/components/schemas/ChargesCurrency'
+        coupon:
+          type: string
+          nullable: true
+    QuickTransfer:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+          enum:
+          - EUR
+          - PLN
+        coupon:
+          type: string
+        provider_id:
+          type: string
+    QuickTransferProvider:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          required: true
+        name:
+          type: string
+          description: Quick Transfer provider name
+          required: true
+        logo_url:
+          type: string
+          format: url
+          description: Url to bank or payment provider logo
+          required: true
+          example: https://ssl.smsapi.pl/assets/img/charges-quick_transfer-providers/ma.png
+    CreditCardCustomerConnection:
+      type: object
+      properties:
+        customer_gateway_id:
+          type: string
+    InvitationProcessStatus:
+      type: object
+      properties:
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvitationStepStatus'
+        completedSuccessfully:
+          type: boolean
+    InvitationStepStatus:
+      properties:
+        name:
+          type: string
+        completed:
+          type: boolean
+        details:
+          type: object
+    InvitationSetPasswordStep:
+      properties:
+        new_password:
+          type: string
+          required: true
+    InvitationPhoneConfirmationStep:
+      properties:
+        code:
+          type: string
+          required: true
+    CountryCollection:
+      allOf:
+      - $ref: '#/components/schemas/Collection'
+      - type: object
+        required:
+        - size
+        - collection
+        properties:
+          collection:
+            type: array
+            items:
+              $ref: '#/components/schemas/Country'
+    Country:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        alpha2:
+          type: string
+    Dashboard:
+      type: object
+      properties:
+        statistics:
+          type: object
+          schema:
+            $ref: '#/components/schemas/DashboardStatistic'
+    DashboardStatistic:
+      type: object
+      properties:
+        messages_send_in_last_month:
+          type: integer
+        count_phone_numbers_in_database:
+          type: integer
+        last_bulk_send_messages:
+          type: integer
+    MenuCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Menu'
+    Menu:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        url:
+          type: string
+        label:
+          type: string
+    DashboardFeatures:
+      type: object
+      properties:
+        image_url:
+          type: string
+        anchor_url:
+          type: string
+        description:
+          type: string
+        anchor_description:
+          type: string
+        feature_url:
+          type: string
+    DashboardCountries:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardCountry'
+    DashboardCountry:
+      type: object
+      properties:
+        label:
+          type: string
+          desctiption: Country name
+        data:
+          type: integer
+          desctiption: Count of messages send to country
+    Draft:
+      type: object
+      properties:
+        bulk_id:
+          $ref: '#/components/schemas/Id'
+        sender:
+          $ref: '#/components/schemas/Sender'
+        name:
+          type: string
+          example: example
+        text:
+          type: string
+          example: example
+        send_at:
+          $ref: '#/components/schemas/DateTime'
+        messages_amount:
+          type: integer
+          example: 2
+          minimum: 1
+        points:
+          $ref: '#/components/schemas/Points'
+        creator:
+          $ref: '#/components/schemas/Username'
+        filename:
+          type: string
+          example: example.csv
+        _links:
+          $ref: '#/components/schemas/DraftLinksCollection'
+    DraftLinksCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/DraftLink'
+    DraftLink:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - file
+          - delete
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    TestMessageRecipient:
+      type: object
+      required:
+      - recipient
+      properties:
+        recipient:
+          $ref: '#/components/schemas/PhoneNumber'
+    ProcessId:
+      type: object
+      required:
+      - process_id
+      properties:
+        process_id:
+          type: string
+          example: 599be03c99ab770b1f26749f9a53f0f0
+    NewsletterSmsDpo:
+      type: object
+      properties:
+        dpo_responsible_person_name:
+          type: string
+        dpo_responsible_person_mail:
+          type: string
+        dpo_authorized_persons_name:
+          type: string
+        third_country_name:
+          type: string
+        third_country_data_transfer:
+          type: boolean
+    NewsletterSmsDpoRequest:
+      type: object
+      required:
+      - dpo_responsible_person_name
+      - dpo_responsible_person_mail
+      - dpo_authorized_persons_name
+      properties:
+        dpo_responsible_person_name:
+          type: string
+        dpo_responsible_person_mail:
+          type: string
+        dpo_authorized_persons_name:
+          type: string
+        third_country_data_transfer:
+          type: boolean
+        third_country_name:
+          type: string
+    ReceivedSmsLegacyRequest:
+      properties:
+        destination:
+          type: string
+        source:
+          type: string
+        timestamp:
+          type: string
+        messageId:
+          type: string
+        content:
+          type: object
+          properties:
+            userData:
+              type: string
+    ReceivedSmsRequest:
+      type: object
+      required:
+      - to
+      - from
+      - text
+      - date
+      - id
+      properties:
+        to:
+          type: string
+          nullable: false
+        from:
+          type: string
+          nullable: false
+        text:
+          type: string
+          nullable: false
+        date:
+          type: string
+          nullable: false
+        id:
+          type: string
+          nullable: false
+    ReceivedSms:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        connected_to_user_id:
+          type: string
+          nullable: true
+        dependencies:
+          type: array
+          items:
+            type: string
+          nullable: false
+    ReceivedSmsLegacy:
+      type: string
+      pattern: ^(OK|ERROR):\d+(:\d+)?(;[a-z_-]+:[^;]*)*$
+      example: OK:1:0
+    ReceivedSmsError:
+      type: object
+      schema:
+        $ref: '#/components/schemas/Error'
+    ReportPeriod:
+      type: string
+      enum:
+      - day
+      - week
+      - month
+    ReportName:
+      type: string
+      maxLength: 50
+      nullable: true
+    ReportStatus:
+      type: string
+      enum:
+      - queue
+      - in_progress
+      - completed
+      - partially_completed
+      - failed
+    CombinedSmsReportType:
+      type: string
+      enum:
+      - sms
+      - sms_bulk
+    ReportUser:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          type: string
+        deleted:
+          type: boolean
+        native:
+          type: boolean
+    ReportUserCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ReportUser'
+    ReportSendername:
+      type: object
+      properties:
+        sender:
+          $ref: '#/components/schemas/Sender'
+        is_deleted:
+          type: boolean
+    ReportSendernameCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ReportSendername'
+    CombinedSmsReportCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/CombinedSmsReport'
+    CombinedSmsReport:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          $ref: '#/components/schemas/ReportName'
+        generated_at:
+          $ref: '#/components/schemas/DateTimeNullable'
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        sent_at:
+          $ref: '#/components/schemas/DateTimeRange'
+        type:
+          $ref: '#/components/schemas/CombinedSmsReportType'
+        _embedded:
+          type: array
+          uniqueItems: true
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/SmsReport'
+            - $ref: '#/components/schemas/SmsBulkReport'
+        _links:
+          $ref: '#/components/schemas/CombinedSmsReportLinkCollection'
+    CombinedSmsReportLinkCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/CombinedSmsReportLink'
+    CombinedSmsReportLink:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - file
+          - delete
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    CombinedRecurringSmsReportCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/CombinedRecurringSmsReport'
+    CombinedRecurringSmsReport:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          $ref: '#/components/schemas/ReportName'
+        period:
+          $ref: '#/components/schemas/ReportPeriod'
+        type:
+          $ref: '#/components/schemas/CombinedSmsReportType'
+        _embedded:
+          type: array
+          uniqueItems: true
+          items:
+            anyOf:
+            - $ref: '#/components/schemas/RecurringSmsReport'
+            - $ref: '#/components/schemas/RecurringSmsBulkReport'
+        _links:
+          $ref: '#/components/schemas/CombinedSmsReportLinkCollection'
+    CombinedRecurringSmsReportLinkCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/CombinedRecurringSmsReportLink'
+    CombinedRecurringSmsReportLink:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - delete
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    HlrLookupReport:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        notification_emails:
+          $ref: '#/components/schemas/EmailCollection'
+        sent_at:
+          $ref: '#/components/schemas/DateTimeRange'
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        bulks:
+          type: boolean
+        _links:
+          $ref: '#/components/schemas/HlrLookupReportLinksCollection'
+    HlrLookupReportLinksCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/HlrLookupReportLink'
+    HlrLookupReportLink:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+          - download
+          - delete
+        method:
+          $ref: '#/components/schemas/Method'
+        href:
+          $ref: '#/components/schemas/Url'
+    CreateHlrLookupReport:
+      type: object
+      required:
+      - sent_at
+      properties:
+        notification_emails:
+          $ref: '#/components/schemas/EmailCollection'
+        sent_at:
+          $ref: '#/components/schemas/DateTimeRangeInput'
+        bulks:
+          oneOf:
+          - type: boolean
+          - type: string
+    SmsReport:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          $ref: '#/components/schemas/ReportName'
+        notification_emails:
+          $ref: '#/components/schemas/EmailCollection'
+        generated_at:
+          $ref: '#/components/schemas/DateTimeNullable'
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        select_fields:
+          $ref: '#/components/schemas/SmsReportSelectableFieldCollection'
+        group_by_fields:
+          $ref: '#/components/schemas/SmsReportGroupableFieldCollection'
+        find_by_fields:
+          anyOf:
+          - $ref: '#/components/schemas/SmsReportFindByField'
+          - type: array
+        sent_at:
+          $ref: '#/components/schemas/DateTimeRange'
+    SmsReportCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SmsReport'
+    RecurringSmsReport:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        name:
+          $ref: '#/components/schemas/ReportName'
+        notification_emails:
+          $ref: '#/components/schemas/EmailCollection'
+        period:
+          $ref: '#/components/schemas/ReportPeriod'
+        select_fields:
+          $ref: '#/components/schemas/SmsReportSelectableFieldCollection'
+        group_by_fields:
+          $ref: '#/components/schemas/SmsReportGroupableFieldCollection'
+        find_by_fields:
+          anyOf:
+          - $ref: '#/components/schemas/RecurringSmsReportFindByField'
+          - type: array
+    RecurringSmsReportCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecurringSmsReport'
+    SmsReportSelectableField:
+      type: string
+      enum:
+      - subject_status
+      - sent_by
+      - sendername
+      - day_of_sending
+      - index
+      - points
+      - total_points
+      - parts
+      - total_parts
+      - our_id
+      - to
+      - modified_at
+      - country
+      - interface
+      - network
+      - content
+      - idx
+      - sent_at
+      - contact_name
+      - contact_description
+      - short_url_operating_system
+      - short_url_browser
+      - short_url_device
+      - short_url_clicked_at
+      - ip
+    SmsReportSelectableFieldCollection:
+      type: array
+      uniqueItems: true
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/SmsReportSelectableField'
+    SmsReportGroupableField:
+      type: string
+      enum:
+      - sent_by
+      - sendername
+      - day_of_sending
+    SmsReportGroupableFieldCollection:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/SmsReportGroupableField'
+    SmsReportFindByField:
+      type: object
+      properties:
+        bulk_id:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/Id'
+            - type: string
+              enum:
+              - empty()
+        subject_status:
+          $ref: '#/components/schemas/SmsStatusCollection'
+        sendername:
+          $ref: '#/components/schemas/SenderCollection'
+        sent_by:
+          $ref: '#/components/schemas/IdCollection'
+    RecurringSmsReportFindByField:
+      type: object
+      properties:
+        subject_status:
+          $ref: '#/components/schemas/SmsStatusCollection'
+        sendername:
+          $ref: '#/components/schemas/SenderCollection'
+        sent_by:
+          $ref: '#/components/schemas/IdCollection'
+    SmsReportFindByFieldRequest:
+      type: object
+      properties:
+        bulk_id:
+          type: array
+          description: if "bulk_id" is missing or equal to null than is ignored
+          minItems: 1
+          uniqueItems: true
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/Id'
+            - type: string
+              enum:
+              - empty()
+        subject_status:
+          allOf:
+          - $ref: '#/components/schemas/SmsStatusCollection'
+          - description: if "subject_status" is missing or equal to null than is ignored
+            minItems: 1
+            uniqueItems: true
+        sendername:
+          allOf:
+          - $ref: '#/components/schemas/SenderCollection'
+          - description: if "sendername" is missing or equal to null than is ignored
+            minItems: 1
+            uniqueItems: true
+        sent_by:
+          allOf:
+          - $ref: '#/components/schemas/IdCollection'
+          - description: if "sent_by" is missing or equal to null than is ignored
+            minItems: 1
+            uniqueItems: true
+    SmsReportWithPredefinedSelectFieldsOptions:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+        - with_content
+        - with_idx
+        - with_contact
+        - with_short_url
+        - with_ip
+    SmsBulkReportCollection:
+      type: object
+      required:
+      - size
+      - collection
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmsBulkReport'
+    SmsBulkReport:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          $ref: '#/components/schemas/ReportName'
+        notification_emails:
+          $ref: '#/components/schemas/EmailCollection'
+        generated_at:
+          $ref: '#/components/schemas/DateTimeNullable'
+        status:
+          $ref: '#/components/schemas/ReportStatus'
+        select_fields:
+          $ref: '#/components/schemas/SmsBulkReportSelectableFieldCollection'
+        find_by_fields:
+          anyOf:
+          - $ref: '#/components/schemas/SmsBulkReportFindByField'
+          - type: array
+        sent_at:
+          $ref: '#/components/schemas/DateTimeRange'
+    SmsBulkReportSelectableField:
+      type: string
+      enum:
+      - points
+      - sent_by
+      - sent_at
+      - name
+      - sendername
+      - preview
+      - file
+      - delivered_messages
+      - all_messages
+      - short_url_unique_hits
+    SmsBulkReportSelectableFieldCollection:
+      type: array
+      uniqueItems: true
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/SmsBulkReportSelectableField'
+    SmsBulkReportFindByField:
+      type: object
+      properties:
+        subject_status:
+          $ref: '#/components/schemas/SmsStatusCollection'
+        sendername:
+          $ref: '#/components/schemas/SenderCollection'
+        sent_by:
+          $ref: '#/components/schemas/IdCollection'
+    SmsBulkReportFindByFieldRequest:
+      type: object
+      properties:
+        subject_status:
+          allOf:
+          - $ref: '#/components/schemas/SmsStatusCollection'
+          - description: If subject_status is missing or equal to null than is ignored
+            minItems: 1
+        sendername:
+          allOf:
+          - $ref: '#/components/schemas/SenderCollection'
+          - description: If sendername is missing or equal to null than is ignored
+            minItems: 1
+        sent_by:
+          allOf:
+          - $ref: '#/components/schemas/IdCollection'
+          - description: If sent_by is missing or equal to null than is ignored
+            minItems: 1
+    SmsBulkReportWithPredefinedSelectFieldsOptions:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+        - with_short_url
+    RecurringSmsBulkReportCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecurringSmsBulkReport'
+    RecurringSmsBulkReport:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        name:
+          $ref: '#/components/schemas/ReportName'
+        notification_emails:
+          $ref: '#/components/schemas/EmailCollection'
+        period:
+          $ref: '#/components/schemas/ReportPeriod'
+        select_fields:
+          $ref: '#/components/schemas/SmsBulkReportSelectableFieldCollection'
+        find_by_fields:
+          anyOf:
+          - $ref: '#/components/schemas/SmsBulkReportFindByField'
+          - type: array
+    FirewallRulesCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/FirewallRuleWithLinks'
+    FirewallRuleWithLinks:
+      properties:
+        id:
+          type: string
+          example: "000000000000000000000000"
+        source:
+          type: string
+          example: 193.238.43.112
+        target:
+          type: string
+          example: api
+        description:
+          type: string
+          example: rule description
+        created_at:
+          ref: '#/components/schemas/DateTime'
+          example: "2021-03-04T11:06:17+01:00"
+        updated_at:
+          ref: '#/components/schemas/DateTimeNullable'
+          example: "2021-03-04T11:06:17+01:00"
+        _links:
+          type: object
+          properties:
+            name:
+              type: string
+            method:
+              type: string
+            href:
+              type: string
+    FirewallRuleCreate:
+      type: object
+      required:
+      - source
+      - target
+      properties:
+        source:
+          description: IP or IP range
+          type: string
+        target:
+          description: Firewall target
+          type: string
+          enum:
+          - api
+        description:
+          description: Rule description
+          type: string
+    FirewallRuleUpdate:
+      type: object
+      properties:
+        source:
+          description: IP or IP range
+          type: string
+        target:
+          description: Firewall target
+          type: string
+          enum:
+          - api
+        description:
+          description: Rule description
+          type: string
+    FirewallRuleResponse:
+      properties:
+        id:
+          type: string
+          example: "000000000000000000000000"
+        source:
+          type: string
+          example: 193.238.43.112
+        target:
+          type: string
+          example: api
+        description:
+          type: string
+          nullable: true
+          example: rule description
+        created_at:
+          ref: '#/components/schemas/DateTime'
+          example: "2021-03-04T11:06:17+01:00"
+        updated_at:
+          ref: '#/components/schemas/DateTimeNullable'
+          example: "2021-03-04T11:06:17+01:00"
+    ShortUrlId:
+      type: string
+      pattern: ^\d+$
+      example: "123"
+    ShortUrlClicksCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShortUrlClick'
+    ShortUrlClick:
+      properties:
+        phone_number:
+          anyOf:
+          - $ref: '#/components/schemas/PhoneNumber'
+          - $ref: '#/components/schemas/EmptyString'
+        date_hit:
+          type: string
+          format: date-time
+        name:
+          type: string
+        short_url:
+          $ref: '#/components/schemas/Url'
+        os:
+          type: string
+        browser:
+          type: string
+        device:
+          type: string
+    ReportLink:
+      properties:
+        link:
+          type: string
+    ClickCountByMobileDeviceCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClickCountByMobileDevice'
+    ClickCountByMobileDevice:
+      properties:
+        link_id:
+          type: integer
+        clicks:
+          $ref: '#/components/schemas/ClickCountByMobileDeviceGroups'
+    ClickCountByMobileDeviceGroups:
+      properties:
+        android:
+          type: integer
+        ios:
+          type: integer
+        wp:
+          type: integer
+        other:
+          type: integer
+        sum:
+          type: integer
+    ShortUrlCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShortUrl'
+    ShortUrl:
+      properties:
+        id:
+          $ref: '#/components/schemas/ShortUrlId'
+        name:
+          type: string
+        url:
+          $ref: '#/components/schemas/Url'
+        short_url:
+          $ref: '#/components/schemas/Url'
+        filename:
+          type: string
+          nullable: true
+        type:
+          type: string
+        expire:
+          $ref: '#/components/schemas/DateTime'
+        hits:
+          type: integer
+        hits_unique:
+          type: integer
+        description:
+          type: string
+          nullable: true
+    CreateShortURL:
+      allOf:
+      - $ref: '#/components/schemas/CreateCommonShortURL'
+      properties:
+        url:
+          $ref: '#/components/schemas/Url'
+      required:
+      - url
+    CreateRichMediaShortURL:
+      allOf:
+      - $ref: '#/components/schemas/CreateCommonShortURL'
+      properties:
+        file:
+          type: file
+      required:
+      - file
+    CreateCommonShortURL:
+      properties:
+        name:
+          type: string
+          description: Link name for named links, omit it to autogenerate
+        expire_time:
+          type: integer
+          minimum: 1
+        expire_unit:
+          type: string
+          enum:
+          - seconds
+          - minutes
+          - hours
+          - days
+          default: seconds
+        description:
+          type: string
+    UpdateShortURL:
+      type: object
+      properties:
+        url:
+          $ref: '#/components/schemas/Url'
+        name:
+          type: string
+        description:
+          type: string
+    GenerateShortURLReport:
+      required:
+      - date_from
+      - date_to
+      properties:
+        date_from:
+          $ref: '#/components/schemas/Date'
+        date_to:
+          $ref: '#/components/schemas/Date'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShortUrlId'
+    CreateSendernameWithStatement:
+      type: object
+      properties:
+        sender:
+          $ref: '#/components/schemas/Sender'
+        statement_accept:
+          type: boolean
+        accepted_statements:
+          $ref: '#/components/schemas/SendernameAcceptedStatements'
+      required:
+      - sender
+      - statement_accept
+    SendernameAcceptedStatements:
+      type: array
+      description: |
+        Types of the statements accepted in the modal. Required only when the extended statements are enabled - every type returned by GET /sms/sendernames/statement must be present.
+      items:
+        type: string
+      example:
+      - sendername
+      - sendername_usage_rights
+      - sendername_change_notice
+    SendernameStatement:
+      type: object
+      properties:
+        content:
+          type: string
+        sections:
+          type: array
+          description: |
+            Statement sections to render in the modal. Empty when the extended statements are disabled - the legacy `content` is then the whole statement.
+          items:
+            $ref: '#/components/schemas/SendernameStatementSection'
+    SendernameStatementSection:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SendernameStatementItem'
+    SendernameStatementItem:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Send this value back in `accepted_statements`.
+          example: sendername_usage_rights
+        content:
+          type: string
+    CreateSendername:
+      type: object
+      properties:
+        sender:
+          $ref: '#/components/schemas/Sender'
+      required:
+      - sender
+    SendernameCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sendername'
+    Sendername:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        is_default:
+          type: boolean
+        sender:
+          $ref: '#/components/schemas/Sender'
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - UNKNOWN
+    Sender:
+      type: string
+      pattern: ^[0-9]{8,16}|[\w.\-&@ %!+]{0,11}$
+      description: Sendername
+    SenderCollection:
+      type: array
+      items:
+        $ref: '#/components/schemas/Sender'
+    TemplateCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+    Template:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        template:
+          type: string
+        normalize:
+          type: boolean
+    AvailableTemplateCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailableTemplate'
+    AvailableTemplate:
+      properties:
+        name:
+          type: string
+        template:
+          type: string
+        normalize:
+          type: boolean
+    CreateSmsTemplate:
+      type: object
+      properties:
+        name:
+          type: string
+        template:
+          type: string
+        normalize:
+          type: boolean
+    PostContentDeclaration:
+      type: object
+      properties:
+        content:
+          description: Declared content of message
+          type: string
+          maxLength: 1530
+    Username:
+      type: string
+      example: example_username
+    Password:
+      type: string
+      example: example_password
+    Description:
+      type: string
+      example: Resource description
+    CreateSubuser:
+      type: object
+      properties:
+        credentials:
+          $ref: '#/components/schemas/CreateSubuserCredentials'
+        active:
+          oneOf:
+          - type: boolean
+          - type: integer
+        description:
+          $ref: '#/components/schemas/Description'
+        points:
+          $ref: '#/components/schemas/SubuserPoints'
+    UpdateSubuser:
+      type: object
+      properties:
+        credentials:
+          $ref: '#/components/schemas/UpdateSubuserCredentials'
+        active:
+          type: boolean
+        description:
+          $ref: '#/components/schemas/Description'
+        points:
+          $ref: '#/components/schemas/SubuserPoints'
+    SubuserCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subuser'
+    Subuser:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        username:
+          $ref: '#/components/schemas/Username'
+        active:
+          type: boolean
+        description:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/Description'
+        points:
+          $ref: '#/components/schemas/SubuserPoints'
+    SubuserPoints:
+      type: object
+      properties:
+        from_account:
+          type: number
+          format: float
+        per_month:
+          type: number
+          format: float
+    CreateSubuserCredentials:
+      type: object
+      properties:
+        username:
+          $ref: '#/components/schemas/Username'
+        password:
+          $ref: '#/components/schemas/Password'
+        api_password:
+          $ref: '#/components/schemas/Password'
+      required:
+      - username
+      - password
+    UpdateSubuserCredentials:
+      type: object
+      properties:
+        password:
+          $ref: '#/components/schemas/Password'
+        api_password:
+          $ref: '#/components/schemas/Password'
+    SubuserSendernamesAccess:
+      type: object
+      properties:
+        access:
+          type: string
+          enum:
+          - all
+          - none
+          - selected
+        senders:
+          type: array
+          nullable: true
+          items:
+            type: string
+      required:
+      - access
+    SubuserBlacklistAccess:
+      type: object
+      properties:
+        access:
+          type: string
+          enum:
+          - all
+          - none
+          - selected
+        numbers:
+          type: array
+          nullable: true
+          items:
+            type: string
+      required:
+      - access
+    SubuserTemplatesAccess:
+      type: object
+      properties:
+        access:
+          type: string
+          enum:
+          - all
+          - none
+          - selected
+        templates:
+          type: array
+          nullable: true
+          items:
+            type: string
+      required:
+      - access
+    SupportMessageReport:
+      type: object
+      properties:
+        message_text:
+          type: string
+          description: Content of report
+        reply_to_email:
+          type: string
+          description: Email of reporting person
+        reply_to_phone:
+          type: string
+          description: Phone number of reporting person
+    SupportContactOptions:
+      type: object
+      properties:
+        post:
+          $ref: '#/components/schemas/SupportPostContactOptions'
+    SupportPostContactOptions:
+      type: object
+      properties:
+        main_contact_name:
+          type: string
+        technical_contact_name:
+          type: string
+        technical_email_addresses:
+          type: string
+        technical_phone_number:
+          type: string
+        price_change_email_address:
+          type: string
+        privacy_violation_email_address:
+          type: string
+        representative_person_name:
+          type: string
+    SupportContactDisplay:
+      type: object
+      properties:
+        main_contact_name:
+          type: string
+        main_email_address:
+          $ref: '#/components/schemas/Email'
+        main_phone_number:
+          $ref: '#/components/schemas/PhoneNumber'
+        technical_contact_name:
+          type: string
+        technical_email_addresses:
+          $ref: '#/components/schemas/EmailCollection'
+        technical_phone_number:
+          type: string
+          nullable: true
+        price_change_email_address:
+          $ref: '#/components/schemas/EmailNullable'
+        privacy_violation_email_address:
+          type: string
+          nullable: true
+        representative_person_name:
+          type: string
+          nullable: true
+      example:
+        main_contact_name: username
+        main_email_address: user@example.com
+        main_phone_number: "48000000000"
+        technical_contact_name: username
+        technical_email_addresses:
+        - user@example.com
+        technical_phone_number: "48000000000"
+        price_change_email_address: user@example.com
+        privacy_violation_email_address: user@example.com
+        representative_person_name: Some Name
+    SupportContactUpdate:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              main_contact_name:
+                type: string
+              technical_contact_name:
+                type: string
+              technical_email_addresses:
+                $ref: '#/components/schemas/EmailCollection'
+              technical_phone_number:
+                oneOf:
+                - $ref: '#/components/schemas/PhoneNumber'
+                - $ref: '#/components/schemas/EmptyString'
+              price_change_email_address:
+                oneOf:
+                - $ref: '#/components/schemas/Email'
+                - $ref: '#/components/schemas/EmptyString'
+              privacy_violation_email_address:
+                oneOf:
+                - $ref: '#/components/schemas/Email'
+                - $ref: '#/components/schemas/EmptyString'
+              representative_person_name:
+                type: string
+                nullable: true
+          examples:
+            support_contact_put_with_all_data_set:
+              summary: Request with all data set
+              value:
+                main_contact_name: username
+                technical_contact_name: username
+                technical_email_addresses:
+                - user@example.com
+                technical_phone_number: "48000000000"
+                price_change_email_address: user@example.com
+                privacy_violation_email_address: user@example.com
+                representative_person_name: Some Name
+            support_contact_put_with_all_data_empty:
+              summary: Request with all possible data empty
+              value:
+                main_contact_name: username
+                technical_contact_name: ""
+                technical_email_addresses: []
+                technical_phone_number: ""
+                price_change_email_address: ""
+                privacy_violation_email_address: ""
+                representative_person_name: ""
+    Patron:
+      properties:
+        name:
+          type: string
+        phone_number:
+          type: string
+        email:
+          type: string
+        service_type:
+          type: string
+          enum:
+          - SUPPORT
+          - MERCHANT
+        avatar:
+          type: string
+          nullable: true
+    PatronsCollection:
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patron'
+    SupportTeamMembersCollection:
+      type: object
+      properties:
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportTeamMember'
+        size:
+          type: integer
+    SupportTeamMember:
+      type: object
+      properties:
+        name:
+          type: string
+        avatar:
+          type: string
+          nullable: true
+    AccountSecuritySettings:
+      properties:
+        apply_api_filters_to_subusers:
+          oneOf:
+          - type: boolean
+          - type: integer
+          description: share api filters with account's subusers
+        ip_api_filters_enabled:
+          oneOf:
+          - type: boolean
+          - type: integer
+          description: enable/disable api filters on account and its subusers
+    ChangePasswordByToken:
+      type: object
+      required:
+      - token
+      - new_password
+      properties:
+        token:
+          description: Reset password token
+          type: string
+        new_password:
+          description: New password
+          type: string
+    RecipientInteractionDescription:
+      type: object
+      required:
+      - type
+      - placement
+      - label
+      - details
+      properties:
+        type:
+          $ref: '#/components/schemas/RecipientInteractionType'
+        placement:
+          $ref: '#/components/schemas/RecipientInteractionPlacement'
+        label:
+          type: string
+          example: suggestion button label
+        details:
+          type: string
+          example: e.g. phone number, suggested reply, url, localization, event name
+    RecipientInteractionType:
+      type: string
+      enum:
+      - suggestReply
+      - openUrl
+      - dialNumber
+      - showLocalization
+      - createCalendarEvent
+      example: suggestReply
+    RecipientInteractionPlacement:
+      type: string
+      enum:
+      - root
+      - standalone_card
+      - carousel_card_1
+      - carousel_card_2
+      - carousel_card_3
+      - carousel_card_4
+      - carousel_card_5
+      - carousel_card_6
+      - carousel_card_7
+      - carousel_card_8
+      - carousel_card_9
+      - carousel_card_10
+      example: root
+      description: level of suggestion, root - for whole message, standalone_card
+        or carousel_card_(1-10) for cards' contents
+    RegistrationFirewallDomainQuery:
+      name: email
+      in: path
+      type: string
+      required: true
+      description: email address to check whether it's prohibited
+    ShipmentRestrictionsCountriesCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+          example: 1
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentRestrictionsCountry'
+    CreateShipmentRestrictionsCountry:
+      type: object
+      properties:
+        country_code:
+          $ref: '#/components/schemas/CountryCode'
+    ShipmentRestrictionsCountry:
+      type: object
+      properties:
+        country_code:
+          $ref: '#/components/schemas/CountryCode'
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        updated_at:
+          $ref: '#/components/schemas/DateTimeNullable'
+    UpdateShipmentRestrictionsSettings:
+      type: object
+      properties:
+        countries_mode:
+          $ref: '#/components/schemas/ShipmentRestrictionsCountriesMode'
+    ShipmentRestrictionsSettings:
+      type: object
+      properties:
+        countries_mode:
+          $ref: '#/components/schemas/ShipmentRestrictionsCountriesMode'
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        updated_at:
+          $ref: '#/components/schemas/DateTimeNullable'
+    ShipmentRestrictionsCountriesMode:
+      type: string
+      enum:
+      - "off"
+      - allow
+      - block
+    CountryCode:
+      type: string
+      pattern: ^[A-Z]{2}$
+      example: PL
+    ShipmentCountryVolumeCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentCountryVolume'
+    ShipmentCountryVolume:
+      type: object
+      properties:
+        country_code:
+          $ref: '#/components/schemas/CountryCode'
+        country_name:
+          type: string
+        country_limit:
+          type: integer
+          nullable: true
+        usage:
+          type: integer
+    ShipmentCountryVolumeRestrictionsCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShipmentCountryVolumeRestriction'
+    CreateShipmentCountryVolumeRestriction:
+      type: object
+      properties:
+        country_code:
+          $ref: '#/components/schemas/CountryCode'
+        country_limit:
+          type: integer
+    UpdateShipmentCountryVolumeRestriction:
+      type: object
+      properties:
+        country_limit:
+          type: integer
+    ShipmentCountryVolumeRestriction:
+      type: object
+      properties:
+        country_code:
+          $ref: '#/components/schemas/CountryCode'
+        country_limit:
+          type: integer
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        updated_at:
+          $ref: '#/components/schemas/DateTimeNullable'
+    ShipmentCountriesVolumesConfig:
+      type: object
+      properties:
+        manage_by_account_enabled:
+          type: boolean
+        max_limit:
+          type: integer
+        default_limit:
+          type: integer
+          nullable: true
+    HealthChecksReportCollection:
+      type: object
+      properties:
+        size:
+          type: integer
+        collection:
+          $ref: '#/components/schemas/HealthCheckReport'
+    HealthCheckReport:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Health check name
+        result:
+          type: boolean
+          description: Health check status
+  parameters:
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 5
+    offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+    q:
+      name: q
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: query
+    Accept-Header-Csv:
+      name: Accept
+      in: header
+      required: false
+      schema:
+        type: string
+        enum:
+        - application/json
+        - text/csv
+        default: application/json
+    Async-Csv:
+      name: x-async
+      description: 'To generate CSV in background add also Content-Type: text/csv'
+      schema:
+        type: boolean
+        default: false
+      in: header
+      required: false
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    ConsentPurpose:
+      name: purpose
+      in: path
+      schema:
+        type: string
+      required: true
+      description: Consent purpose
+    discountCodesGroupId:
+      name: discount_codes_group_id
+      in: path
+      schema:
+        type: string
+      required: true
+    discountCodeId:
+      name: discount_code_id
+      in: path
+      schema:
+        type: string
+      required: true
+    HlrLookupId:
+      name: lookup_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    HlrBulkId:
+      name: bulk_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    newsletterSmsId:
+      name: newsletter_id
+      in: path
+      schema:
+        type: string
+      required: true
+    newsletterSmsAgreementId:
+      name: agreement_id
+      in: path
+      schema:
+        $ref: '#/components/schemas/Id'
+      required: true
+    personalTokenId:
+      name: personal_token_id
+      in: path
+      schema:
+        type: string
+      required: true
+    oauthClientId:
+      name: oauth_client_id
+      in: path
+      schema:
+        type: string
+      required: true
+    optOutId:
+      name: optOutId
+      in: path
+      schema:
+        type: string
+      required: true
+      description: Opt-Out id
+    queryPhoneNumber:
+      name: phone_number
+      in: query
+      schema:
+        type: string
+      required: false
+      description: phone number
+    smsBulkId:
+      name: bulk_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Alphanumeric 24-character length string
+    ProfilePricingType:
+      name: type
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/ProfilePricingType'
+    AccountTaxId:
+      name: AccountTaxId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/AccountTaxId'
+    BulkId:
+      name: bulk_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    ReportSmsBulkIdCollection:
+      name: bulk_id
+      in: query
+      schema:
+        $ref: '#/components/schemas/IdCollection'
+    shortUrlId:
+      name: id
+      in: path
+      schema:
+        $ref: '#/components/schemas/ShortUrlId'
+      required: true
+      description: Short URL ID
+    Sender:
+      name: sender
+      in: path
+      schema:
+        $ref: '#/components/schemas/Sender'
+      required: true
+    smsTemplateId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    SubusersQuery:
+      name: q
+      in: query
+      schema:
+        type: string
+      required: false
+      description: Filter by username (like, case insensitive)
+    CountryCode:
+      name: country_code
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/CountryCode'
+  responses:
+    NotFoundError:
+      description: Entity not found error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotImplementedError:
+      description: Feature not implemented error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ConflictError:
+      description: Entity conflict error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequestError:
+      description: Invalid request data error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ForbiddenError:
+      description: Access forbidden error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnsupportedMediaTypeError:
+      description: Unsupported media type error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MethodNotAllowedError:
+      description: Method not allowed error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailableError:
+      description: Service unavailable
+      content:
+        application/json:
+          schema:
+            porperties:
+              message:
+                type: string
+              service:
+                type: string
+    CsvFile:
+      description: CSV file
+      content:
+        text/csv:
+          schema:
+            type: string
+    FileLocation:
+      headers:
+        Content-Location:
+          schema:
+            type: string
+          description: Publicly available url to file active few seconds
+    CreateCallbackResponse:
+      description: Callback created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallbackResponse'
+          examples:
+            create_callback_sms_mo_all:
+              summary: SMS receive report callback
+              value:
+                id: 0
+                active: true
+                invalid: false
+                type: sms_mo
+                url: http://example.com
+                api_version: 1
+                receiver_type: all
+            create_callback_sms_mo_2way:
+              summary: SMS receive report callback with 2WAY
+              value:
+                id: 0
+                active: true
+                invalid: false
+                type: sms_mo
+                url: http://example.com
+                api_version: 1
+                receiver_type: 2way
+            create_callback_sms_mo_number:
+              summary: SMS receive report callback with receiver number
+              value:
+                id: 0
+                active: true
+                invalid: false
+                type: sms_mo
+                url: http://example.com
+                api_version: 1
+                receiver_type: number
+                receiver_number: "123123123"
+            create_callback_sms_dlr:
+              summary: SMS delivery report callback
+              value:
+                id: 0
+                active: true
+                invalid: false
+                type: sms_dlr
+                url: http://example.com
+                api_version: 1
+    OptionsCallbackResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallbackOptions'
+          examples:
+            callback_options:
+              summary: Callback options for user with sms, mms, vms, hlr, 2way and
+                short url access and recive numbers registered
+              value:
+                post:
+                  type:
+                  - sms_dlr
+                  - sms_mo
+                  - mms_dlr
+                  - mms_mo
+                  - vms_dlr
+                  - bulk
+                  - hlr
+                  - short_url
+                  receiver_type:
+                  - all
+                  - 2way
+                  - number
+                  receiver_number:
+                  - "123123123"
+                  - "123123124"
+                  - "789789789"
+                  receive_numbers:
+                    sms:
+                    - "123123123"
+                    - "123123124"
+                    mms:
+                    - "789789789"
+            callback_options_without_mms_vms_hlr_2way_short_url_access:
+              summary: Callback options for user without mms, vms, hlr, 2way and short
+                url access
+              value:
+                post:
+                  type:
+                  - sms_dlr
+                  - sms_mo
+                  - bulk
+                  receiver_type:
+                  - all
+                  - number
+                  receiver_number:
+                  - "123123123"
+                  - "123123124"
+                  - "789789789"
+                  receive_numbers:
+                    sms:
+                    - "123123123"
+                    - "123123124"
+                    mms:
+                    - "789789789"
+            callback_options_without_receive_numbers:
+              summary: Callback options for user without recive numbers registered
+              value:
+                post:
+                  type:
+                  - sms_dlr
+                  - sms_mo
+                  - mms_dlr
+                  - mms_mo
+                  - vms_dlr
+                  - bulk
+                  - hlr
+                  - short_url
+                  receiver_type:
+                  - all
+                  - 2way
+                  - number
+                  receive_numbers: []
+    HlrCollectionResponse:
+      description: Hlrs collection response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HlrCollection'
+    HlrBulksCollectionResponse:
+      description: Hlr bulks collection response
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/HlrBulk'
+    HlrBulkResponse:
+      description: Hlr bulk response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HlrBulk'
+    HlrBulkReportResponse:
+      description: Hlr bulk report response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                $ref: '#/components/schemas/DownloadFileToken'
+    OptOutSettings:
+      description: Opt-Out company presentation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OptOutSettings'
+    RcsMessageCollection:
+      allOf:
+      - $ref: '#/components/schemas/Collection'
+      - type: object
+        properties:
+          collection:
+            type: array
+            items:
+              $ref: '#/components/schemas/RcsMessage'
+    GetReceiverNumbersResponse:
+      description: Receiver numbers
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReceiverNumbers'
+          examples:
+            receiver_numbers_without_prefix:
+              summary: Receive number without prefix
+              value:
+                size: 1
+                collection:
+                  number: 123123
+                  type: SMS
+            receiver_numbers_with_prefix:
+              summary: Receive number with prefix
+              value:
+                size: 1
+                collection:
+                  number: 123123.prefix
+                  type: SMS
+    UserLogsResponse:
+      description: User logs
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserLogsCollection'
+        text/csv:
+          schema:
+            type: string
+    AccountTaxResponse:
+      description: Found account tax registry data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccountTax'
+          examples:
+            polish_company_example:
+              summary: Polish company account tax data
+              value:
+                country_code: PL
+                vat_number: 9691566736
+                name: "LINK MOBILITY POLAND SP\xD3\u0141KA Z OGRANICZON\u0104 ODPOWIEDZIALNO\u015ACI\u0104"
+                address: TOSZECKA 101 44-117 GLIWICE
+                city: GLIWICE
+                street: TOSZECKA 101
+                post_code: 44-117
+    SmsDraftsCollectionResponse:
+      description: Sms drafts collection response
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Draft'
+    DraftFileResponse:
+      description: Sms draft file response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                $ref: '#/components/schemas/DownloadFileToken'
+    ReceivedSmsResponse:
+      description: Received SMS
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReceivedSms'
+          examples:
+            example_response:
+              summary: Success response
+              value:
+                id: "4"
+                dependencies: []
+    ReceivedSmsLegacyResponse:
+      description: Received SMS
+      content:
+        text/html:
+          schema:
+            $ref: '#/components/schemas/ReceivedSmsLegacy'
+          examples:
+            example_response:
+              summary: Success response
+              value: OK:1:0
+            success_with_dependency:
+              summary: Success response with a dependency result
+              value: OK:109:1;callback-sms:8918631763421637530
+            invalid_input_params:
+              summary: One or more input parameters is invalid or missing
+              value: ERROR:3001
+            message_already_processed:
+              summary: Message has been already processed
+              value: ERROR:3101
+    ReceivedSmsErrorResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReceivedSmsError'
+          examples:
+            invalid_input_params:
+              summary: One or more input parameters is invalid or missing
+              value:
+                error: invalid_domain_logic
+                message: Invalid input params
+            message_already_processed:
+              summary: Message has been already processed
+              value:
+                error: invalid_domain_logic
+                message: Message already processed
+    ReportUserCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReportUserCollection'
+    ReportSendernameCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReportSendernameCollection'
+    CombinedSmsReportCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CombinedSmsReportCollection'
+    CombinedRecurringSmsReportCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CombinedRecurringSmsReportCollection'
+    HlrLookupReportResponse:
+      description: Hlr lookups report response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HlrLookupReport'
+    HlrLookupReportsResponse:
+      description: Hlr lookups reports response
+      content:
+        application/json:
+          schema:
+            allOf:
+            - $ref: '#/components/schemas/Collection'
+            - type: object
+              properties:
+                collection:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/HlrLookupReport'
+    HlrLookupReportDownloadResponse:
+      description: Hlr lookup report download response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                $ref: '#/components/schemas/DownloadFileToken'
+    SmsReport:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SmsReport'
+    SmsReportCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SmsReportCollection'
+    RecurringSmsReport:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RecurringSmsReport'
+    RecurringSmsReportCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RecurringSmsReportCollection'
+    SmsBulkReport:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SmsBulkReport'
+    SmsBulkReportCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SmsBulkReportCollection'
+    RecurringSmsBulkReport:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RecurringSmsBulkReport'
+    RecurringSmsBulkReportCollection:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RecurringSmsBulkReportCollection'
+    OptionsContentDeclaration:
+      description: Available options for message content declaration
+      headers:
+        Allow:
+          schema:
+            type: string
+          description: Return allowed methods on this resource
+    CountryServicesResponse:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              receiving_numbers:
+                type: boolean
+              alphanumeric_sendernames:
+                type: boolean
+              details:
+                type: string
+    ShipmentRestrictionsSettings:
+      description: Shipment Restrictions Settings
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ShipmentRestrictionsSettings'
+    ShipmentRestrictionsCountry:
+      description: Shipment Restrictions Country
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ShipmentRestrictionsCountry'
+    ShipmentRestrictionsCountriesCollection:
+      description: Shipment Restrictions Countries Collection
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ShipmentRestrictionsCountriesCollection'
+    ShipmentCountryVolumeCollection:
+      description: Shipment countries volumes.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ShipmentCountryVolumeCollection'
+        text/csv:
+          schema:
+            type: string
+    ShipmentCountryVolumeRestriction:
+      description: Shipment country volume restriction.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ShipmentCountryVolumeRestriction'
+    ShipmentCountryVolumeRestrictionsCollection:
+      description: Shipment country volume restrictions collection.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ShipmentCountryVolumeRestrictionsCollection'
+    ShipmentCountriesVolumesConfig:
+      description: Shipment countries volumes configuration.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ShipmentCountriesVolumesConfig'
+  requestBodies:
+    CreateCallbackRequest:
+      content:
+        application/json:
+          schema:
+            oneOf:
+            - $ref: '#/components/schemas/CallbackMo'
+            - $ref: '#/components/schemas/CallbackDlr'
+            - $ref: '#/components/schemas/CallbackHlr'
+            - $ref: '#/components/schemas/CallbackBulk'
+            - $ref: '#/components/schemas/CallbackShortUrl'
+          examples:
+            create_callback_sms_mo_all:
+              summary: SMS receive report callback
+              value:
+                type: sms_mo
+                url: http://example.com
+                receiver_type: all
+            create_callback_sms_mo_2way:
+              summary: SMS receive report callback with 2WAY
+              value:
+                type: sms_mo
+                url: http://example.com
+                receiver_type: 2way
+            create_callback_sms_mo_number:
+              summary: SMS receive report callback with receiver number
+              value:
+                type: sms_mo
+                url: http://example.com
+                receiver_type: number
+                receiver_number: "123123123"
+            create_callback_sms_dlr:
+              summary: SMS delivery report callback
+              value:
+                type: sms_dlr
+                url: http://example.com
+    RegionalSettingsRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegionalSettings'
+          examples:
+            All:
+              summary: Send lang, timezone and datetime format
+              value:
+                language: en-en
+                timezone: Europe/Warsaw
+                datetime_format: d.m.Y H:i:s
+            Only:
+              summary: Send lang as ISO 639-1
+              value:
+                language: en-en
+            Tag:
+              summary: Send lang with region
+              value:
+                language: en-en
+    CreateHlrLookup:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              phone_number:
+                $ref: '#/components/schemas/PhoneNumber'
+              idx:
+                $ref: '#/components/schemas/Idx'
+    CreateHlrBulk:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+              notify_email:
+                $ref: '#/components/schemas/Email'
+              skip_invalid:
+                type: boolean
+            required:
+            - file
+          encoding:
+            file:
+              contentType: text/plain, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+                application/vnd.oasis.opendocument.spreadsheet
+    UpdateOptOutSettings:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OptOutSettings'
+    RequestChangeInvoiceDetails:
+      description: Send request to change invoice details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestChangeInvoiceDetailsRequest'
+    ReceivedSmsLegacyRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReceivedSmsLegacyRequest'
+    ReceivedSmsRequestBody:
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ReceivedSmsRequest'
+            - $ref: '#/components/schemas/ReceivedSmsLegacyRequest'
+    CreateSmsReport:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: '#/components/schemas/ReportName'
+              notification_emails:
+                $ref: '#/components/schemas/EmailCollection'
+              sent_at:
+                $ref: '#/components/schemas/DateTimeRangeInput'
+              select_fields:
+                $ref: '#/components/schemas/SmsReportSelectableFieldCollection'
+              group_by_fields:
+                $ref: '#/components/schemas/SmsReportGroupableFieldCollection'
+              find_by_fields:
+                $ref: '#/components/schemas/SmsReportFindByFieldRequest'
+            required:
+            - select_fields
+    CreateRecurringSmsReport:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: '#/components/schemas/ReportName'
+              notification_emails:
+                $ref: '#/components/schemas/EmailCollection'
+              period:
+                $ref: '#/components/schemas/ReportPeriod'
+              select_fields:
+                $ref: '#/components/schemas/SmsReportSelectableFieldCollection'
+              group_by_fields:
+                $ref: '#/components/schemas/SmsReportGroupableFieldCollection'
+              find_by_fields:
+                $ref: '#/components/schemas/SmsReportFindByFieldRequest'
+            required:
+            - period
+            - select_fields
+    CreateShortSmsReport:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: '#/components/schemas/ReportName'
+              notification_emails:
+                $ref: '#/components/schemas/EmailCollection'
+              sent_at:
+                $ref: '#/components/schemas/DateTimeRangeInput'
+              find_by_fields:
+                $ref: '#/components/schemas/SmsReportFindByFieldRequest'
+    CreateSmsReportWithPredefinedSelectFields:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: '#/components/schemas/ReportName'
+              notification_emails:
+                $ref: '#/components/schemas/EmailCollection'
+              sent_at:
+                $ref: '#/components/schemas/DateTimeRangeInput'
+              find_by_fields:
+                $ref: '#/components/schemas/SmsReportFindByFieldRequest'
+              options:
+                $ref: '#/components/schemas/SmsReportWithPredefinedSelectFieldsOptions'
+    CreateSmsBulkReport:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: '#/components/schemas/ReportName'
+              notification_emails:
+                $ref: '#/components/schemas/EmailCollection'
+              sent_at:
+                $ref: '#/components/schemas/DateTimeRangeInput'
+              select_fields:
+                $ref: '#/components/schemas/SmsBulkReportSelectableFieldCollection'
+              find_by_fields:
+                $ref: '#/components/schemas/SmsBulkReportFindByFieldRequest'
+            required:
+            - select_fields
+    CreateSmsBulkReportWithPredefinedSelectFields:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: '#/components/schemas/ReportName'
+              notification_emails:
+                $ref: '#/components/schemas/EmailCollection'
+              sent_at:
+                $ref: '#/components/schemas/DateTimeRangeInput'
+              find_by_fields:
+                $ref: '#/components/schemas/SmsBulkReportFindByFieldRequest'
+              options:
+                $ref: '#/components/schemas/SmsBulkReportWithPredefinedSelectFieldsOptions'
+    CreateRecurringSmsBulkReport:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: '#/components/schemas/ReportName'
+              notification_emails:
+                $ref: '#/components/schemas/EmailCollection'
+              period:
+                $ref: '#/components/schemas/ReportPeriod'
+              select_fields:
+                $ref: '#/components/schemas/SmsBulkReportSelectableFieldCollection'
+              find_by_fields:
+                $ref: '#/components/schemas/SmsBulkReportFindByFieldRequest'
+            required:
+            - period
+            - select_fields
+    CreateShipmentRestrictionsCountry:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateShipmentRestrictionsCountry'
+    UpdateShipmentRestrictionsSettings:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateShipmentRestrictionsSettings'
+    CreateShipmentCountryVolumeRestriction:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateShipmentCountryVolumeRestriction'
+    UpdateShipmentCountryVolumeRestriction:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateShipmentCountryVolumeRestriction'
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: SMSAPI REST API
+  description: |
+    [SMSAPI.com main page](https://www.smsapi.com/)
+
+    [API documentation](https://www.smsapi.com/docs)
+    ### URL adresses
+    API URL adresses:
+    * `https://api.smsapi.com/` - for secure SSL connections
+    * `https://api2.smsapi.com/` - backup for secure SSL connections
+
+    ### Authorization
+    Authorization at SMSAPI utilizes OAuth 2 mechanism.
+    You can generate OAuth token in our customer panel [API Tokens](https://ssl.smsapi.com/react/oauth/manage).
+    Authorization header will be necessary in request to our API.
+
+    `Authorization: Bearer <token>`
+servers:
+- url: https://api.smsapi.com
+- url: https://api2.smsapi.com
+security:
+- token: []
+paths:
+  /blacklist/phone_numbers:
+    get:
+      summary: Returns blacklist phone numbers
+      tags:
+      - blacklist
+      parameters:
+      - $ref: '#/components/parameters/q'
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/Async-Csv'
+      - $ref: '#/components/parameters/Accept-Header-Csv'
+      responses:
+        200:
+          description: Blacklist phone numbers
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/BlacklistPhoneNumbers'
+                - $ref: '#/components/schemas/FileContentLocation'
+            text/csv:
+              schema:
+                type: string
+        202:
+          description: CSV file generation started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileContentLocation'
+        204:
+          description: No blacklist phone numbers to export
+    post:
+      summary: Adds phone number to blacklist
+      tags:
+      - blacklist
+      requestBody:
+        required: true
+        description: Blacklist phone number
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBlacklistPhoneNumber'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateBlacklistPhoneNumber'
+      responses:
+        201:
+          description: Blacklist phone number created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlacklistPhoneNumber'
+        400:
+          $ref: '#/components/responses/BadRequestError'
+          description: Invalid phone number
+    delete:
+      summary: Delete phone numbers
+      tags:
+      - blacklist
+      parameters:
+      - $ref: '#/components/parameters/queryPhoneNumber'
+      responses:
+        204:
+          description: Blacklist phone numbers deleted
+  /blacklist/phone_numbers/imports:
+    post:
+      summary: Imports phone numbers to blacklist
+      tags:
+      - blacklist
+      requestBody:
+        required: true
+        description: Blacklist import
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                import:
+                  type: string
+          text/csv:
+            schema:
+              type: string
+      responses:
+        202:
+          description: Import accepted
+        400:
+          $ref: '#/components/responses/BadRequestError'
+          description: Invalid import file
+  /blacklist/phone_numbers/{id}:
+    delete:
+      summary: Delete blacklist phone number
+      tags:
+      - blacklist
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        204:
+          description: Blacklist phone number deleted
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /callbacks:
+    get:
+      summary: Lists registered callbacks
+      tags:
+      - callbacks
+      responses:
+        200:
+          description: Callbacks list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackCollection'
+    post:
+      summary: Registers callback
+      tags:
+      - callbacks
+      requestBody:
+        required: true
+        $ref: '#/components/requestBodies/CreateCallbackRequest'
+      responses:
+        201:
+          $ref: '#/components/responses/CreateCallbackResponse'
+    options:
+      summary: Create callback options
+      tags:
+      - callbacks
+      responses:
+        200:
+          $ref: '#/components/responses/OptionsCallbackResponse'
+  /callbacks/{id}:
+    get:
+      summary: Get callback
+      tags:
+      - callbacks
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        200:
+          description: Callback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackResponse'
+    put:
+      summary: Updates callback
+      tags:
+      - callbacks
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCallback'
+      responses:
+        200:
+          description: Callback updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackResponse'
+    delete:
+      summary: Delete callback
+      tags:
+      - callbacks
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        204:
+          description: Callback deleted
+  /callbacks/{id}/commands/deactivate:
+    put:
+      summary: Deactivate callback
+      tags:
+      - callbacks
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        202:
+          description: Callback deactivation started
+  /callbacks/{id}/commands/activate:
+    put:
+      summary: Activate callback
+      tags:
+      - callbacks
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        202:
+          description: Callback activation started
+  /callbacks/{id}/commands/test:
+    get:
+      summary: Test callback
+      tags:
+      - callbacks
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        200:
+          description: Callback test result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackTestResult'
+  /profile:
+    get:
+      summary: Profile details
+      tags:
+      - profile
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+  /mfa/codes:
+    post:
+      summary: Generates Multi Factor Authentication code
+      tags:
+      - mfa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMFACode'
+      responses:
+        201:
+          description: MFA code created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFACode'
+        400:
+          description: Invalid phone number - only mobile are acceptable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /mfa/codes/verifications:
+    post:
+      summary: Veryfies Multi Factor Authentication code
+      tags:
+      - mfa
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyMFACode'
+      responses:
+        204:
+          description: MFA confirmed
+        404:
+          description: MFA code for given mobile number not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        408:
+          description: MFA code expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /opt_outs:
+    get:
+      summary: Opt-Out list
+      tags:
+      - opt_out
+      parameters:
+      - $ref: '#/components/parameters/queryPhoneNumber'
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/Async-Csv'
+      - $ref: '#/components/parameters/Accept-Header-Csv'
+      responses:
+        200:
+          description: Opt-Out list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptOutCollection'
+            text/csv:
+              schema:
+                type: string
+        403:
+          $ref: '#/components/responses/ForbiddenError'
+  /opt_outs/{optOutId}:
+    delete:
+      summary: Opt-Out delete
+      tags:
+      - opt_out
+      parameters:
+      - $ref: '#/components/parameters/optOutId'
+      responses:
+        204:
+          description: Opt-Out deleted
+        403:
+          description: Opt-Out feature turned off
+          $ref: '#/components/responses/ForbiddenError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /opt_outs/settings:
+    get:
+      summary: Opt-Out settings
+      tags:
+      - opt_out
+      responses:
+        200:
+          $ref: '#/components/responses/OptOutSettings'
+    put:
+      summary: Opt-Out settings update
+      tags:
+      - opt_out
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateOptOutSettings'
+      responses:
+        200:
+          $ref: '#/components/responses/OptOutSettings'
+  /ping:
+    head:
+      summary: Check service availibility
+      tags:
+      - ping
+      responses:
+        204:
+          description: Service is reachable
+        default:
+          description: Service is not reachable
+    get:
+      summary: Authorization result and status of subservices
+      tags:
+      - ping
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ping'
+  /rcs/senders:
+    get:
+      summary: List of available rcs senders to use
+      tags:
+      - rcs
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRcsSenderCollection'
+  /rcs/messages:
+    post:
+      summary: Send a single RCS message.
+      tags:
+      - rcs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendRcsMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendRcsMessage'
+      responses:
+        201:
+          description: RCS message has been sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentRcsMessage'
+    get:
+      summary: List of RCS messages sent by the current user.
+      tags:
+      - rcs
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/RcsMessageCollection'
+  /sms.do:
+    post:
+      operationId: sendSms
+      summary: Send SMS
+      description: Send SMS
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LegacySmsToSend'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacySmsToSend'
+      tags:
+      - sms.do
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/LegacySendSmsResponse'
+                - $ref: '#/components/schemas/LegacySendSmsErrorResponse'
+                type: object
+            text/plain:
+              schema:
+                type: string
+                example: OK:9101844352429796180:0.165
+  /profile/prices:
+    get:
+      summary: Lists profile prices
+      tags:
+      - profile
+      parameters:
+      - $ref: '#/components/parameters/ProfilePricingType'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prices'
+  /short_url/links:
+    get:
+      summary: List short URLs
+      tags:
+      - short_url
+      responses:
+        200:
+          description: Short URL links.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortUrlCollection'
+        503:
+          $ref: '#/components/responses/ServiceUnavailableError'
+    post:
+      summary: Create short URL
+      tags:
+      - short_url
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/CreateShortURL'
+              - $ref: '#/components/schemas/CreateRichMediaShortURL'
+            examples:
+              create_short_url:
+                summary: Create short url
+                value:
+                  url: http://example.com
+              create_named_short_url:
+                summary: Create named short url
+                value:
+                  url: http://example.com
+                  name: Url name
+              create_short_url_with_description:
+                summary: Create descriptive short url
+                value:
+                  url: http://example.com
+                  description: My page
+              create_rich_media_url:
+                summary: Create rich media short url
+                value:
+                  file: file
+              create_short_url_with_expiration:
+                summary: Create short url that expires in a week
+                value:
+                  url: http://example.com
+                  expire_time: 7
+                  expire_unit: days
+          application/x-www-form-urlencoded:
+            schema:
+              oneOf:
+              - $ref: '#/components/schemas/CreateShortURL'
+              - $ref: '#/components/schemas/CreateRichMediaShortURL'
+            examples:
+              create_short_url:
+                summary: Create short url
+                value: url=http://example.com
+              create_named_short_url:
+                summary: Create named short url
+                value: url=http://example.com&name=Url name
+              create_short_url_with_description:
+                summary: Create descriptive short url
+                value: url=http://example.com&description=My page
+              create_rich_media_url:
+                summary: Create rich media short url
+                value: file=file
+              create_short_url_with_expiration:
+                summary: Create short url that expires in a week
+                value: url=http://example.com&expire_time=7&expire_unit=days
+      responses:
+        201:
+          description: Short URL created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortUrl'
+        409:
+          description: Named link already exists
+        503:
+          $ref: '#/components/responses/ServiceUnavailableError'
+  /short_url/links/{id}:
+    get:
+      summary: Get short URL
+      tags:
+      - short_url
+      parameters:
+      - $ref: '#/components/parameters/shortUrlId'
+      responses:
+        200:
+          description: Short URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortUrl'
+        503:
+          $ref: '#/components/responses/ServiceUnavailableError'
+    put:
+      summary: Update short URL
+      tags:
+      - short_url
+      parameters:
+      - $ref: '#/components/parameters/shortUrlId'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateShortURL'
+      responses:
+        200:
+          description: Short URL updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortUrl'
+        503:
+          $ref: '#/components/responses/ServiceUnavailableError'
+    delete:
+      summary: Delete short URL
+      tags:
+      - short_url
+      parameters:
+      - $ref: '#/components/parameters/shortUrlId'
+      responses:
+        204:
+          description: Short URL deleted.
+        503:
+          $ref: '#/components/responses/ServiceUnavailableError'
+  /sms/sendernames/statement:
+    get:
+      summary: Get new sendername statement
+      tags:
+      - sms/sendernames
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendernameStatement'
+  /sms/sendernames:
+    get:
+      summary: List sendernames
+      tags:
+      - sms/sendernames
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendernameCollection'
+    post:
+      summary: Create sendername
+      tags:
+      - sms/sendernames
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateSendername'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sendername'
+  /sms/sendernames/{sender}:
+    get:
+      summary: Get sendername
+      tags:
+      - sms/sendernames
+      parameters:
+      - $ref: '#/components/parameters/Sender'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sendername'
+    delete:
+      summary: Delete sendername
+      tags:
+      - sms/sendernames
+      parameters:
+      - $ref: '#/components/parameters/Sender'
+      responses:
+        204:
+          description: Delete sendername
+  /sms/sendernames/{sender}/commands/make_default:
+    post:
+      summary: Make sendername as defualt
+      tags:
+      - sms/sendernames
+      parameters:
+      - $ref: '#/components/parameters/Sender'
+      responses:
+        204:
+          description: Sendername made as default
+  /sms/templates:
+    get:
+      summary: List own SMS templates
+      tags:
+      - sms/templates
+      responses:
+        200:
+          description: List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateCollection'
+    post:
+      summary: Create SMS template
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateSmsTemplate'
+      tags:
+      - sms/templates
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+  /sms/templates/{id}:
+    get:
+      summary: Get SMS template
+      parameters:
+      - $ref: '#/components/parameters/smsTemplateId'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+      tags:
+      - sms/templates
+    put:
+      summary: Update SMS template
+      parameters:
+      - $ref: '#/components/parameters/smsTemplateId'
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateSmsTemplate'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+      tags:
+      - sms/templates
+    delete:
+      summary: Delete SMS template
+      parameters:
+      - $ref: '#/components/parameters/smsTemplateId'
+      responses:
+        204:
+          description: Delete
+      tags:
+      - sms/templates
+  /sms/templates/available:
+    get:
+      summary: List of own SMS templates and (optionally) ones shared with main account
+      tags:
+      - sms/templates
+      responses:
+        200:
+          description: List
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableTemplateCollection'
+  /subusers:
+    get:
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/SubusersQuery'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubuserCollection'
+    post:
+      summary: Create subuser
+      tags:
+      - subusers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubuser'
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subuser'
+  /subusers/{id}:
+    get:
+      summary: Get subuser details
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subuser'
+    delete:
+      summary: Delete subuser
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        204:
+          description: Subuser deleted
+    put:
+      summary: Edit subuser
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubuser'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subuser'
+  /subusers/{id}/shares/sendernames:
+    get:
+      summary: Get subuser native sendernames access
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubuserSendernamesAccess'
+    put:
+      summary: Update subuser native sendernames access
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubuserSendernamesAccess'
+      responses:
+        204:
+          description: Subuser native sendernames access updated
+  /subusers/{id}/shares/templates:
+    get:
+      summary: Get subuser native templates access
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubuserTemplatesAccess'
+    put:
+      summary: Update subuser native templates access
+      tags:
+      - subusers
+      parameters:
+      - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubuserTemplatesAccess'
+      responses:
+        204:
+          description: Subuser native templates access updated
+  /shipment/country_volumes:
+    get:
+      summary: List shipment country volume.
+      tags:
+      - shipment_restrictions
+      parameters:
+      - in: query
+        name: year
+        schema:
+          type: string
+        description: Used country volume year.
+      - in: query
+        name: month
+        schema:
+          type: string
+        description: Used country volume month.
+      - $ref: '#/components/parameters/Accept-Header-Csv'
+      responses:
+        200:
+          $ref: '#/components/responses/ShipmentCountryVolumeCollection'
+...

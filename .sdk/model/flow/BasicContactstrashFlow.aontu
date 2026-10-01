@@ -1,0 +1,28 @@
+# BasicContactstrashFlow
+
+main: kit: flow: BasicContactstrashFlow:
+{
+  entity: "contactstrash",
+  kind: "basic",
+  name: "BasicContactstrashFlow",
+  step: [
+    {
+      i: {
+        ref: "contactstrash_ref01",
+        srcdatavar: "contactstrash_ref01_data",
+        suffix: "_up0"
+      }
+
+      o: "update",
+      s: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-contactstrash_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicContactstrashFlow"
+}

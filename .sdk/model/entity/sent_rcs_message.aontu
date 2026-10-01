@@ -1,0 +1,69 @@
+# Entity: sent_rcs_message
+
+main: kit: entity: sent_rcs_message: {
+
+  alias: field: {}
+
+  fields: {
+    content: {
+      h: "Content"
+      n: "content"
+      r: false
+      sh: "RCS message content in RCS JSON format."
+      t: "`$OBJECT`"
+    }
+    phone_number: {
+      h: "Phone Number"
+      n: "phone_number"
+      r: true
+      sh: "Recipient phone number (e.g."
+      t: "`$STRING`"
+    }
+    sender: {
+      h: "Sender"
+      n: "sender"
+      r: true
+      t: "`$ANY`"
+    }
+    text: {
+      h: "Text"
+      n: "text"
+      r: false
+      sh: "Plain text message content."
+      t: "`$STRING`"
+    }
+  }
+
+  name: "sent_rcs_message"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /rcs/messages"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/rcs/messages"
+          s: [
+            {
+              lit: "rcs"
+            }
+            {
+              lit: "messages"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

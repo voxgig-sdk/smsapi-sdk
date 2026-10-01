@@ -1,0 +1,37 @@
+{
+  "existing": {
+    "sendername_statement": {
+      "SENDERNAME_STATEMENT00": {
+        "content": "s1e",
+        "statements": [],
+        "title": "s20"
+      },
+      "SENDERNAME_STATEMENT01": {
+        "content": "s3c",
+        "statements": [],
+        "title": "s3e"
+      },
+      "SENDERNAME_STATEMENT02": {
+        "content": "s5a",
+        "statements": [],
+        "title": "s5c"
+      }
+    }
+  },
+  "new": {
+    "sendername_statement": {
+      "sendername_statement_ref01": {
+        "content": "s78",
+        "statements": [],
+        "title": "s7a"
+      }
+    }
+  },
+  "requests": {
+    "GET /sms/sendernames/statement": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

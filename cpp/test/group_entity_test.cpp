@@ -1,0 +1,115 @@
+// Generated basic-flow test for the group entity (model-driven,
+// unit mode; mirrors the rust/go TestEntity generator).
+
+#include "runner_support.hpp"
+
+using namespace sdk;
+using namespace sdk::rs;
+
+struct GroupSetup {
+  std::shared_ptr<SmsapiSDK> client;
+  Value data;
+  Value idmap;
+  Value env;
+  bool live = false;
+  bool synthetic_only = false;
+  long long now = 0;
+};
+
+static GroupSetup group_basic_setup(const Value& extra) {
+  load_env_local();
+
+  std::string entity_data_file = "../.sdk/test/entity/group/GroupTestData.json";
+  Value entity_data = vs::parse_json(read_file(entity_data_file));
+
+  Value options = vmap({{"entity", getp(entity_data, "existing")}});
+  auto client = SmsapiSDK::testSDK(options, extra);
+
+  // idmap via transform (upper-cased id name synthetics), matching the donors.
+  Value idmap = Struct::transform(
+      vlist({Value("group01"), Value("group02"), Value("group03")}),
+      vmap({{"`$PACK`", vlist({
+        Value(""),
+        vmap({
+          {"`$KEY`", Value("`$COPY`")},
+          {"`$VAL`", vlist({Value("`$FORMAT`"), Value("upper"), Value("`$COPY`")})}
+        })
+      })}}));
+  if (!idmap.is_map()) idmap = vmap();
+
+  Value env = env_override(vmap({
+    {"SMSAPI_TEST_GROUP_ENTID", idmap},
+    {"SMSAPI_TEST_LIVE", Value("FALSE")},
+    {"SMSAPI_TEST_EXPLAIN", Value("FALSE")}
+  }));
+
+  Value idmap_resolved = Helpers::toMapAny(getp(env, "SMSAPI_TEST_GROUP_ENTID"));
+  if (!idmap_resolved.is_map()) idmap_resolved = idmap;
+
+  bool live = getp(env, "SMSAPI_TEST_LIVE") == Value("TRUE");
+
+  GroupSetup s;
+  s.client = client;
+  s.data = entity_data;
+  s.idmap = idmap_resolved;
+  s.env = env;
+  s.live = live;
+  s.synthetic_only = false;
+  s.now = now_ms();
+  return s;
+}
+
+static void group_entity_instance() {
+  auto testsdk = SmsapiSDK::testSDK();
+  auto ent = testsdk->group();
+  ASSERT_EQ(ent->getName(), std::string("group"), "entity name");
+}
+
+
+static void group_entity_basic() {
+  auto setup = group_basic_setup(Value::undef());
+  std::string mode = setup.live ? "live" : "unit";
+  for (const std::string& op : std::vector<std::string>{"update", "load"}) {
+    auto sk = is_control_skipped("entityOp", std::string("group.") + op, mode);
+    if (sk.first) { std::cerr << "skip: " << (sk.second.empty()? "sdk-test-control.json" : sk.second) << "\n"; return; }
+  }
+  auto client = setup.client;
+
+  // Bootstrap entity data from existing test data (no create step in flow).
+  // Declare _data at FUNCTION scope (later load/update steps reference it);
+  // only _data_raw was declared, so the block-local assignment left _data
+  // undeclared ("was not declared in this scope").
+  Value group_ref01_data_raw = Helpers::toMapAny(Struct::getpath(setup.data, {"existing", "group"}));
+  Value group_ref01_data = vmap();
+  {
+    std::vector<Value> its = Struct::items(group_ref01_data_raw);
+    group_ref01_data = its.empty() ? vmap() : Helpers::toMapAny(pair_val(its[0]));
+    if (!group_ref01_data.is_map()) group_ref01_data = vmap();
+  }
+  // UPDATE
+  auto group_ref01_ent = client->group();
+  Value group_ref01_data_up0_up = vmap();
+  setp(group_ref01_data_up0_up, "id", getp(group_ref01_data, "id"));
+  std::string group_ref01_data_up0_markval = std::string("Mark01-group_ref01_") + std::to_string(setup.now);
+  setp(group_ref01_data_up0_up, "created_by", Value(group_ref01_data_up0_markval));
+  Value group_ref01_resdata_up0_result = group_ref01_ent->update(Struct::clone(group_ref01_data_up0_up), Value::undef())->data();
+  Value group_ref01_resdata_up0 = Helpers::toMapAny(group_ref01_resdata_up0_result);
+  if (!group_ref01_resdata_up0.is_map()) group_ref01_resdata_up0 = vmap();
+  ASSERT_TRUE(group_ref01_resdata_up0.is_map(), "expected update result to be a map");
+  ASSERT_EQ_VAL(getp(group_ref01_resdata_up0, "id"), getp(group_ref01_data_up0_up, "id"), "expected update result id to match");
+  ASSERT_EQ_VAL(getp(group_ref01_resdata_up0, "created_by"), Value(group_ref01_data_up0_markval), "expected created_by to be updated");
+
+  // LOAD
+  Value group_ref01_match_dt0 = vmap({{"id", getp(group_ref01_data, "id")}});
+  Value group_ref01_data_dt0_loaded = group_ref01_ent->load(Struct::clone(group_ref01_match_dt0), Value::undef())->data();
+  Value group_ref01_data_dt0_load_result = Helpers::toMapAny(group_ref01_data_dt0_loaded);
+  ASSERT_TRUE(group_ref01_data_dt0_load_result.is_map(), "expected load result to be a map");
+  ASSERT_EQ_VAL(getp(group_ref01_data_dt0_load_result, "id"), getp(group_ref01_data, "id"), "expected load result id to match");
+
+}
+
+int main() {
+  T_RUN(group_entity_instance);
+  T_RUN(group_entity_basic);
+  return sdktest::summary("group_entity_test");
+}

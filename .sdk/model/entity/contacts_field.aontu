@@ -1,0 +1,357 @@
+# Entity: contacts_field
+
+main: kit: entity: contacts_field: {
+
+  alias: field: {}
+
+  fields: {
+    birthday_date: {
+      fo: "date"
+      h: "Birthday Date"
+      n: "birthday_date"
+      r: false
+      t: "`$STRING`"
+    }
+    city: {
+      h: "City"
+      n: "city"
+      r: false
+      t: "`$STRING`"
+    }
+    contact_expire_after: {
+      h: "Contact Expire After"
+      n: "contact_expire_after"
+      r: true
+      sh: "Contact expire after days"
+      t: "`$INTEGER`"
+    }
+    contacts_count: {
+      h: "Contacts Count"
+      n: "contacts_count"
+      r: false
+      t: "`$INTEGER`"
+    }
+    country: {
+      h: "Country"
+      n: "country"
+      r: false
+      t: "`$STRING`"
+    }
+    created_by: {
+      h: "Created By"
+      n: "created_by"
+      r: true
+      t: "`$STRING`"
+    }
+    date_created: {
+      fo: "date-time"
+      h: "Date Created"
+      n: "date_created"
+      r: true
+      t: "`$STRING`"
+    }
+    date_updated: {
+      fo: "date-time"
+      h: "Date Updated"
+      n: "date_updated"
+      r: true
+      t: "`$STRING`"
+    }
+    description: {
+      h: "Description"
+      n: "description"
+      r: false
+      t: "`$STRING`"
+    }
+    email: {
+      fo: "email"
+      h: "Email"
+      n: "email"
+      r: false
+      t: "`$STRING`"
+    }
+    first_name: {
+      h: "First Name"
+      n: "first_name"
+      r: false
+      t: "`$STRING`"
+    }
+    gender: {
+      h: "Gender"
+      n: "gender"
+      r: true
+      t: "`$STRING`"
+    }
+    group_id: {
+      fo: "oid"
+      h: "Group Id"
+      n: "group_id"
+      r: false
+      sh: "Object ID"
+      t: "`$STRING`"
+    }
+    groups: {
+      h: "Groups"
+      n: "groups"
+      r: true
+      t: "`$ARRAY`"
+    }
+    id: {
+      fo: "oid"
+      h: "Id"
+      n: "id"
+      op: {
+        list: {
+          req: true
+          type: "`$STRING`"
+        }
+      }
+      r: false
+      sh: "Object ID"
+      t: "`$STRING`"
+    }
+    idx: {
+      h: "Idx"
+      n: "idx"
+      r: false
+      sh: "User provided resource id"
+      t: "`$STRING`"
+    }
+    last_name: {
+      h: "Last Name"
+      n: "last_name"
+      r: false
+      t: "`$STRING`"
+    }
+    name: {
+      h: "Name"
+      n: "name"
+      r: false
+      sh: "Group name"
+      t: "`$STRING`"
+    }
+    permissions: {
+      h: "Permissions"
+      n: "permissions"
+      r: false
+      t: "`$ARRAY`"
+    }
+    phone_number: {
+      h: "Phone Number"
+      n: "phone_number"
+      r: false
+      t: "`$STRING`"
+    }
+    read: {
+      h: "Read"
+      n: "read"
+      r: false
+      sh: "Has read permission"
+      t: "`$BOOLEAN`"
+    }
+    send: {
+      h: "Send"
+      n: "send"
+      r: false
+      sh: "Has send permission"
+      t: "`$BOOLEAN`"
+    }
+    source: {
+      h: "Source"
+      n: "source"
+      r: false
+      t: "`$STRING`"
+    }
+    type: {
+      h: "Type"
+      n: "type"
+      r: false
+      t: "`$STRING`"
+    }
+    username: {
+      h: "Username"
+      n: "username"
+      r: false
+      t: "`$STRING`"
+    }
+    value: {
+      h: "Value"
+      n: "value"
+      r: false
+      t: "`$STRING`"
+    }
+    write: {
+      h: "Write"
+      n: "write"
+      r: false
+      sh: "Has write permission"
+      t: "`$BOOLEAN`"
+    }
+  }
+
+  id: {
+    field: "id"
+    name: "id"
+  }
+
+  name: "contacts_field"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /contacts/fields"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/contacts/fields"
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "fields"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /contacts/fields"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/contacts/fields"
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "fields"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+      ]
+    }
+    remove: {
+      name: "remove"
+      points: [
+        {
+          co: {
+            id: "DELETE /contacts/fields/{fieldId}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "fieldId"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "DELETE"
+          o: "/contacts/fields/{fieldId}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          r: {
+            param: {
+              fieldId: "id"
+            }
+          }
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "fields"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    update: {
+      name: "update"
+      points: [
+        {
+          co: {
+            id: "PUT /contacts/fields/{fieldId}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "fieldId"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/contacts/fields/{fieldId}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          r: {
+            param: {
+              fieldId: "id"
+            }
+          }
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "fields"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

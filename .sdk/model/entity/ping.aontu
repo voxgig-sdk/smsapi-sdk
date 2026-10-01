@@ -1,0 +1,51 @@
+# Entity: ping
+
+main: kit: entity: ping: {
+
+  alias: field: {}
+
+  fields: {
+    authorized: {
+      h: "Authorized"
+      n: "authorized"
+      r: true
+      t: "`$BOOLEAN`"
+    }
+    unavailable: {
+      h: "Unavailable"
+      n: "unavailable"
+      r: true
+      t: "`$ARRAY`"
+    }
+  }
+
+  name: "ping"
+  op: {
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /ping"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/ping"
+          s: [
+            {
+              lit: "ping"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.unavailable`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

@@ -1,0 +1,78 @@
+# BasicContactsFieldFlow
+
+main: kit: flow: BasicContactsFieldFlow:
+{
+  entity: "contacts_field",
+  kind: "basic",
+  name: "BasicContactsFieldFlow",
+  step: [
+    {
+      i: {
+        ref: "contacts_field_ref01"
+      }
+
+      o: "create"
+    }
+
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "contacts_field_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "contacts_field_ref01",
+        srcdatavar: "contacts_field_ref01_data",
+        suffix: "_up0",
+        textfield: "birthday_date"
+      }
+
+      o: "update",
+      s: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-contacts_field_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "contacts_field_ref01",
+        suffix: "_rm0"
+      }
+
+      m: {
+        id: "contacts_field01"
+      }
+
+      o: "remove"
+    }
+
+    {
+      i: {
+        suffix: "_rt0"
+      }
+
+      o: "list",
+      v: [
+        {
+          apply: "ItemNotExists",
+          def: {
+            ref: "contacts_field_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicContactsFieldFlow"
+}

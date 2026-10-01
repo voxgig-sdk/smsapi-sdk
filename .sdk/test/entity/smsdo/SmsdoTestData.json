@@ -1,0 +1,112 @@
+{
+  "existing": {
+    "smsdo": {
+      "SMSDO00": {
+        "allow_duplicates": 210,
+        "check_idx": "sd3",
+        "date": "sd4",
+        "date_validate": 213,
+        "details": "sd6",
+        "encoding": "sd7",
+        "expiration_date": "sd8",
+        "fallback": [],
+        "fast": 218,
+        "flash": 219,
+        "format": "sdc",
+        "from": "sdd",
+        "group": "sde",
+        "idx": "sdf",
+        "max_parts": 224,
+        "message": "se1",
+        "normalize": 226,
+        "notify_url": "se3",
+        "test": "se4",
+        "time_restriction": "se5",
+        "to": "se6",
+        "id": "SMSDO00"
+      },
+      "SMSDO01": {
+        "allow_duplicates": 420,
+        "check_idx": "s1a5",
+        "date": "s1a6",
+        "date_validate": 423,
+        "details": "s1a8",
+        "encoding": "s1a9",
+        "expiration_date": "s1aa",
+        "fallback": [],
+        "fast": 428,
+        "flash": 429,
+        "format": "s1ae",
+        "from": "s1af",
+        "group": "s1b0",
+        "idx": "s1b1",
+        "max_parts": 434,
+        "message": "s1b3",
+        "normalize": 436,
+        "notify_url": "s1b5",
+        "test": "s1b6",
+        "time_restriction": "s1b7",
+        "to": "s1b8",
+        "id": "SMSDO01"
+      },
+      "SMSDO02": {
+        "allow_duplicates": 630,
+        "check_idx": "s277",
+        "date": "s278",
+        "date_validate": 633,
+        "details": "s27a",
+        "encoding": "s27b",
+        "expiration_date": "s27c",
+        "fallback": [],
+        "fast": 638,
+        "flash": 639,
+        "format": "s280",
+        "from": "s281",
+        "group": "s282",
+        "idx": "s283",
+        "max_parts": 644,
+        "message": "s285",
+        "normalize": 646,
+        "notify_url": "s287",
+        "test": "s288",
+        "time_restriction": "s289",
+        "to": "s28a",
+        "id": "SMSDO02"
+      }
+    }
+  },
+  "new": {
+    "smsdo": {
+      "smsdo_ref01": {
+        "allow_duplicates": 840,
+        "check_idx": "s349",
+        "date": "s34a",
+        "date_validate": 843,
+        "details": "s34c",
+        "encoding": "s34d",
+        "expiration_date": "s34e",
+        "fallback": [],
+        "fast": 848,
+        "flash": 849,
+        "format": "s352",
+        "from": "s353",
+        "group": "s354",
+        "idx": "s355",
+        "max_parts": 854,
+        "message": "s357",
+        "normalize": 856,
+        "notify_url": "s359",
+        "test": "s35a",
+        "time_restriction": "s35b",
+        "to": "s35c"
+      }
+    }
+  },
+  "requests": {
+    "POST /sms.do": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

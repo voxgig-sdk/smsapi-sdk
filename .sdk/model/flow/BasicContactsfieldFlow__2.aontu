@@ -1,0 +1,26 @@
+# BasicContactsfieldFlow
+
+main: kit: flow: BasicContactsfieldFlow:
+{
+  entity: "contactsfield",
+  kind: "basic",
+  name: "BasicContactsfieldFlow",
+  step: [
+    {
+      m: {
+        field_id: "field01"
+      }
+
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "contactsfield_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicContactsfieldFlow"
+}

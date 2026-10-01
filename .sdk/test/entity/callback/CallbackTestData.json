@@ -1,0 +1,91 @@
+{
+  "existing": {
+    "callback": {
+      "CALLBACK00": {
+        "active": true,
+        "api_version": 81,
+        "id": "CALLBACK00",
+        "invalid": false,
+        "receiver": {},
+        "receiver_type": "s55",
+        "type": "s56",
+        "url": "s57"
+      },
+      "CALLBACK01": {
+        "active": true,
+        "api_version": 161,
+        "id": "CALLBACK01",
+        "invalid": false,
+        "receiver": {},
+        "receiver_type": "sa5",
+        "type": "sa6",
+        "url": "sa7"
+      },
+      "CALLBACK02": {
+        "active": true,
+        "api_version": 241,
+        "id": "CALLBACK02",
+        "invalid": false,
+        "receiver": {},
+        "receiver_type": "sf5",
+        "type": "sf6",
+        "url": "sf7"
+      }
+    }
+  },
+  "new": {
+    "callback": {
+      "callback_ref01": {
+        "active": true,
+        "api_version": 321,
+        "invalid": false,
+        "receiver": {},
+        "receiver_type": "s145",
+        "type": "s146",
+        "url": "s147"
+      }
+    }
+  },
+  "requests": {
+    "POST /callbacks": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /callbacks": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /callbacks/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /callbacks/{id}/commands/test": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /callbacks/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /callbacks/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /callbacks/{id}/commands/activate": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /callbacks/{id}/commands/deactivate": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

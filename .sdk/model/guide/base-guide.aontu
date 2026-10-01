@@ -1,0 +1,359 @@
+# Generated from the API definition and overwritten on every build: do not
+# edit this file. Put customizations in the guide entry file, which includes
+# this one and overrides its defaults:
+#   guide.aontu
+
+guide: {
+  metrics: count: entity: 29
+  metrics: count: path: 49
+  metrics: count: method: 92
+
+  entity: available: {
+    path: "/sms/templates/available": {
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+  }
+
+  entity: blacklist: {
+    path: "/blacklist/phone_numbers": {
+      action: "phone_number": {}
+      op: create: method: *POST
+      op: load: method: *GET
+      op: remove: method: *DELETE
+    }
+    path: "/blacklist/phone_numbers/imports": {
+      op: create: method: *POST
+    }
+    path: "/blacklist/phone_numbers/{id}": {
+      op: remove: method: *DELETE
+    }
+  }
+
+  entity: callback: {
+    path: "/callbacks": {
+      op: OPTIONS: method: *OPTIONS
+      op: OPTIONS: transform: res: *("`body.post`")|top
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/callbacks/{id}": {
+      op: load: method: *GET
+      op: remove: method: *DELETE
+      op: update: method: *PUT
+    }
+    path: "/callbacks/{id}/commands/activate": {
+      action: "command_activate": {}
+      op: update: method: *PUT
+    }
+    path: "/callbacks/{id}/commands/deactivate": {
+      action: "command_deactivate": {}
+      op: update: method: *PUT
+    }
+    path: "/callbacks/{id}/commands/test": {
+      action: "command_test": {}
+      op: load: method: *GET
+    }
+  }
+
+  entity: contact: {
+    path: "/contacts": {
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+      op: remove: method: *DELETE
+    }
+    path: "/contacts/groups/{groupId}/members/{contactId}": {
+      rename: param: "contactId": *"contact_id"
+      rename: param: "groupId": *"group_id"
+      op: load: method: *GET
+      op: update: method: *PUT
+    }
+    path: "/contacts/{contactId}": {
+      rename: param: "contactId": *"id"
+      op: load: method: *GET
+      op: remove: method: *DELETE
+      op: update: method: *PUT
+    }
+    path: "/contacts/{contactId}/groups": {
+      action: "group": {}
+      rename: param: "contactId": *"id"
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/contacts/{contactId}/groups/{groupId}": {
+      rename: param: "contactId": *"id"
+      rename: param: "groupId": *"group_id"
+      op: load: method: *GET
+      op: remove: method: *DELETE
+      op: update: method: *PUT
+    }
+  }
+
+  entity: contacts_field: {
+    path: "/contacts/fields": {
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/contacts/fields/{fieldId}": {
+      rename: param: "fieldId": *"id"
+      op: update: method: *PUT
+    }
+  }
+
+  entity: contactsfield: {
+    path: "/contacts/fields/{fieldId}": {
+      rename: param: "fieldId": *"field_id"
+      op: remove: method: *DELETE
+    }
+    path: "/contacts/fields/{fieldId}/options": {
+      rename: param: "fieldId": *"field_id"
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+  }
+
+  entity: contactsgroup: {
+    path: "/contacts/groups": {
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+      op: remove: method: *DELETE
+    }
+    path: "/contacts/groups/{groupId}": {
+      rename: param: "groupId": *"group_id"
+      op: remove: method: *DELETE
+    }
+    path: "/contacts/groups/{groupId}/members": {
+      rename: param: "groupId": *"group_id"
+      op: create: method: *POST
+      op: remove: method: *DELETE
+      op: update: method: *PUT
+    }
+    path: "/contacts/groups/{groupId}/members/{contactId}": {
+      rename: param: "contactId": *"contact_id"
+      rename: param: "groupId": *"group_id"
+      op: remove: method: *DELETE
+    }
+    path: "/contacts/groups/{groupId}/permissions": {
+      rename: param: "groupId": *"group_id"
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/contacts/groups/{groupId}/permissions/{username}": {
+      rename: param: "groupId": *"group_id"
+      op: remove: method: *DELETE
+      op: update: method: *PUT
+    }
+  }
+
+  entity: contactstrash: {
+    path: "/contacts/trash": {
+      op: head: method: *HEAD
+      op: remove: method: *DELETE
+    }
+    path: "/contacts/trash/restore": {
+      op: update: method: *PUT
+    }
+  }
+
+  entity: field_available: {
+    path: "/contacts/fields/available": {
+      op: list: method: *GET
+    }
+  }
+
+  entity: group: {
+    path: "/contacts/groups/{groupId}": {
+      rename: param: "groupId": *"id"
+      op: load: method: *GET
+      op: update: method: *PUT
+    }
+  }
+
+  entity: mfa: {
+    path: "/mfa/codes/verifications": {
+      op: create: method: *POST
+    }
+  }
+
+  entity: mfa_code: {
+    path: "/mfa/codes": {
+      op: create: method: *POST
+    }
+  }
+
+  entity: opt_out: {
+    path: "/opt_outs": {
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/opt_outs/{optOutId}": {
+      rename: param: "optOutId": *"id"
+      op: remove: method: *DELETE
+    }
+  }
+
+  entity: opt_out_setting: {
+    path: "/opt_outs/settings": {
+      op: load: method: *GET
+      op: update: method: *PUT
+    }
+  }
+
+  entity: permission: {
+    path: "/contacts/groups/{groupId}/permissions": {
+      rename: param: "groupId": *"group_id"
+      op: create: method: *POST
+    }
+    path: "/contacts/groups/{groupId}/permissions/{username}": {
+      rename: param: "groupId": *"group_id"
+      rename: param: "username": *"id"
+      op: load: method: *GET
+    }
+  }
+
+  entity: ping: {
+    path: "/ping": {
+      op: head: method: *HEAD
+      op: list: method: *GET
+      op: list: transform: res: *("`body.unavailable`")|top
+    }
+  }
+
+  entity: profile: {
+    path: "/profile": {
+      op: load: method: *GET
+    }
+    path: "/profile/prices": {
+      action: "price": {}
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+  }
+
+  entity: rcs: {
+    path: "/rcs/messages": {
+      action: "message": {}
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+  }
+
+  entity: sendername: {
+    path: "/sms/sendernames": {
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/sms/sendernames/{sender}": {
+      rename: param: "sender": *"id"
+      op: load: method: *GET
+    }
+  }
+
+  entity: sendername_statement: {
+    path: "/sms/sendernames/statement": {
+      op: list: method: *GET
+      op: list: transform: res: *("`body.sections`")|top
+    }
+  }
+
+  entity: sent_rcs_message: {
+    path: "/rcs/messages": {
+      op: create: method: *POST
+      op: create: transform: res: *("`body.id`")|top
+    }
+  }
+
+  entity: shipment_country_volume: {
+    path: "/shipment/country_volumes": {
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+  }
+
+  entity: short_url: {
+    path: "/short_url/links": {
+      action: "link": {}
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/short_url/links/{id}": {
+      op: load: method: *GET
+      op: remove: method: *DELETE
+      op: update: method: *PUT
+    }
+  }
+
+  entity: smsdo: {
+    path: "/sms.do": {
+      op: create: method: *POST
+    }
+  }
+
+  entity: smssendername: {
+    path: "/sms/sendernames/{sender}": {
+      op: remove: method: *DELETE
+    }
+    path: "/sms/sendernames/{sender}/commands/make_default": {
+      rename: param: "sender": *"sendername_id"
+      op: create: method: *POST
+    }
+  }
+
+  entity: smstemplate: {
+    path: "/sms/templates/{id}": {
+      op: remove: method: *DELETE
+    }
+  }
+
+  entity: subuser: {
+    path: "/subusers": {
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/subusers/{id}": {
+      op: load: method: *GET
+      op: remove: method: *DELETE
+      op: update: method: *PUT
+    }
+    path: "/subusers/{id}/shares/sendernames": {
+      action: "share_sendername": {}
+      op: list: method: *GET
+      op: list: transform: res: *("`body.senders`")|top
+      op: update: method: *PUT
+    }
+    path: "/subusers/{id}/shares/templates": {
+      action: "share_template": {}
+      op: list: method: *GET
+      op: list: transform: res: *("`body.templates`")|top
+      op: update: method: *PUT
+    }
+  }
+
+  entity: template: {
+    path: "/sms/templates": {
+      op: create: method: *POST
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+    path: "/sms/templates/{id}": {
+      op: load: method: *GET
+      op: update: method: *PUT
+    }
+  }
+
+  entity: user_rcs_sender_collection: {
+    path: "/rcs/senders": {
+      op: list: method: *GET
+      op: list: transform: res: *("`body.collection`")|top
+    }
+  }
+
+}

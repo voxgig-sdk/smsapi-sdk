@@ -1,0 +1,33 @@
+{
+  "existing": {
+    "ping": {
+      "PING00": {
+        "authorized": true,
+        "unavailable": []
+      },
+      "PING01": {
+        "authorized": true,
+        "unavailable": []
+      },
+      "PING02": {
+        "authorized": true,
+        "unavailable": []
+      }
+    }
+  },
+  "new": {
+    "ping": {
+      "ping_ref01": {
+        "authorized": true,
+        "unavailable": []
+      }
+    }
+  },
+  "requests": {
+    "GET /ping": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

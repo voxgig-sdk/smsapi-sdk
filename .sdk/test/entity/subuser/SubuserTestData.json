@@ -1,0 +1,88 @@
+{
+  "existing": {
+    "subuser": {
+      "SUBUSER00": {
+        "active": true,
+        "credentials": {},
+        "description": "s3e",
+        "id": "SUBUSER00",
+        "points": {},
+        "username": "s41"
+      },
+      "SUBUSER01": {
+        "active": true,
+        "credentials": {},
+        "description": "s7a",
+        "id": "SUBUSER01",
+        "points": {},
+        "username": "s7d"
+      },
+      "SUBUSER02": {
+        "active": true,
+        "credentials": {},
+        "description": "sb6",
+        "id": "SUBUSER02",
+        "points": {},
+        "username": "sb9"
+      }
+    }
+  },
+  "new": {
+    "subuser": {
+      "subuser_ref01": {
+        "active": true,
+        "credentials": {},
+        "description": "sf2",
+        "points": {},
+        "username": "sf5"
+      }
+    }
+  },
+  "requests": {
+    "POST /subusers": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /subusers/{id}/shares/sendernames": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /subusers/{id}/shares/templates": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /subusers": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /subusers/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /subusers/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /subusers/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /subusers/{id}/shares/sendernames": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /subusers/{id}/shares/templates": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

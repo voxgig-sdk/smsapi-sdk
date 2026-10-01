@@ -1,0 +1,9 @@
+# BasicSmstemplateFlow
+
+main: kit: flow: BasicSmstemplateFlow:
+{
+  entity: "smstemplate",
+  kind: "basic",
+  name: "BasicSmstemplateFlow",
+  "key$": "BasicSmstemplateFlow"
+}

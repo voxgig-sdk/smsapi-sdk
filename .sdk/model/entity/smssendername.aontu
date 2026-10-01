@@ -1,0 +1,120 @@
+# Entity: smssendername
+
+main: kit: entity: smssendername: {
+
+  alias: field: {}
+
+  name: "smssendername"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /sms/sendernames/{sender}/commands/make_default"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                k: "param"
+                n: "sendername_id"
+                or: "sender"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "POST"
+          o: "/sms/sendernames/{sender}/commands/make_default"
+          q: {
+            exist: [
+              "sendername_id"
+            ]
+          }
+          r: {
+            param: {
+              sender: "sendername_id"
+            }
+          }
+          s: [
+            {
+              lit: "sms"
+            }
+            {
+              lit: "sendernames"
+            }
+            {
+              var: "sendername_id"
+            }
+            {
+              lit: "commands"
+            }
+            {
+              lit: "make_default"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    remove: {
+      name: "remove"
+      points: [
+        {
+          co: {
+            id: "DELETE /sms/sendernames/{sender}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                k: "param"
+                n: "sender"
+                or: "sender"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "DELETE"
+          o: "/sms/sendernames/{sender}"
+          q: {
+            exist: [
+              "sender"
+            ]
+          }
+          s: [
+            {
+              lit: "sms"
+            }
+            {
+              lit: "sendernames"
+            }
+            {
+              var: "sender"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+  fields: {
+  }
+
+
+  relations: ancestors: [
+    [path("$.main.kit.entity.sendername")]
+  ]
+
+}

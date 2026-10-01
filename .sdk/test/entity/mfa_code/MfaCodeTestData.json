@@ -1,0 +1,49 @@
+{
+  "existing": {
+    "mfa_code": {
+      "MFA_CODE00": {
+        "content": "s28",
+        "fast": "s29",
+        "from": "s2a",
+        "phone_number": "s2b",
+        "id": "MFA_CODE00"
+      },
+      "MFA_CODE01": {
+        "content": "s50",
+        "fast": "s51",
+        "from": "s52",
+        "phone_number": "s53",
+        "id": "MFA_CODE01"
+      },
+      "MFA_CODE02": {
+        "content": "s78",
+        "fast": "s79",
+        "from": "s7a",
+        "phone_number": "s7b",
+        "id": "MFA_CODE02"
+      }
+    }
+  },
+  "new": {
+    "mfa_code": {
+      "mfa_code_ref01": {
+        "content": "sa0",
+        "fast": "sa1",
+        "from": "sa2",
+        "phone_number": "sa3"
+      }
+    }
+  },
+  "requests": {
+    "POST /mfa/codes": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "POST /mfa/codes/verifications": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

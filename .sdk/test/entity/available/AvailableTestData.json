@@ -1,0 +1,37 @@
+{
+  "existing": {
+    "available": {
+      "AVAILABLE00": {
+        "name": "s1e",
+        "normalize": false,
+        "template": "s20"
+      },
+      "AVAILABLE01": {
+        "name": "s3c",
+        "normalize": false,
+        "template": "s3e"
+      },
+      "AVAILABLE02": {
+        "name": "s5a",
+        "normalize": false,
+        "template": "s5c"
+      }
+    }
+  },
+  "new": {
+    "available": {
+      "available_ref01": {
+        "name": "s78",
+        "normalize": false,
+        "template": "s7a"
+      }
+    }
+  },
+  "requests": {
+    "GET /sms/templates/available": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

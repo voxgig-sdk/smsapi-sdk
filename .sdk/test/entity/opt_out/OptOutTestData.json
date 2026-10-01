@@ -1,0 +1,45 @@
+{
+  "existing": {
+    "opt_out": {
+      "OPT_OUT00": {
+        "date": "s28",
+        "id": "OPT_OUT00",
+        "links": [],
+        "phoneNumber": 43
+      },
+      "OPT_OUT01": {
+        "date": "s50",
+        "id": "OPT_OUT01",
+        "links": [],
+        "phoneNumber": 83
+      },
+      "OPT_OUT02": {
+        "date": "s78",
+        "id": "OPT_OUT02",
+        "links": [],
+        "phoneNumber": 123
+      }
+    }
+  },
+  "new": {
+    "opt_out": {
+      "opt_out_ref01": {
+        "date": "sa0",
+        "links": [],
+        "phoneNumber": 163
+      }
+    }
+  },
+  "requests": {
+    "GET /opt_outs": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /opt_outs/{optOutId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

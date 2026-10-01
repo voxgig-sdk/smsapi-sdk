@@ -1,0 +1,63 @@
+# Entity: available
+
+main: kit: entity: available: {
+
+  alias: field: {}
+
+  fields: {
+    name: {
+      h: "Name"
+      n: "name"
+      r: false
+      t: "`$STRING`"
+    }
+    normalize: {
+      h: "Normalize"
+      n: "normalize"
+      r: false
+      t: "`$BOOLEAN`"
+    }
+    template: {
+      h: "Template"
+      n: "template"
+      r: false
+      t: "`$STRING`"
+    }
+  }
+
+  name: "available"
+  op: {
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /sms/templates/available"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/sms/templates/available"
+          s: [
+            {
+              lit: "sms"
+            }
+            {
+              lit: "templates"
+            }
+            {
+              lit: "available"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

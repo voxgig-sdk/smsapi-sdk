@@ -1,0 +1,45 @@
+# Entity: rcs
+
+main: kit: entity: rcs: {
+
+  alias: field: {}
+
+  name: "rcs"
+  op: {
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /rcs/messages"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/rcs/messages"
+          q: {
+            "$action": "message"
+          }
+          s: [
+            {
+              lit: "rcs"
+            }
+            {
+              lit: "messages"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+      ]
+    }
+  }
+
+  fields: {
+  }
+
+
+
+}

@@ -1,0 +1,47 @@
+{
+  "existing": {
+    "blacklist": {
+      "BLACKLIST00": {
+        "id": "BLACKLIST00"
+      },
+      "BLACKLIST01": {
+        "id": "BLACKLIST01"
+      },
+      "BLACKLIST02": {
+        "id": "BLACKLIST02"
+      }
+    }
+  },
+  "new": {
+    "blacklist": {
+      "blacklist_ref01": {}
+    }
+  },
+  "requests": {
+    "POST /blacklist/phone_numbers": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "POST /blacklist/phone_numbers/imports": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /blacklist/phone_numbers": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /blacklist/phone_numbers/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /blacklist/phone_numbers": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

@@ -1,0 +1,190 @@
+# Entity: group
+
+main: kit: entity: group: {
+
+  alias: field: {}
+
+  fields: {
+    contact_expire_after: {
+      h: "Contact Expire After"
+      n: "contact_expire_after"
+      r: true
+      sh: "Contact expire after days"
+      t: "`$INTEGER`"
+    }
+    contacts_count: {
+      h: "Contacts Count"
+      n: "contacts_count"
+      r: true
+      t: "`$INTEGER`"
+    }
+    created_by: {
+      h: "Created By"
+      n: "created_by"
+      r: true
+      t: "`$STRING`"
+    }
+    date_created: {
+      fo: "date-time"
+      h: "Date Created"
+      n: "date_created"
+      r: true
+      t: "`$STRING`"
+    }
+    date_updated: {
+      fo: "date-time"
+      h: "Date Updated"
+      n: "date_updated"
+      r: true
+      t: "`$STRING`"
+    }
+    description: {
+      h: "Description"
+      n: "description"
+      r: true
+      t: "`$STRING`"
+    }
+    id: {
+      fo: "oid"
+      h: "Id"
+      n: "id"
+      r: true
+      sh: "Object ID"
+      t: "`$STRING`"
+    }
+    idx: {
+      h: "Idx"
+      n: "idx"
+      r: false
+      sh: "User provided resource id"
+      t: "`$STRING`"
+    }
+    name: {
+      h: "Name"
+      n: "name"
+      r: true
+      sh: "Group name"
+      t: "`$STRING`"
+    }
+    permissions: {
+      h: "Permissions"
+      n: "permissions"
+      r: false
+      t: "`$ARRAY`"
+    }
+  }
+
+  id: {
+    field: "id"
+    name: "id"
+  }
+
+  name: "group"
+  op: {
+    load: {
+      name: "load"
+      points: [
+        {
+          co: {
+            id: "GET /contacts/groups/{groupId}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "groupId"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/contacts/groups/{groupId}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          r: {
+            param: {
+              groupId: "id"
+            }
+          }
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "groups"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    update: {
+      name: "update"
+      points: [
+        {
+          co: {
+            id: "PUT /contacts/groups/{groupId}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "groupId"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "PUT"
+          o: "/contacts/groups/{groupId}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          r: {
+            param: {
+              groupId: "id"
+            }
+          }
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "groups"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

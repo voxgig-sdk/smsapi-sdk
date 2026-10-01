@@ -1,0 +1,22 @@
+# BasicFieldAvailableFlow
+
+main: kit: flow: BasicFieldAvailableFlow:
+{
+  entity: "field_available",
+  kind: "basic",
+  name: "BasicFieldAvailableFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "field_available_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicFieldAvailableFlow"
+}

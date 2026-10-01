@@ -1,0 +1,22 @@
+# BasicAvailableFlow
+
+main: kit: flow: BasicAvailableFlow:
+{
+  entity: "available",
+  kind: "basic",
+  name: "BasicAvailableFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "available_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicAvailableFlow"
+}

@@ -1,0 +1,246 @@
+# Entity: blacklist
+
+main: kit: entity: blacklist: {
+
+  alias: field: {}
+
+  fields: {
+    id: {
+      h: "Id"
+      n: "id"
+      r: false
+      t: "`$STRING`"
+    }
+  }
+
+  id: {
+    field: "id"
+    name: "id"
+  }
+
+  name: "blacklist"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /blacklist/phone_numbers"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/blacklist/phone_numbers"
+          q: {
+            "$action": "phone_number"
+          }
+          s: [
+            {
+              lit: "blacklist"
+            }
+            {
+              lit: "phone_numbers"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "POST /blacklist/phone_numbers/imports"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/blacklist/phone_numbers/imports"
+          s: [
+            {
+              lit: "blacklist"
+            }
+            {
+              lit: "phone_numbers"
+            }
+            {
+              lit: "imports"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    load: {
+      name: "load"
+      points: [
+        {
+          co: {
+            id: "GET /blacklist/phone_numbers"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            header: [
+              {
+                ex: "application/json"
+                k: "header"
+                n: "accept"
+                or: "Accept"
+                r: false
+                t: "`$STRING`"
+              }
+              {
+                ex: false
+                k: "header"
+                n: "x_async"
+                or: "x-async"
+                r: false
+                t: "`$BOOLEAN`"
+              }
+            ]
+            query: [
+              {
+                ex: 5
+                k: "query"
+                n: "limit"
+                or: "limit"
+                r: false
+                t: "`$INTEGER`"
+              }
+              {
+                ex: 0
+                k: "query"
+                n: "offset"
+                or: "offset"
+                r: false
+                t: "`$INTEGER`"
+              }
+              {
+                ex: 0
+                k: "query"
+                n: "q"
+                or: "q"
+                r: false
+                t: "`$INTEGER`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/blacklist/phone_numbers"
+          q: {
+            "$action": "phone_number"
+            exist: [
+              "accept"
+              "limit"
+              "offset"
+              "q"
+              "x_async"
+            ]
+          }
+          s: [
+            {
+              lit: "blacklist"
+            }
+            {
+              lit: "phone_numbers"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    remove: {
+      name: "remove"
+      points: [
+        {
+          co: {
+            id: "DELETE /blacklist/phone_numbers/{id}"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "id"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "DELETE"
+          o: "/blacklist/phone_numbers/{id}"
+          q: {
+            exist: [
+              "id"
+            ]
+          }
+          s: [
+            {
+              lit: "blacklist"
+            }
+            {
+              lit: "phone_numbers"
+            }
+            {
+              var: "id"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "DELETE /blacklist/phone_numbers"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            query: [
+              {
+                k: "query"
+                n: "phone_number"
+                or: "phone_number"
+                r: false
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "DELETE"
+          o: "/blacklist/phone_numbers"
+          q: {
+            "$action": "phone_number"
+            exist: [
+              "phone_number"
+            ]
+          }
+          s: [
+            {
+              lit: "blacklist"
+            }
+            {
+              lit: "phone_numbers"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

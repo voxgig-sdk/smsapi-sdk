@@ -1,0 +1,18 @@
+# BasicSentRcsMessageFlow
+
+main: kit: flow: BasicSentRcsMessageFlow:
+{
+  entity: "sent_rcs_message",
+  kind: "basic",
+  name: "BasicSentRcsMessageFlow",
+  step: [
+    {
+      i: {
+        ref: "sent_rcs_message_ref01"
+      }
+
+      o: "create"
+    }
+  ],
+  "key$": "BasicSentRcsMessageFlow"
+}

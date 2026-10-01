@@ -1,0 +1,21 @@
+{
+  "existing": {
+    "rcs": {
+      "RCS00": {},
+      "RCS01": {},
+      "RCS02": {}
+    }
+  },
+  "new": {
+    "rcs": {
+      "rcs_ref01": {}
+    }
+  },
+  "requests": {
+    "GET /rcs/messages": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

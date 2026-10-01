@@ -1,0 +1,12 @@
+{
+  "available_services": [
+    {
+      "name": "Panel",
+      "url": "specifications/panel_com.yml"
+    },
+    {
+      "name": "Contacts",
+      "url": "specifications/contacts_com.yml"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+# Entity: sendername_statement
+
+main: kit: entity: sendername_statement: {
+
+  alias: field: {}
+
+  fields: {
+    content: {
+      h: "Content"
+      n: "content"
+      r: false
+      t: "`$STRING`"
+    }
+    statements: {
+      h: "Statements"
+      n: "statements"
+      r: false
+      t: "`$ARRAY`"
+    }
+    title: {
+      h: "Title"
+      n: "title"
+      r: false
+      t: "`$STRING`"
+    }
+  }
+
+  name: "sendername_statement"
+  op: {
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /sms/sendernames/statement"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/sms/sendernames/statement"
+          s: [
+            {
+              lit: "sms"
+            }
+            {
+              lit: "sendernames"
+            }
+            {
+              lit: "statement"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.sections`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

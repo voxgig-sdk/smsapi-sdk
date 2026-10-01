@@ -1,0 +1,12 @@
+.{
+    .name = .smsapi_sdk,
+    .version = "0.0.1",
+    .fingerprint = 0xddee264f66ca38d6,
+    .dependencies = .{},
+    .paths = .{
+        "src",
+        "test",
+        "build.zig",
+        "build.zig.zon",
+    },
+}

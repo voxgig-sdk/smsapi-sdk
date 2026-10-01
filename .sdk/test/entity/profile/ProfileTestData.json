@@ -1,0 +1,61 @@
+{
+  "existing": {
+    "profile": {
+      "PROFILE00": {
+        "email": "s46",
+        "name": "s47",
+        "payment_type": "s48",
+        "phone_number": 73,
+        "points": 74,
+        "user_type": "s4b",
+        "username": "s4c",
+        "id": "PROFILE00"
+      },
+      "PROFILE01": {
+        "email": "s8c",
+        "name": "s8d",
+        "payment_type": "s8e",
+        "phone_number": 143,
+        "points": 144,
+        "user_type": "s91",
+        "username": "s92",
+        "id": "PROFILE01"
+      },
+      "PROFILE02": {
+        "email": "sd2",
+        "name": "sd3",
+        "payment_type": "sd4",
+        "phone_number": 213,
+        "points": 214,
+        "user_type": "sd7",
+        "username": "sd8",
+        "id": "PROFILE02"
+      }
+    }
+  },
+  "new": {
+    "profile": {
+      "profile_ref01": {
+        "email": "s118",
+        "name": "s119",
+        "payment_type": "s11a",
+        "phone_number": 283,
+        "points": 284,
+        "user_type": "s11d",
+        "username": "s11e"
+      }
+    }
+  },
+  "requests": {
+    "GET /profile/prices": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /profile": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

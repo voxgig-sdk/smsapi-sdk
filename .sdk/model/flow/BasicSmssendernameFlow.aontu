@@ -1,0 +1,35 @@
+# BasicSmssendernameFlow
+
+main: kit: flow: BasicSmssendernameFlow:
+{
+  entity: "smssendername",
+  kind: "basic",
+  name: "BasicSmssendernameFlow",
+  step: [
+    {
+      i: {
+        ref: "smssendername_ref01"
+      }
+
+      m: {
+        sendername_id: "sendername01"
+      }
+
+      o: "create"
+    }
+
+    {
+      i: {
+        ref: "smssendername_ref01",
+        suffix: "_rm0"
+      }
+
+      m: {
+        id: "smssendername01"
+      }
+
+      o: "remove"
+    }
+  ],
+  "key$": "BasicSmssendernameFlow"
+}

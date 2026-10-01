@@ -1,0 +1,54 @@
+{
+  "existing": {
+    "sendername": {
+      "SENDERNAME00": {
+        "created_at": "s32",
+        "id": "SENDERNAME00",
+        "is_default": true,
+        "sender": "s35",
+        "status": "s36"
+      },
+      "SENDERNAME01": {
+        "created_at": "s64",
+        "id": "SENDERNAME01",
+        "is_default": true,
+        "sender": "s67",
+        "status": "s68"
+      },
+      "SENDERNAME02": {
+        "created_at": "s96",
+        "id": "SENDERNAME02",
+        "is_default": true,
+        "sender": "s99",
+        "status": "s9a"
+      }
+    }
+  },
+  "new": {
+    "sendername": {
+      "sendername_ref01": {
+        "created_at": "sc8",
+        "is_default": true,
+        "sender": "scb",
+        "status": "scc"
+      }
+    }
+  },
+  "requests": {
+    "POST /sms/sendernames": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /sms/sendernames": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /sms/sendernames/{sender}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

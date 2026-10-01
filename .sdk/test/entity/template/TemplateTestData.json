@@ -1,0 +1,55 @@
+{
+  "existing": {
+    "template": {
+      "TEMPLATE00": {
+        "id": "TEMPLATE00",
+        "name": "s29",
+        "normalize": true,
+        "template": "s2b"
+      },
+      "TEMPLATE01": {
+        "id": "TEMPLATE01",
+        "name": "s51",
+        "normalize": true,
+        "template": "s53"
+      },
+      "TEMPLATE02": {
+        "id": "TEMPLATE02",
+        "name": "s79",
+        "normalize": true,
+        "template": "s7b"
+      }
+    }
+  },
+  "new": {
+    "template": {
+      "template_ref01": {
+        "name": "sa1",
+        "normalize": true,
+        "template": "sa3"
+      }
+    }
+  },
+  "requests": {
+    "POST /sms/templates": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /sms/templates": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /sms/templates/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /sms/templates/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

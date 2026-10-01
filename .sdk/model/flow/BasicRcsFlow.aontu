@@ -1,0 +1,22 @@
+# BasicRcsFlow
+
+main: kit: flow: BasicRcsFlow:
+{
+  entity: "rcs",
+  kind: "basic",
+  name: "BasicRcsFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "rcs_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicRcsFlow"
+}

@@ -1,0 +1,27 @@
+{
+  "existing": {
+    "smstemplate": {
+      "SMSTEMPLATE00": {
+        "id": "SMSTEMPLATE00"
+      },
+      "SMSTEMPLATE01": {
+        "id": "SMSTEMPLATE01"
+      },
+      "SMSTEMPLATE02": {
+        "id": "SMSTEMPLATE02"
+      }
+    }
+  },
+  "new": {
+    "smstemplate": {
+      "smstemplate_ref01": {}
+    }
+  },
+  "requests": {
+    "DELETE /sms/templates/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

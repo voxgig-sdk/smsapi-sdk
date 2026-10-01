@@ -1,0 +1,25 @@
+{
+  point: "warning"
+  note: "Path placeholder {username} on entity=contactsgroup op=remove path=/contacts/groups/{groupId}/permissions/{username} has no declared parameter, so it is taken as a required string."
+  entity: "contactsgroup"
+  path: "/contacts/groups/{groupId}/permissions/{username}"
+  op: "remove"
+}
+
+
+{
+  point: "warning"
+  note: "Path placeholder {username} on entity=contactsgroup op=update path=/contacts/groups/{groupId}/permissions/{username} has no declared parameter, so it is taken as a required string."
+  entity: "contactsgroup"
+  path: "/contacts/groups/{groupId}/permissions/{username}"
+  op: "update"
+}
+
+
+{
+  point: "warning"
+  note: "Path placeholder {username} on entity=permission op=load path=/contacts/groups/{groupId}/permissions/{username} has no declared parameter, so it is taken as a required string."
+  entity: "permission"
+  path: "/contacts/groups/{groupId}/permissions/{username}"
+  op: "load"
+}

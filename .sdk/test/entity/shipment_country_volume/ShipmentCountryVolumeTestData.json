@@ -1,0 +1,41 @@
+{
+  "existing": {
+    "shipment_country_volume": {
+      "SHIPMENT_COUNTRY_VOLUME00": {
+        "country_code": "s28",
+        "country_limit": 41,
+        "country_name": "s2a",
+        "usage": 43
+      },
+      "SHIPMENT_COUNTRY_VOLUME01": {
+        "country_code": "s50",
+        "country_limit": 81,
+        "country_name": "s52",
+        "usage": 83
+      },
+      "SHIPMENT_COUNTRY_VOLUME02": {
+        "country_code": "s78",
+        "country_limit": 121,
+        "country_name": "s7a",
+        "usage": 123
+      }
+    }
+  },
+  "new": {
+    "shipment_country_volume": {
+      "shipment_country_volume_ref01": {
+        "country_code": "sa0",
+        "country_limit": 161,
+        "country_name": "sa2",
+        "usage": 163
+      }
+    }
+  },
+  "requests": {
+    "GET /shipment/country_volumes": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

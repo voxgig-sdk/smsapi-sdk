@@ -1,0 +1,18 @@
+# BasicMfaCodeFlow
+
+main: kit: flow: BasicMfaCodeFlow:
+{
+  entity: "mfa_code",
+  kind: "basic",
+  name: "BasicMfaCodeFlow",
+  step: [
+    {
+      i: {
+        ref: "mfa_code_ref01"
+      }
+
+      o: "create"
+    }
+  ],
+  "key$": "BasicMfaCodeFlow"
+}

@@ -1,0 +1,203 @@
+{
+  "existing": {
+    "contact": {
+      "CONTACT00": {
+        "birthday_date": "s122",
+        "city": "s123",
+        "collection": [],
+        "contact_expire_after": 293,
+        "contacts_count": 294,
+        "country": "s127",
+        "created_by": "s128",
+        "date_created": "s129",
+        "date_updated": "s12a",
+        "description": "s12b",
+        "email": "s12c",
+        "first_name": "s12d",
+        "gender": "s12e",
+        "group_id": "GROUP01",
+        "groups": [],
+        "id": "CONTACT00",
+        "idx": "s132",
+        "last_name": "s133",
+        "name": "s134",
+        "permissions": [],
+        "phone_number": "s136",
+        "read": false,
+        "send": true,
+        "size": 313,
+        "source": "s13a",
+        "type": "s13b",
+        "username": "s13c",
+        "value": "s13d",
+        "write": true,
+        "contact_id": "CONTACT01"
+      },
+      "CONTACT01": {
+        "birthday_date": "s244",
+        "city": "s245",
+        "collection": [],
+        "contact_expire_after": 583,
+        "contacts_count": 584,
+        "country": "s249",
+        "created_by": "s24a",
+        "date_created": "s24b",
+        "date_updated": "s24c",
+        "description": "s24d",
+        "email": "s24e",
+        "first_name": "s24f",
+        "gender": "s250",
+        "group_id": "GROUP01",
+        "groups": [],
+        "id": "CONTACT01",
+        "idx": "s254",
+        "last_name": "s255",
+        "name": "s256",
+        "permissions": [],
+        "phone_number": "s258",
+        "read": false,
+        "send": true,
+        "size": 603,
+        "source": "s25c",
+        "type": "s25d",
+        "username": "s25e",
+        "value": "s25f",
+        "write": true,
+        "contact_id": "CONTACT01"
+      },
+      "CONTACT02": {
+        "birthday_date": "s366",
+        "city": "s367",
+        "collection": [],
+        "contact_expire_after": 873,
+        "contacts_count": 874,
+        "country": "s36b",
+        "created_by": "s36c",
+        "date_created": "s36d",
+        "date_updated": "s36e",
+        "description": "s36f",
+        "email": "s370",
+        "first_name": "s371",
+        "gender": "s372",
+        "group_id": "GROUP01",
+        "groups": [],
+        "id": "CONTACT02",
+        "idx": "s376",
+        "last_name": "s377",
+        "name": "s378",
+        "permissions": [],
+        "phone_number": "s37a",
+        "read": false,
+        "send": true,
+        "size": 893,
+        "source": "s37e",
+        "type": "s37f",
+        "username": "s380",
+        "value": "s381",
+        "write": true,
+        "contact_id": "CONTACT01"
+      }
+    }
+  },
+  "new": {
+    "contact": {
+      "contact_ref01": {
+        "birthday_date": "s488",
+        "city": "s489",
+        "collection": [],
+        "contact_expire_after": 1163,
+        "contacts_count": 1164,
+        "country": "s48d",
+        "created_by": "s48e",
+        "date_created": "s48f",
+        "date_updated": "s490",
+        "description": "s491",
+        "email": "s492",
+        "first_name": "s493",
+        "gender": "s494",
+        "group_id": "GROUP01",
+        "groups": [],
+        "idx": "s498",
+        "last_name": "s499",
+        "name": "s49a",
+        "permissions": [],
+        "phone_number": "s49c",
+        "read": false,
+        "send": true,
+        "size": 1183,
+        "source": "s4a0",
+        "type": "s4a1",
+        "username": "s4a2",
+        "value": "s4a3",
+        "write": true
+      }
+    }
+  },
+  "requests": {
+    "POST /contacts/{contactId}/groups": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "POST /contacts": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /contacts": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /contacts/{contactId}/groups": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /contacts/groups/{groupId}/members/{contactId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /contacts/{contactId}/groups/{groupId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /contacts/{contactId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /contacts/{contactId}/groups/{groupId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /contacts/{contactId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /contacts": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /contacts/groups/{groupId}/members/{contactId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /contacts/{contactId}/groups/{groupId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /contacts/{contactId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

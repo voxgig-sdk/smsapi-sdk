@@ -1,0 +1,44 @@
+{
+  "existing": {
+    "sent_rcs_message": {
+      "SENT_RCS_MESSAGE00": {
+        "content": {},
+        "phone_number": "s29",
+        "sender": "s2a",
+        "text": "s2b",
+        "id": "SENT_RCS_MESSAGE00"
+      },
+      "SENT_RCS_MESSAGE01": {
+        "content": {},
+        "phone_number": "s51",
+        "sender": "s52",
+        "text": "s53",
+        "id": "SENT_RCS_MESSAGE01"
+      },
+      "SENT_RCS_MESSAGE02": {
+        "content": {},
+        "phone_number": "s79",
+        "sender": "s7a",
+        "text": "s7b",
+        "id": "SENT_RCS_MESSAGE02"
+      }
+    }
+  },
+  "new": {
+    "sent_rcs_message": {
+      "sent_rcs_message_ref01": {
+        "content": {},
+        "phone_number": "sa1",
+        "sender": "sa2",
+        "text": "sa3"
+      }
+    }
+  },
+  "requests": {
+    "POST /rcs/messages": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

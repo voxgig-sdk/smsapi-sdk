@@ -1,0 +1,37 @@
+{
+  "existing": {
+    "opt_out_setting": {
+      "OPT_OUT_SETTING00": {
+        "brand": "sa",
+        "id": "OPT_OUT_SETTING00"
+      },
+      "OPT_OUT_SETTING01": {
+        "brand": "s14",
+        "id": "OPT_OUT_SETTING01"
+      },
+      "OPT_OUT_SETTING02": {
+        "brand": "s1e",
+        "id": "OPT_OUT_SETTING02"
+      }
+    }
+  },
+  "new": {
+    "opt_out_setting": {
+      "opt_out_setting_ref01": {
+        "brand": "s28"
+      }
+    }
+  },
+  "requests": {
+    "GET /opt_outs/settings": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /opt_outs/settings": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

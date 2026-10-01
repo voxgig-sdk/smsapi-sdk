@@ -1,0 +1,44 @@
+{
+  "existing": {
+    "field_available": {
+      "FIELD_AVAILABLE00": {
+        "built_in": true,
+        "id": "FIELD_AVAILABLE00",
+        "name": "s34",
+        "options": [],
+        "type": "s36"
+      },
+      "FIELD_AVAILABLE01": {
+        "built_in": true,
+        "id": "FIELD_AVAILABLE01",
+        "name": "s66",
+        "options": [],
+        "type": "s68"
+      },
+      "FIELD_AVAILABLE02": {
+        "built_in": true,
+        "id": "FIELD_AVAILABLE02",
+        "name": "s98",
+        "options": [],
+        "type": "s9a"
+      }
+    }
+  },
+  "new": {
+    "field_available": {
+      "field_available_ref01": {
+        "built_in": true,
+        "name": "sca",
+        "options": [],
+        "type": "scc"
+      }
+    }
+  },
+  "requests": {
+    "GET /contacts/fields/available": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

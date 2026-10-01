@@ -1,0 +1,100 @@
+# BasicSubuserFlow
+
+main: kit: flow: BasicSubuserFlow:
+{
+  entity: "subuser",
+  kind: "basic",
+  name: "BasicSubuserFlow",
+  step: [
+    {
+      i: {
+        ref: "subuser_ref01"
+      }
+
+      o: "create"
+    }
+
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "subuser_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "subuser_ref01",
+        srcdatavar: "subuser_ref01_data",
+        suffix: "_up0",
+        textfield: "description"
+      }
+
+      o: "update",
+      s: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-subuser_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "subuser_ref01",
+        srcdatavar: "subuser_ref01_data",
+        suffix: "_dt0"
+      }
+
+      m: {
+        id: "subuser01"
+      }
+
+      o: "load",
+      v: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-subuser_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "subuser_ref01",
+        suffix: "_rm0"
+      }
+
+      m: {
+        id: "subuser01"
+      }
+
+      o: "remove"
+    }
+
+    {
+      i: {
+        suffix: "_rt0"
+      }
+
+      o: "list",
+      v: [
+        {
+          apply: "ItemNotExists",
+          def: {
+            ref: "subuser_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicSubuserFlow"
+}

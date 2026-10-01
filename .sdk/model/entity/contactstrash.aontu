@@ -1,0 +1,71 @@
+# Entity: contactstrash
+
+main: kit: entity: contactstrash: {
+
+  alias: field: {}
+
+  name: "contactstrash"
+  op: {
+    remove: {
+      name: "remove"
+      points: [
+        {
+          co: {
+            id: "DELETE /contacts/trash"
+            source: "openapi3"
+            version: 2
+          }
+          m: "DELETE"
+          o: "/contacts/trash"
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "trash"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+    update: {
+      name: "update"
+      points: [
+        {
+          co: {
+            id: "PUT /contacts/trash/restore"
+            source: "openapi3"
+            version: 2
+          }
+          m: "PUT"
+          o: "/contacts/trash/restore"
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "trash"
+            }
+            {
+              lit: "restore"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+  fields: {
+  }
+
+
+
+}

@@ -1,0 +1,1175 @@
+// Generated canary sweep: no credential leaves this SDK in any form.
+// Mirrors test/clean.test.ts in the ts reference. Do not hand-edit.
+
+#include <functional>
+#include <iostream>
+#include <stdexcept>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "testlib.hpp"
+
+using namespace sdk;
+
+// Generated: the credential's wire placement is fixed when the SDK is built.
+static const bool AUTH_SUPPRESSED = false;
+static const std::string AUTH_WHERE = "header";
+static const std::string AUTH_NAME = "authorization";
+
+static const std::string CANARY_APIKEY = "CANARY-APIKEY-k9x2m7q4p1";
+static const std::string CANARY_SECRET = "CANARY-SECRET-w3e8r5t2y6";
+static const std::string CANARY_HEADER = "CANARY-HEADER-z1x4c7v0b3";
+static const std::string CANARY_VALUE = "CANARY-VALUE-n5m8b2v9c4";
+
+static const std::string MASK = "[redacted]";
+
+
+struct Sink {
+  std::string name;
+  std::string text;
+};
+
+
+// Every form a canary can travel in.
+static std::vector<std::string> canaryForms() {
+  std::vector<std::string> out;
+  for (const std::string& v : {CANARY_APIKEY, CANARY_SECRET, CANARY_HEADER, CANARY_VALUE}) {
+    out.push_back(v);
+    out.push_back(util::cleanBase64(v));
+    out.push_back(Struct::escurl(Value(v)));
+  }
+  out.push_back(util::cleanBase64(CANARY_APIKEY + ":" + CANARY_SECRET));
+  return out;
+}
+
+
+static std::vector<std::string> leaks(const std::string& text) {
+  std::vector<std::string> out;
+  for (const auto& f : canaryForms()) {
+    if (std::string::npos != text.find(f)) out.push_back(f);
+  }
+  return out;
+}
+
+
+// Header maps keep the caller's spelling; the assertion should not care.
+static Value header(const Value& map, const std::string& name) {
+  if (!map.is_map()) return Value::undef();
+  std::string lname = name;
+  for (auto& c : lname) c = static_cast<char>(std::tolower((unsigned char)c));
+  for (const auto& kv : *map.as_map()) {
+    std::string k = kv.first;
+    for (auto& c : k) c = static_cast<char>(std::tolower((unsigned char)c));
+    if (k == lname) return kv.second;
+  }
+  return Value::undef();
+}
+
+
+static bool endsWith(const std::string& s, const std::string& suf) {
+  return s.size() >= suf.size() && 0 == s.compare(s.size() - suf.size(), suf.size(), suf);
+}
+
+
+static void addForms(std::vector<Sink>& sinks, const std::string& name, const Value& val) {
+  sinks.push_back({name + ":json", vs::jsonify(val, 0)});
+  sinks.push_back({name + ":string", Struct::stringify(val)});
+}
+
+
+static void addError(std::vector<Sink>& sinks, const std::string& name, const SdkErrorPtr& err) {
+  sinks.push_back({name + ":what", std::string(err->what())});
+  sinks.push_back({name + ":string", err->to_string()});
+  addForms(sinks, name + ":value", err->toValue());
+  addForms(sinks, name + ":spec", err->spec);
+  addForms(sinks, name + ":result", err->result);
+}
+
+
+// Captures the serialised context from inside the pipeline: what a hook
+// author would hand to a logger.
+class CaptureFeature : public BaseFeature {
+public:
+  std::vector<Sink>* sinks;
+  explicit CaptureFeature(std::vector<Sink>* sinks_)
+      : BaseFeature("capture", "0.0.1", true), sinks(sinks_) {}
+  void preRequest(CtxPtr ctx) override { sinks->push_back({"ctx@PreRequest", ctx->to_string()}); }
+  void preResponse(CtxPtr ctx) override { sinks->push_back({"ctx@PreResponse", ctx->to_string()}); }
+  void preUnexpected(CtxPtr ctx) override { sinks->push_back({"ctx@PreUnexpected", ctx->to_string()}); }
+};
+
+
+// A feature that throws from inside the pipeline, quoting the request it
+// saw: an exception makeError never handled. Its variant throws again from
+// PreUnexpected, which makeError fires once it has cleaned its own error.
+class ThrowFeature : public BaseFeature {
+public:
+  bool unexpected;
+  explicit ThrowFeature(bool unexpected_ = false)
+      : BaseFeature("throwhook", "0.0.1", true), unexpected(unexpected_) {}
+  void preResponse(CtxPtr ctx) override {
+    throw std::runtime_error("hook saw " + vs::jsonify(ctx->spec ? ctx->spec->toValue() : Value::undef(), 0));
+  }
+  void preUnexpected(CtxPtr ctx) override {
+    if (unexpected) {
+      throw std::runtime_error("hook saw " + vs::jsonify(ctx->spec ? ctx->spec->toValue() : Value::undef(), 0));
+    }
+  }
+};
+
+
+// Features that fail the operation with the SDK's own error, whose code
+// quotes a registered value: one refuses it as rbac does, and records the
+// error PreUnexpected hands a hook; the other throws it.
+class DenyFeature : public BaseFeature {
+public:
+  std::vector<Sink>* sinks;
+  explicit DenyFeature(std::vector<Sink>* sinks_)
+      : BaseFeature("denyhook", "0.0.1", true), sinks(sinks_) {}
+  void prePoint(CtxPtr ctx) override {
+    ctx->out.pointError = ctx->makeError("denied:" + CANARY_VALUE, "denied");
+  }
+  void preUnexpected(CtxPtr ctx) override {
+    if (ctx->ctrl->err) addError(*sinks, "error", ctx->ctrl->err);
+  }
+};
+
+class RaiseFeature : public BaseFeature {
+public:
+  RaiseFeature() : BaseFeature("raisehook", "0.0.1", true) {}
+  void preResponse(CtxPtr) override {
+    throw std::make_shared<SdkError>("raised:" + CANARY_VALUE, "raised", nullptr);
+  }
+};
+
+
+// A stream whose producer fails while the caller consumes it, quoting a
+// credential.
+class StreamThrowFeature : public BaseFeature {
+public:
+  StreamThrowFeature() : BaseFeature("streamthrow", "0.0.1", true) {}
+  void preDone(CtxPtr ctx) override {
+    if (!ctx->result) return;
+    ctx->result->stream = []() -> std::vector<Value> {
+      throw std::runtime_error("stream saw " + CANARY_APIKEY);
+    };
+  }
+};
+
+
+// A stream that succeeds, so the pipeline's terminal step never runs.
+class StreamOkFeature : public BaseFeature {
+public:
+  StreamOkFeature() : BaseFeature("streamok", "0.0.1", true) {}
+  void preDone(CtxPtr ctx) override {
+    if (!ctx->result) return;
+    std::vector<Value> items;
+    Value data = ctx->result->resdata;
+    if (data.is_list()) {
+      for (const auto& item : *data.as_list()) items.push_back(item);
+    } else if (!is_nullish(data)) {
+      items.push_back(data);
+    }
+    ctx->result->stream = [items]() { return items; };
+  }
+};
+
+
+// A sink callable: records every form of the record it receives.
+static Value capture(std::vector<Sink>* sinks, const std::string& name, int at) {
+  vs::Injector fn = [sinks, name, at](vs::Injection&, const Value& args, const std::string&,
+                                      const Value&) -> Value {
+    addForms(*sinks, name, vs::getelem(args, Value(int64_t(at))));
+    return Value::undef();
+  };
+  return Value(fn);
+}
+
+
+static Value response(int status, const Value& data, const Value& headers) {
+  Value h = vmap({{"content-type", Value("application/json")}});
+  if (headers.is_map()) {
+    for (const auto& kv : *headers.as_map()) map_put(h, kv.first, kv.second);
+  }
+  Value out = vmap();
+  map_put(out, "status", Value(status));
+  map_put(out, "statusText", Value(status < 400 ? "OK" : "ERR"));
+  map_put(out, "body", Value(vs::jsonify(data, 0)));
+  map_put(out, "json", json_thunk(data));
+  map_put(out, "headers", h);
+  return out;
+}
+
+
+struct Scenario {
+  std::string name;
+  std::function<Value(const std::string&, const Value&)> respond;
+};
+
+
+static std::vector<Scenario> scenarios() {
+  return {
+    {"ok", [](const std::string&, const Value&) {
+      return response(200, vmap({{"id", Value("i1")}, {"name", Value("n1")}}),
+                      vmap({{"x-session-token", Value("RESP-TOKEN-a1b2c3d4e5")}}));
+    }},
+    {"notfound", [](const std::string&, const Value&) {
+      return response(404, vmap({{"error", Value("no such record")}}), Value::undef());
+    }},
+    {"server", [](const std::string&, const Value&) {
+      return response(500, vmap({{"error", Value("boom")}}), Value::undef());
+    }},
+    {"transport", [](const std::string& url, const Value&) -> Value {
+      throw std::make_shared<SdkError>("fetch_fail",
+        "socket hang up (URL was: \"" + url + "\")", nullptr);
+    }},
+    {"notjson", [](const std::string&, const Value&) {
+      vs::Injector broken = [](vs::Injection&, const Value&, const std::string&,
+                               const Value&) -> Value {
+        throw std::make_shared<SdkError>("json_parse", "Unexpected token < in JSON", nullptr);
+      };
+      Value out = vmap();
+      map_put(out, "status", Value(200));
+      map_put(out, "statusText", Value("OK"));
+      map_put(out, "body", Value("<html>"));
+      map_put(out, "json", Value(broken));
+      map_put(out, "headers", vmap());
+      return out;
+    }},
+  };
+}
+
+
+static bool hasFeature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
+
+
+static std::shared_ptr<SmsapiSDK> makeSdk(const Scenario& scenario, std::vector<Sink>* sinks,
+                                              const Value& cleanopts,
+                                              FeaturePtr extra = nullptr) {
+  Value feature = vmap();
+  if (hasFeature("log")) {
+    // The log feature hands [level, record] to its logger.
+    map_put(feature, "log", vmap({{"active", Value(true)}, {"logger", capture(sinks, "log", 1)}}));
+  }
+  if (hasFeature("debug")) {
+    map_put(feature, "debug", vmap({{"active", Value(true)}, {"onEntry", capture(sinks, "debug", 0)}}));
+  }
+  if (hasFeature("audit")) {
+    map_put(feature, "audit", vmap({{"active", Value(true)}, {"sink", capture(sinks, "audit", 0)}}));
+  }
+  if (hasFeature("telemetry")) {
+    map_put(feature, "telemetry", vmap({{"active", Value(true)}, {"exporter", capture(sinks, "telemetry", 0)}}));
+  }
+  if (hasFeature("cost")) {
+    map_put(feature, "cost", vmap({{"active", Value(true)}, {"sink", capture(sinks, "cost", 0)}}));
+  }
+  if (hasFeature("metrics")) map_put(feature, "metrics", vmap({{"active", Value(true)}}));
+  if (hasFeature("clienttrack")) map_put(feature, "clienttrack", vmap({{"active", Value(true)}}));
+
+  Scenario sc = scenario;
+  vs::Injector fetch = [sc](vs::Injection&, const Value& args, const std::string&,
+                            const Value&) -> Value {
+    Value url = vs::getelem(args, Value(int64_t(0)));
+    Value fetchdef = vs::getelem(args, Value(int64_t(1)));
+    return sc.respond(url.is_string() ? url.as_string() : "", fetchdef);
+  };
+
+  Value clean = vmap({{"values", Value(CANARY_VALUE)}});
+  if (cleanopts.is_map()) {
+    for (const auto& kv : *cleanopts.as_map()) map_put(clean, kv.first, kv.second);
+  }
+
+  Value opts = vmap({
+    {"apikey", Value(CANARY_APIKEY)},
+    {"secret", Value(CANARY_SECRET)},
+    {"headers", vmap({{"X-Custom-Token", Value(CANARY_HEADER)}})},
+    {"clean", clean},
+    {"feature", feature},
+    {"system", vmap({{"fetch", Value(fetch)}})},
+  });
+  auto sdk = std::make_shared<SmsapiSDK>(opts);
+  sdk->getRootCtx()->utility->featureAdd(sdk->getRootCtx(), std::make_shared<CaptureFeature>(sinks));
+  if (extra) sdk->getRootCtx()->utility->featureAdd(sdk->getRootCtx(), extra);
+  return sdk;
+}
+
+
+struct Candidate {
+  std::string name;
+  std::vector<std::string> params;
+  std::function<Value(SmsapiSDK&, const Value&, const Value&)> run;
+  std::function<std::vector<Value>(SmsapiSDK&, const Value&, const Value&)> stream;
+};
+
+
+struct Target {
+  int index;
+  Value match;
+};
+
+
+// Generated from the model: every operation the active entities declare,
+// with the path parameters its points declare.
+static std::vector<Candidate> candidates() {
+  return {
+    {"available.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.available()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.available()->stream("list", m, callopts);
+    }},
+    {"blacklist.load", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.blacklist()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.blacklist()->stream("load", m, callopts);
+    }},
+    {"blacklist.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.blacklist()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.blacklist()->stream("create", m, callopts);
+    }},
+    {"blacklist.remove", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.blacklist()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.blacklist()->stream("remove", m, callopts);
+    }},
+    {"callback.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.callback()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.callback()->stream("list", m, callopts);
+    }},
+    {"callback.load", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.callback()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.callback()->stream("load", m, callopts);
+    }},
+    {"callback.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.callback()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.callback()->stream("create", m, callopts);
+    }},
+    {"callback.remove", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.callback()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.callback()->stream("remove", m, callopts);
+    }},
+    {"callback.update", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.callback()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.callback()->stream("update", m, callopts);
+    }},
+    {"contact.list", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.contact()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contact()->stream("list", m, callopts);
+    }},
+    {"contact.load", {"contact_id", "group_id", "id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contact()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contact()->stream("load", m, callopts);
+    }},
+    {"contact.create", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contact()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contact()->stream("create", m, callopts);
+    }},
+    {"contact.remove", {"group_id", "id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contact()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contact()->stream("remove", m, callopts);
+    }},
+    {"contact.update", {"contact_id", "group_id", "id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contact()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contact()->stream("update", m, callopts);
+    }},
+    {"contacts_field.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.contacts_field()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contacts_field()->stream("list", m, callopts);
+    }},
+    {"contacts_field.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contacts_field()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contacts_field()->stream("create", m, callopts);
+    }},
+    {"contacts_field.remove", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contacts_field()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contacts_field()->stream("remove", m, callopts);
+    }},
+    {"contacts_field.update", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contacts_field()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contacts_field()->stream("update", m, callopts);
+    }},
+    {"contacts_field_option.list", {"field_id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.contacts_field_option()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contacts_field_option()->stream("list", m, callopts);
+    }},
+    {"contactsgroup.list", {"group_id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.contactsgroup()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contactsgroup()->stream("list", m, callopts);
+    }},
+    {"contactsgroup.create", {"group_id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contactsgroup()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contactsgroup()->stream("create", m, callopts);
+    }},
+    {"contactsgroup.remove", {"contact_id", "group_id", "username"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contactsgroup()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contactsgroup()->stream("remove", m, callopts);
+    }},
+    {"contactsgroup.update", {"group_id", "username"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contactsgroup()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contactsgroup()->stream("update", m, callopts);
+    }},
+    {"contactstrash.remove", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contactstrash()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contactstrash()->stream("remove", m, callopts);
+    }},
+    {"contactstrash.update", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.contactstrash()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.contactstrash()->stream("update", m, callopts);
+    }},
+    {"field_available.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.field_available()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.field_available()->stream("list", m, callopts);
+    }},
+    {"group.load", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.group()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.group()->stream("load", m, callopts);
+    }},
+    {"group.update", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.group()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.group()->stream("update", m, callopts);
+    }},
+    {"mfa_code.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.mfa_code()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.mfa_code()->stream("create", m, callopts);
+    }},
+    {"opt_out.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.opt_out()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.opt_out()->stream("list", m, callopts);
+    }},
+    {"opt_out.remove", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.opt_out()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.opt_out()->stream("remove", m, callopts);
+    }},
+    {"opt_out_setting.load", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.opt_out_setting()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.opt_out_setting()->stream("load", m, callopts);
+    }},
+    {"opt_out_setting.update", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.opt_out_setting()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.opt_out_setting()->stream("update", m, callopts);
+    }},
+    {"permission.load", {"group_id", "id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.permission()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.permission()->stream("load", m, callopts);
+    }},
+    {"permission.create", {"group_id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.permission()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.permission()->stream("create", m, callopts);
+    }},
+    {"ping.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.ping()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.ping()->stream("list", m, callopts);
+    }},
+    {"profile.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.profile()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.profile()->stream("list", m, callopts);
+    }},
+    {"profile.load", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.profile()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.profile()->stream("load", m, callopts);
+    }},
+    {"rcs.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.rcs()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.rcs()->stream("list", m, callopts);
+    }},
+    {"sendername.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.sendername()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.sendername()->stream("list", m, callopts);
+    }},
+    {"sendername.load", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.sendername()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.sendername()->stream("load", m, callopts);
+    }},
+    {"sendername.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.sendername()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.sendername()->stream("create", m, callopts);
+    }},
+    {"sendername_statement.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.sendername_statement()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.sendername_statement()->stream("list", m, callopts);
+    }},
+    {"sent_rcs_message.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.sent_rcs_message()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.sent_rcs_message()->stream("create", m, callopts);
+    }},
+    {"shipment_country_volume.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.shipment_country_volume()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.shipment_country_volume()->stream("list", m, callopts);
+    }},
+    {"short_url.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.short_url()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.short_url()->stream("list", m, callopts);
+    }},
+    {"short_url.load", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.short_url()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.short_url()->stream("load", m, callopts);
+    }},
+    {"short_url.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.short_url()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.short_url()->stream("create", m, callopts);
+    }},
+    {"short_url.remove", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.short_url()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.short_url()->stream("remove", m, callopts);
+    }},
+    {"short_url.update", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.short_url()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.short_url()->stream("update", m, callopts);
+    }},
+    {"smsdo.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.smsdo()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.smsdo()->stream("create", m, callopts);
+    }},
+    {"smssendername.create", {"sendername_id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.smssendername()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.smssendername()->stream("create", m, callopts);
+    }},
+    {"smssendername.remove", {"sender"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.smssendername()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.smssendername()->stream("remove", m, callopts);
+    }},
+    {"smstemplate.remove", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.smstemplate()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.smstemplate()->stream("remove", m, callopts);
+    }},
+    {"subuser.list", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.subuser()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.subuser()->stream("list", m, callopts);
+    }},
+    {"subuser.load", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.subuser()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.subuser()->stream("load", m, callopts);
+    }},
+    {"subuser.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.subuser()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.subuser()->stream("create", m, callopts);
+    }},
+    {"subuser.remove", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.subuser()->remove(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.subuser()->stream("remove", m, callopts);
+    }},
+    {"subuser.update", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.subuser()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.subuser()->stream("update", m, callopts);
+    }},
+    {"template.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.template_()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.template_()->stream("list", m, callopts);
+    }},
+    {"template.load", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.template_()->load(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.template_()->stream("load", m, callopts);
+    }},
+    {"template.create", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.template_()->create(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.template_()->stream("create", m, callopts);
+    }},
+    {"template.update", {"id"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      return c.template_()->update(m, ctrl)->data();
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.template_()->stream("update", m, callopts);
+    }},
+    {"user_rcs_sender_collection.list", {},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
+      auto ents = c.user_rcs_sender_collection()->list(m, ctrl);
+      Value out = vlist();
+      for (const auto& e : ents) out.as_list()->push_back(e->data());
+      return out;
+    },
+     [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
+      return c.user_rcs_sender_collection()->stream("list", m, callopts);
+    }},
+  };
+}
+
+
+// The first operation that completes against a plain 200: with no
+// arguments, else with every path parameter its points declare filled in.
+static Target usableOp(const std::vector<Candidate>& cands) {
+  vs::Injector fetch = [](vs::Injection&, const Value&, const std::string&, const Value&) -> Value {
+    return response(200, vmap({{"id", Value("i1")}}), Value::undef());
+  };
+  Value opts = vmap({
+    {"apikey", Value(CANARY_APIKEY)},
+    {"system", vmap({{"fetch", Value(fetch)}})},
+  });
+  auto plain = std::make_shared<SmsapiSDK>(opts);
+  for (size_t i = 0; i < cands.size(); i++) {
+    Value filled = vmap();
+    for (const auto& p : cands[i].params) map_put(filled, p, Value("p1"));
+    for (const Value& match : {vmap(), filled}) {
+      try {
+        cands[i].run(*plain, Struct::clone(match), vmap());
+        return {static_cast<int>(i), match};
+      } catch (const SdkErrorPtr&) {
+        continue;
+      } catch (const std::exception&) {
+        continue;
+      }
+    }
+  }
+  return {-1, Value::undef()};
+}
+
+
+static const char* NOTHING_TO_SWEEP =
+  "SKIP: no operation of this SDK completes against a plain 200; nothing to sweep";
+
+
+static SdkErrorPtr drive(SmsapiSDK& sdk, const Candidate& cand, const Target& target,
+                         const Value& ctrl, std::vector<Sink>& sinks) {
+  // A caller may keep the record it passed rather than read ctrl.explain.
+  Value held = getp(ctrl, "explain");
+  SdkErrorPtr err;
+  Value out = Value::undef();
+  bool got = false;
+  try {
+    out = cand.run(sdk, Struct::clone(target.match), ctrl);
+    got = true;
+  } catch (const SdkErrorPtr& e) {
+    err = e;
+  } catch (const std::exception& e) {
+    // Escaped the pipeline raw: swept as it is.
+    err = std::make_shared<SdkError>("escaped", e.what(), nullptr);
+  }
+  if (err) addError(sinks, "error", err);
+  if (got) addForms(sinks, "result", out);
+  Value explain = getp(ctrl, "explain");
+  if (explain.is_map()) addForms(sinks, "explain", explain);
+  if (held.is_map() && (!explain.is_map() || held.as_map() != explain.as_map())) {
+    addForms(sinks, "explain:held", held);
+  }
+  return err;
+}
+
+
+struct Variant {
+  std::string name;
+  std::function<Value()> ctrl;
+};
+
+
+static std::vector<Variant> variants() {
+  return {
+    {"throw", []() { return vmap(); }},
+    {"explain", []() { return vmap({{"explain", vmap()}}); }},
+    {"nothrow", []() { return vmap({{"throw", Value(false)}, {"explain", vmap()}}); }},
+  };
+}
+
+
+static void no_credential_leaves_the_sdk() {
+  std::vector<Candidate> cands = candidates();
+  Target target = usableOp(cands);
+  if (0 > target.index) {
+    std::cout << NOTHING_TO_SWEEP << std::endl;
+    return;
+  }
+  const Candidate& cand = cands[target.index];
+
+  std::vector<Sink> sinks;
+  std::map<std::string, SdkErrorPtr> errors;
+  std::map<std::string, Value> explains;
+
+  for (const Scenario& scenario : scenarios()) {
+    for (const Variant& variant : variants()) {
+      auto sdk = makeSdk(scenario, &sinks, Value::undef());
+      Value ctrl = variant.ctrl();
+      SdkErrorPtr err = drive(*sdk, cand, target, ctrl, sinks);
+      std::string key = scenario.name + "/" + variant.name;
+      if (err) errors[key] = err;
+      Value explain = getp(ctrl, "explain");
+      if (explain.is_map()) explains[key] = explain;
+      sinks.push_back({"sdk:string", sdk->to_string()});
+    }
+  }
+
+  // A credential mistyped as a map is rejected by validation, whose message
+  // quotes the value it rejected.
+  SdkErrorPtr rejected;
+  try {
+    std::make_shared<SmsapiSDK>(vmap({
+      {"apikey", vmap({{"value", Value(CANARY_APIKEY)}})},
+      {"clean", vmap({{"values", Value(CANARY_VALUE)}})},
+    }));
+  } catch (const SdkErrorPtr& e) {
+    rejected = e;
+  }
+  ASSERT_TRUE((bool)rejected, "a credential mistyped as a map should be rejected");
+  if (rejected) addError(sinks, "rejected", rejected);
+
+  // An exception a feature hook throws, quoting the request, skips makeError;
+  // the variant throws again from PreUnexpected. Both run with explain on.
+  for (bool unexpected : {false, true}) {
+    auto hooked = makeSdk(scenarios()[0], &sinks, Value::undef(), std::make_shared<ThrowFeature>(unexpected));
+    SdkErrorPtr hookerr = drive(*hooked, cand, target, vmap({{"explain", vmap()}}), sinks);
+    ASSERT_TRUE((bool)hookerr, "the throwing hook should fail the operation");
+  }
+
+  // A feature's own error keeps its code, which is cleaned like the message:
+  // returned, handed to a hook, thrown by a hook, and cleaned by cleanError.
+  auto denier = makeSdk(scenarios()[0], &sinks, Value::undef(), std::make_shared<DenyFeature>(&sinks));
+  SdkErrorPtr denied = drive(*denier, cand, target, vmap(), sinks);
+  ASSERT_TRUE((bool)denied, "the refusing hook should fail the operation");
+  auto raiser = makeSdk(scenarios()[0], &sinks, Value::undef(), std::make_shared<RaiseFeature>());
+  SdkErrorPtr raised = drive(*raiser, cand, target, vmap(), sinks);
+  ASSERT_TRUE((bool)raised, "the raising hook should fail the operation");
+  auto stepped = std::make_shared<SdkError>("stepped:" + CANARY_VALUE, "stepped", nullptr);
+  util::cleanError(denier->getRootCtx(), stepped);
+  addError(sinks, "stepped", stepped);
+
+  // Consuming a stream runs inside the same catch path as the operation, and
+  // the explain record the caller passed is cleaned however the stream ends.
+  const std::vector<std::pair<std::string, FeaturePtr>> streams = {
+    {"stream", std::make_shared<StreamThrowFeature>()},
+    {"stream-ok", std::make_shared<StreamOkFeature>()},
+    {"stream-plain", nullptr},
+  };
+  for (const auto& [name, extra] : streams) {
+    auto streamed = makeSdk(scenarios()[0], &sinks, Value::undef(), extra);
+    Value explain = vmap();
+    Value callopts = vmap({{"ctrl", vmap({{"explain", explain}})}});
+    bool streamraised = false;
+    try {
+      for (const Value& item : cand.stream(*streamed, Struct::clone(target.match), callopts)) (void)item;
+    } catch (const SdkErrorPtr& e) {
+      streamraised = true;
+      addError(sinks, name, e);
+    } catch (const std::exception& e) {
+      streamraised = true;
+      sinks.push_back({name + ":what", std::string(e.what())});
+    }
+    ASSERT_TRUE(("stream" == name) == streamraised, name + ": only the failing stream throws");
+    ASSERT_TRUE(0 < explain.as_map()->size(), name + ": the explain record was not filled");
+    addForms(sinks, name + ":explain", explain);
+  }
+
+  // A client given no clean block at all masks by the schema defaults.
+  Scenario notfoundsc = scenarios()[1];
+  vs::Injector barefetch = [notfoundsc](vs::Injection&, const Value& args, const std::string&,
+                                        const Value&) -> Value {
+    Value url = vs::getelem(args, Value(int64_t(0)));
+    return notfoundsc.respond(url.is_string() ? url.as_string() : "", vs::getelem(args, Value(int64_t(1))));
+  };
+  auto bare = std::make_shared<SmsapiSDK>(vmap({
+    {"apikey", Value(CANARY_APIKEY)},
+    {"secret", Value(CANARY_SECRET)},
+    {"headers", vmap({{"X-Custom-Token", Value(CANARY_HEADER)}})},
+    {"system", vmap({{"fetch", Value(barefetch)}})},
+  }));
+  SdkErrorPtr barerr = drive(*bare, cand, target, vmap(), sinks);
+  ASSERT_TRUE((bool)barerr, "the 404 scenario must throw without a clean block");
+
+  // The raw path returns its failure rather than throwing it.
+  Value direct = makeSdk(scenarios()[3], &sinks, Value::undef())->direct(vmap({{"path", Value("raw")}}));
+  ASSERT_TRUE(is_false(getp(direct, "ok")), "a transport failure should fail direct()");
+  addForms(sinks, "direct", direct);
+
+  std::string leaked;
+  int leakcount = 0;
+  for (const Sink& s : sinks) {
+    std::vector<std::string> found = leaks(s.text);
+    if (found.empty()) continue;
+    leakcount++;
+    if (!leaked.empty()) leaked += "; ";
+    leaked += s.name + " [";
+    for (size_t i = 0; i < found.size(); i++) leaked += (0 < i ? ", " : "") + found[i];
+    leaked += "]";
+  }
+
+  std::cout << "clean: swept " << sinks.size() << " surface(s), " << leakcount << " leak(s)"
+            << std::endl;
+
+  ASSERT_EQ(leakcount, 0, "credential leaked through: " + leaked);
+
+  // The positive half: the slot the credential travelled in is masked, and
+  // an unregistered token in a response header is masked by name.
+  auto nf = errors.find("notfound/throw");
+  ASSERT_TRUE(errors.end() != nf, "the 404 scenario must throw");
+  if (errors.end() != nf) {
+    SdkErrorPtr notfound = nf->second;
+    ASSERT_EQ(notfound->status, 404, "the 404 scenario reports its status");
+    Value spec = notfound->spec;
+    if (!AUTH_SUPPRESSED) {
+      if ("query" == AUTH_WHERE) {
+        ASSERT_EQ_VAL(header(getp(spec, "query"), AUTH_NAME), Value(MASK), "query credential masked");
+      } else if ("cookie" == AUTH_WHERE) {
+        std::string cookie = Struct::stringify(header(getp(spec, "headers"), "cookie"));
+        ASSERT_TRUE(std::string::npos != cookie.find(MASK), "cookie: " + cookie);
+      } else {
+        std::string cred = Struct::stringify(header(getp(spec, "headers"), AUTH_NAME));
+        ASSERT_TRUE(endsWith(cred, MASK), AUTH_NAME + ": " + cred);
+      }
+    }
+    ASSERT_EQ_VAL(header(getp(spec, "headers"), "x-custom-token"), Value(MASK),
+                  "custom token header masked");
+  }
+  if (denied) ASSERT_TRUE(denied->code == "denied:" + MASK, "refusal code: " + denied->code);
+  if (raised) ASSERT_TRUE(raised->code == "raised:" + MASK, "raised code: " + raised->code);
+  ASSERT_TRUE(stepped->code == "stepped:" + MASK, "stepped code: " + stepped->code);
+  if (barerr) {
+    ASSERT_EQ_VAL(header(getp(barerr->spec, "headers"), "x-custom-token"), Value(MASK),
+                  "no clean block: custom token header masked");
+  }
+
+  auto ex = explains.find("ok/explain");
+  Value result = explains.end() == ex ? Value::undef() : getp(ex->second, "result");
+  ASSERT_TRUE(result.is_map(), "the explain record should carry the result");
+  ASSERT_EQ_VAL(header(getp(result, "headers"), "x-session-token"), Value(MASK),
+                "response token header masked");
+}
+
+
+static void the_sweep_can_see_a_leak() {
+  std::vector<Candidate> cands = candidates();
+  Target target = usableOp(cands);
+  if (0 > target.index) {
+    std::cout << NOTHING_TO_SWEEP << std::endl;
+    return;
+  }
+
+  std::vector<Sink> sinks;
+  auto sdk = makeSdk(scenarios()[1], &sinks, vmap({{"active", Value(false)}}));
+  SdkErrorPtr err = drive(*sdk, cands[target.index], target, vmap(), sinks);
+  ASSERT_TRUE((bool)err, "the 404 scenario must throw");
+  if (!err) return;
+
+  int leaked = 0;
+  for (const Sink& s : sinks) {
+    if (!leaks(s.text).empty()) leaked++;
+  }
+  ASSERT_TRUE(0 < leaked, "with clean off, nothing showed the canary: the sweep is blind");
+
+  if (!AUTH_SUPPRESSED) {
+    std::string text = vs::jsonify(err->spec, 0);
+    ASSERT_TRUE(std::string::npos != text.find(CANARY_APIKEY) ||
+                std::string::npos != text.find(util::cleanBase64(CANARY_APIKEY + ":" + CANARY_SECRET)),
+                "the raw spec should carry the credential when clean is off");
+  }
+
+  // Explaining a failure must not cost it its error.
+  std::vector<Sink> quiet;
+  auto explainer = makeSdk(scenarios()[1], &quiet, vmap({{"active", Value(false)}}));
+  SdkErrorPtr explained = drive(*explainer, cands[target.index], target,
+                                vmap({{"explain", vmap()}}), quiet);
+  ASSERT_TRUE(explained && explained->msg == err->msg,
+              "with clean off, explain lost the error: " + (explained ? explained->msg : "<none>"));
+}
+
+
+// A registered value used as a property name is masked; names that mask
+// alike are all kept.
+static void a_registered_value_used_as_a_name_is_masked() {
+  auto sdk = std::make_shared<SmsapiSDK>(vmap({
+    {"clean", vmap({{"values", Value("ZZVAL-abc123,ZZVAL-xyz789")}})},
+  }));
+  Value out = util::clean(sdk->getRootCtx(), vmap({
+    {"ZZVAL-abc123", Value(1)}, {"ZZVAL-xyz789", Value(2)}, {"plain", Value(3)},
+  }));
+  std::vector<std::string> keys;
+  for (const auto& kv : *out.as_map()) keys.push_back(kv.first);
+  ASSERT_TRUE((keys == std::vector<std::string>{MASK, MASK + "#1", "plain"}),
+              "masked names: " + Struct::stringify(out));
+}
+
+
+// The generated config's own clean block is honoured, and left unchanged.
+static void the_generated_configs_own_clean_block_is_honoured() {
+  auto client = std::make_shared<SmsapiSDK>(vmap());
+  UtilityPtr utility = client->getUtility();
+  Value config = vmap({{"options", vmap({{"clean", vmap({
+    {"keys", Value("zzsens")}, {"values", Value("CONFIG-SEEDED-1")},
+  })}})}});
+  CtxSpec cs;
+  cs.utility = utility;
+  cs.options = vmap({{"clean", vmap({{"values", Value("CALLER-SEEDED-2")}})}});
+  cs.config = config;
+  CtxPtr ctx = utility->makeContext(cs, nullptr);
+  ctx->options = utility->makeOptions(ctx);
+  ASSERT_EQ_VAL(util::clean(ctx, Value("a CONFIG-SEEDED-1 b CALLER-SEEDED-2")),
+                Value("a " + MASK + " b " + MASK), "both seeded values are masked");
+  Value out = util::clean(ctx, vmap({{"my_zzsens", Value("x")}, {"other", Value("y")}}));
+  ASSERT_EQ_VAL(getp(out, "my_zzsens"), Value(MASK), "the config's key name is sensitive");
+  ASSERT_EQ_VAL(getp(out, "other"), Value("y"), "an ordinary name is kept");
+  ASSERT_EQ_VAL(Struct::getpath(config, {"options", "clean", "keys"}), Value("zzsens"),
+                "the config's keys are left alone");
+  ASSERT_EQ_VAL(Struct::getpath(config, {"options", "clean", "values"}), Value("CONFIG-SEEDED-1"),
+                "the config's values are left alone");
+}
+
+
+// A feature's name is not a field name: a feature called secrets does not
+// make its settings secret, though a sensitive field inside it still is. An
+// entity block, of per-entity settings or seeded records keyed by entity name
+// and id, is not read at all.
+static void a_feature_name_is_read_as_a_name() {
+  auto client = std::make_shared<SmsapiSDK>(vmap({
+    {"apikey", Value(CANARY_APIKEY)},
+    {"feature", vmap({
+      {"secrets", vmap({
+        {"active", Value(false)}, {"name", Value("ZZNAME-feat123")}, {"token", Value("ZZTOKEN-feat456")},
+      })},
+      {"test", vmap({
+        {"active", Value(false)},
+        {"entity", vmap({{"zztoken", vmap({{"ZZTOKEN01", vmap({{"note", Value("PLAINRECORD-t5r3e1w9")}})}})}})},
+      })},
+    })},
+    {"entity", vmap({{"zztoken", vmap({{"alias", vmap({{"zzkey", Value("PLAINALIAS-m2n4b6v8")}})}})}})},
+  }));
+  CtxPtr ctx = client->getRootCtx();
+  ASSERT_EQ_VAL(util::clean(ctx, Value("ZZNAME-feat123 ZZTOKEN-feat456")),
+                Value("ZZNAME-feat123 " + MASK), "only the sensitive field is registered");
+  ASSERT_EQ_VAL(util::clean(ctx, Value("record PLAINRECORD-t5r3e1w9")),
+                Value("record PLAINRECORD-t5r3e1w9"), "a record seeded under an entity block is not registered");
+  ASSERT_EQ_VAL(util::clean(ctx, Value("alias PLAINALIAS-m2n4b6v8")),
+                Value("alias PLAINALIAS-m2n4b6v8"), "an entity's own settings are not registered");
+}
+
+
+int main() {
+  T_RUN(no_credential_leaves_the_sdk);
+  T_RUN(the_sweep_can_see_a_leak);
+  T_RUN(a_registered_value_used_as_a_name_is_masked);
+  T_RUN(the_generated_configs_own_clean_block_is_honoured);
+  T_RUN(a_feature_name_is_read_as_a_name);
+  return sdktest::summary("clean_test");
+}

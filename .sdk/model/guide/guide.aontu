@@ -1,0 +1,43 @@
+# Guide
+
+@"@voxgig/apidef/model/guide.aontu"
+
+@"./base-guide.aontu"
+
+
+
+
+
+# --- entity corrections (the vendor definition is not edited) ---------------
+#
+# apidef derives two entities from /contacts/fields, `contacts_field` and
+# `contactsfield`. Their class names differ only in case (ContactsField,
+# Contactsfield), so on a case-insensitive filesystem both generate ONE file
+# and the ts build fails (TS1149). Fold the field operations into
+# `contacts_field`, give the per-field options list its own entity, and switch
+# the duplicate off.
+guide: entity: contactsfield: active: false
+
+guide: entity: contacts_field: path: "/contacts/fields/{fieldId}": op: remove: method: "DELETE"
+
+guide: entity: contacts_field_option: path: "/contacts/fields/{fieldId}/options": {
+  rename: param: "fieldId": "field_id"
+  op: list: method: "GET"
+  op: list: transform: res: "`body.collection`"
+}
+
+# POST /rcs/messages answers { id }. apidef unwraps that to the bare id
+# (`body.id`), so the entity holds a scalar instead of the record and the
+# generated definition test fails ("undefined !== {}"). Keep the record.
+guide: entity: sent_rcs_message: path: "/rcs/messages": op: create: transform: res: "`body`"
+
+# apidef names the verification endpoint's entity `mfa`, which the elixir
+# target emits as `@type mfa`, a built-in Elixir type, so elixir does not
+# compile. Verifying a code is an action on the code, so fold it into
+# `mfa_code` and switch the separate entity off.
+guide: entity: mfa: active: false
+
+guide: entity: mfa_code: path: "/mfa/codes/verifications": {
+  action: "verification": {}
+  op: create: method: "POST"
+}

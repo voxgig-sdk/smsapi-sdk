@@ -1,0 +1,100 @@
+# Entity: mfa_code
+
+main: kit: entity: mfa_code: {
+
+  alias: field: {}
+
+  fields: {
+    content: {
+      h: "Content"
+      n: "content"
+      r: false
+      sh: "Custom content that must contain placeholder [%code%]"
+      t: "`$STRING`"
+    }
+    fast: {
+      h: "Fast"
+      n: "fast"
+      r: false
+      t: "`$ANY`"
+      union: {
+        branches: 2
+        count: 1
+        depth: 0
+      }
+    }
+    from: {
+      h: "From"
+      n: "from"
+      r: false
+      sh: "Sendername"
+      t: "`$STRING`"
+    }
+    phone_number: {
+      h: "Phone Number"
+      n: "phone_number"
+      r: true
+      t: "`$STRING`"
+    }
+  }
+
+  name: "mfa_code"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /mfa/codes"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/mfa/codes"
+          s: [
+            {
+              lit: "mfa"
+            }
+            {
+              lit: "codes"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+        {
+          co: {
+            id: "POST /mfa/codes/verifications"
+            source: "openapi3"
+            version: 2
+          }
+          m: "POST"
+          o: "/mfa/codes/verifications"
+          q: {
+            "$action": "verification"
+          }
+          s: [
+            {
+              lit: "mfa"
+            }
+            {
+              lit: "codes"
+            }
+            {
+              lit: "verifications"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

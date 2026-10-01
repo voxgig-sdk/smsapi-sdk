@@ -1,0 +1,32 @@
+{
+  "existing": {
+    "contactstrash": {
+      "CONTACTSTRASH00": {
+        "id": "CONTACTSTRASH00"
+      },
+      "CONTACTSTRASH01": {
+        "id": "CONTACTSTRASH01"
+      },
+      "CONTACTSTRASH02": {
+        "id": "CONTACTSTRASH02"
+      }
+    }
+  },
+  "new": {
+    "contactstrash": {
+      "contactstrash_ref01": {}
+    }
+  },
+  "requests": {
+    "DELETE /contacts/trash": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /contacts/trash/restore": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

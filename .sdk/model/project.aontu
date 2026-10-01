@@ -1,0 +1,57 @@
+# Project overlay — YOURS. The scaffold creates this file once and never
+# overwrites it.
+#
+# Most of model/ is toolchain-derived and is deliberately regenerated so that
+# toolchain fixes propagate; this file, the guide, and the target, feature and
+# edition indexes are kept. Put anything here that is a decision about THIS
+# project rather than a fact about the API.
+#
+# Included LAST by sdk.aontu, after target/target-index.aontu, because a key
+# under main.kit.target.<t> can only refine a target that has already been
+# defined. Declared earlier, the model build fails with "Cannot unify value:
+# nil with value: string / key ext value was: nil", which names nothing that
+# would lead you here.
+#
+# The release version each generated manifest declares (package.json,
+# pyproject.toml, the gemspec, the rockspec) and that the port Makefiles tag:
+#
+#   main: kit: target: ts: publish: version: '1.2.3'
+#
+# Per target, because ports publish to different registries on different
+# clocks. Set every target to the same value for a lockstep repo.
+#
+# A published package name that does not follow the derivation:
+#
+#   main: kit: target: ts: publish: registry: package: '@scope/name'
+
+# All 20 bundled features are carried (core23, Richard 2026-10-01). Every
+# feature model is active by default except secrets, whose source is then
+# not emitted while its tests are, so it is switched on here.
+main: kit: feature: secrets: active: true
+
+# README prose lives here, not in config.aontu: create-sdkgen rewrites
+# config.aontu on every re-scaffold, and this overlay is never overwritten.
+
+# README prose (sdkgen ReadmeTop reads these slots). Segment B framing:
+# SMSAPI already ships official SDKs, so this leads with the agent surface.
+main: kit: info: {
+  tagline: `An MCP server and CLI for the SMSAPI REST API, plus clients in 20 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.`
+
+  about_md: `**Unofficial. Not affiliated with SMSAPI.** This is an unofficial SDK for the SMSAPI public API, built by [Voxgig](https://voxgig.com/sdk). It is not affiliated with, endorsed by, or sponsored by SMSAPI or LINK Mobility.
+
+SMSAPI already publishes official client libraries for PHP, C#, Python, JavaScript, Java, Go and Bash, and they remain the place to start for those languages. This repository is about the surface those libraries do not cover: an MCP server, so AI agents such as Claude and Cursor can look up contacts, groups, templates, sender names, callbacks, opt-outs and account data in SMSAPI, and a command-line tool with an interactive REPL. The generated MCP server is read-only, with list and load tools, and the CLI covers list, load and update; sending a message goes through the SDKs.
+
+Because every surface here is generated from SMSAPI's own OpenAPI documents, none of them drift from the API. Hand-written agent integrations usually fall behind on the first release; this one is regenerated instead.
+
+The same generator also emits clients in further languages, included here as a reference.
+
+### Honest state
+
+Generated from SMSAPI's public OpenAPI documents (the Panel and Contacts specifications behind smsapi.com/rest) on 2026-10-01. Not production-tuned. Known rough edge: entity names are derived from the paths, and a few resources come out split in two. Contact groups are Group (load, update) and Contactsgroup (create, list, remove, members, permissions); sender names and SMS templates have the same split, and sending an SMS is the create operation of an entity named Smsdo, after the /sms.do path. Every operation is present; the grouping is not yet tidy. Use it as a starting point or a reference.
+
+When teams want SDKs and agent surfaces like these production-grade, tested and released through a real pipeline, Voxgig does that work as a consulting engagement. Questions: richard@voxgig.com.
+
+If you are from SMSAPI and would like this repository removed, or transferred to your own GitHub organisation, email richard@voxgig.com and it will be done within two business days, no questions asked.`
+
+  docs_url: 'https://www.smsapi.com/docs'
+}

@@ -1,0 +1,47 @@
+# BasicOptOutSettingFlow
+
+main: kit: flow: BasicOptOutSettingFlow:
+{
+  entity: "opt_out_setting",
+  kind: "basic",
+  name: "BasicOptOutSettingFlow",
+  step: [
+    {
+      i: {
+        ref: "opt_out_setting_ref01",
+        srcdatavar: "opt_out_setting_ref01_data",
+        suffix: "_up0",
+        textfield: "brand"
+      }
+
+      o: "update",
+      s: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-opt_out_setting_ref01"
+          }
+        }
+      ]
+    }
+
+    {
+      i: {
+        ref: "opt_out_setting_ref01",
+        srcdatavar: "opt_out_setting_ref01_data",
+        suffix: "_dt0"
+      }
+
+      o: "load",
+      v: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-opt_out_setting_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicOptOutSettingFlow"
+}

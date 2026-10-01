@@ -1,0 +1,22 @@
+# BasicUserRcsSenderCollectionFlow
+
+main: kit: flow: BasicUserRcsSenderCollectionFlow:
+{
+  entity: "user_rcs_sender_collection",
+  kind: "basic",
+  name: "BasicUserRcsSenderCollectionFlow",
+  step: [
+    {
+      o: "list",
+      v: [
+        {
+          apply: "ItemExists",
+          def: {
+            ref: "user_rcs_sender_collection_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicUserRcsSenderCollectionFlow"
+}

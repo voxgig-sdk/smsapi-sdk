@@ -1,0 +1,84 @@
+{
+  "existing": {
+    "short_url": {
+      "SHORT_URL00": {
+        "description": "s64",
+        "expire": "s65",
+        "filename": "s66",
+        "hits": 103,
+        "hits_unique": 104,
+        "id": "SHORT_URL00",
+        "name": "s6a",
+        "short_url": "s6b",
+        "type": "s6c",
+        "url": "s6d"
+      },
+      "SHORT_URL01": {
+        "description": "sc8",
+        "expire": "sc9",
+        "filename": "sca",
+        "hits": 203,
+        "hits_unique": 204,
+        "id": "SHORT_URL01",
+        "name": "sce",
+        "short_url": "scf",
+        "type": "sd0",
+        "url": "sd1"
+      },
+      "SHORT_URL02": {
+        "description": "s12c",
+        "expire": "s12d",
+        "filename": "s12e",
+        "hits": 303,
+        "hits_unique": 304,
+        "id": "SHORT_URL02",
+        "name": "s132",
+        "short_url": "s133",
+        "type": "s134",
+        "url": "s135"
+      }
+    }
+  },
+  "new": {
+    "short_url": {
+      "short_url_ref01": {
+        "description": "s190",
+        "expire": "s191",
+        "filename": "s192",
+        "hits": 403,
+        "hits_unique": 404,
+        "name": "s196",
+        "short_url": "s197",
+        "type": "s198",
+        "url": "s199"
+      }
+    }
+  },
+  "requests": {
+    "POST /short_url/links": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /short_url/links": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "GET /short_url/links/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "DELETE /short_url/links/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /short_url/links/{id}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}

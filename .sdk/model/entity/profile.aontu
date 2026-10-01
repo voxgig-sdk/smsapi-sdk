@@ -1,0 +1,131 @@
+# Entity: profile
+
+main: kit: entity: profile: {
+
+  alias: field: {}
+
+  fields: {
+    email: {
+      h: "Email"
+      n: "email"
+      r: true
+      t: "`$STRING`"
+    }
+    name: {
+      h: "Name"
+      n: "name"
+      r: true
+      t: "`$STRING`"
+    }
+    payment_type: {
+      h: "Payment Type"
+      n: "payment_type"
+      r: true
+      t: "`$STRING`"
+    }
+    phone_number: {
+      h: "Phone Number"
+      n: "phone_number"
+      r: true
+      t: "`$INTEGER`"
+      union: {
+        branches: 2
+        count: 1
+        depth: 0
+      }
+    }
+    points: {
+      fo: "float"
+      h: "Points"
+      n: "points"
+      r: false
+      t: "`$NUMBER`"
+    }
+    user_type: {
+      h: "User Type"
+      n: "user_type"
+      r: true
+      t: "`$STRING`"
+    }
+    username: {
+      h: "Username"
+      n: "username"
+      r: true
+      t: "`$STRING`"
+    }
+  }
+
+  name: "profile"
+  op: {
+    list: {
+      name: "list"
+      points: [
+        {
+          co: {
+            id: "GET /profile/prices"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            query: [
+              {
+                ex: "eco"
+                k: "query"
+                n: "type"
+                or: "type"
+                r: false
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/profile/prices"
+          q: {
+            "$action": "price"
+            exist: [
+              "type"
+            ]
+          }
+          s: [
+            {
+              lit: "profile"
+            }
+            {
+              lit: "prices"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+      ]
+    }
+    load: {
+      name: "load"
+      points: [
+        {
+          co: {
+            id: "GET /profile"
+            source: "openapi3"
+            version: 2
+          }
+          m: "GET"
+          o: "/profile"
+          s: [
+            {
+              lit: "profile"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

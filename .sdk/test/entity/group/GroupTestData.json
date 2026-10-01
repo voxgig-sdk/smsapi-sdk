@@ -1,0 +1,69 @@
+{
+  "existing": {
+    "group": {
+      "GROUP00": {
+        "contact_expire_after": 100,
+        "contacts_count": 101,
+        "created_by": "s66",
+        "date_created": "s67",
+        "date_updated": "s68",
+        "description": "s69",
+        "id": "GROUP00",
+        "idx": "s6b",
+        "name": "s6c",
+        "permissions": []
+      },
+      "GROUP01": {
+        "contact_expire_after": 200,
+        "contacts_count": 201,
+        "created_by": "sca",
+        "date_created": "scb",
+        "date_updated": "scc",
+        "description": "scd",
+        "id": "GROUP01",
+        "idx": "scf",
+        "name": "sd0",
+        "permissions": []
+      },
+      "GROUP02": {
+        "contact_expire_after": 300,
+        "contacts_count": 301,
+        "created_by": "s12e",
+        "date_created": "s12f",
+        "date_updated": "s130",
+        "description": "s131",
+        "id": "GROUP02",
+        "idx": "s133",
+        "name": "s134",
+        "permissions": []
+      }
+    }
+  },
+  "new": {
+    "group": {
+      "group_ref01": {
+        "contact_expire_after": 400,
+        "contacts_count": 401,
+        "created_by": "s192",
+        "date_created": "s193",
+        "date_updated": "s194",
+        "description": "s195",
+        "idx": "s197",
+        "name": "s198",
+        "permissions": []
+      }
+    }
+  },
+  "requests": {
+    "GET /contacts/groups/{groupId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    },
+    "PUT /contacts/groups/{groupId}": {
+      "provenance": "operation-contract",
+      "version": 2,
+      "source": "openapi3"
+    }
+  }
+}
