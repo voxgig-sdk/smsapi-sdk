@@ -1,6 +1,6 @@
 # Smsapi Ruby SDK
 
-An MCP server and CLI for the SMSAPI REST API, plus clients in 20 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.
+An MCP server and CLI for the SMSAPI REST API, plus clients in 13 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.
 
 The Ruby SDK for the Smsapi API — an entity-oriented client using idiomatic Ruby conventions.
 

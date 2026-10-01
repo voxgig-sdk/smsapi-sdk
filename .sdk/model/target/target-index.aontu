@@ -1,7 +1,6 @@
 # SDK Targets.
 
 
-@"./c.aontu"
 @"./clojure.aontu"
 @"./cpp.aontu"
 @"./csharp.aontu"
@@ -10,17 +9,11 @@
 @"./go-cli.aontu"
 @"./go-mcp.aontu"
 @"./java.aontu"
-@"./js.aontu"
 @"./kotlin.aontu"
 @"./lua.aontu"
 @"./ocaml.aontu"
-@"./perl.aontu"
-@"./php.aontu"
 @"./py.aontu"
 @"./py-data.aontu"
 @"./rb.aontu"
-@"./rust.aontu"
-@"./scala.aontu"
 @"./swift.aontu"
-@"./ts.aontu"
 @"./zig.aontu"

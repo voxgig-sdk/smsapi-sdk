@@ -12,11 +12,10 @@ There are companion guides deeper in the tree: one per language
 
 ## Project map
 
-**Targets** (23):
+**Targets** (16):
 
 | Target | Directory | Build guide |
 | --- | --- | --- |
-| `c` | `c/` | [`c/AGENTS.md`](./c/AGENTS.md) |
 | `clojure` | `clojure/` | [`clojure/AGENTS.md`](./clojure/AGENTS.md) |
 | `cpp` | `cpp/` | [`cpp/AGENTS.md`](./cpp/AGENTS.md) |
 | `csharp` | `csharp/` | [`csharp/AGENTS.md`](./csharp/AGENTS.md) |
@@ -25,19 +24,13 @@ There are companion guides deeper in the tree: one per language
 | `go-cli` | `go-cli/` — A CLI surface, not an SDK client library. | [`go-cli/AGENTS.md`](./go-cli/AGENTS.md) |
 | `go-mcp` | `go-mcp/` — An MCP server surface for AI agents, not an SDK client library. | [`go-mcp/AGENTS.md`](./go-mcp/AGENTS.md) |
 | `java` | `java/` | [`java/AGENTS.md`](./java/AGENTS.md) |
-| `js` | `js/` | [`js/AGENTS.md`](./js/AGENTS.md) |
 | `kotlin` | `kotlin/` | [`kotlin/AGENTS.md`](./kotlin/AGENTS.md) |
 | `lua` | `lua/` | [`lua/AGENTS.md`](./lua/AGENTS.md) |
 | `ocaml` | `ocaml/` | [`ocaml/AGENTS.md`](./ocaml/AGENTS.md) |
-| `perl` | `perl/` | [`perl/AGENTS.md`](./perl/AGENTS.md) |
-| `php` | `php/` | [`php/AGENTS.md`](./php/AGENTS.md) |
 | `py` | `py/` | [`py/AGENTS.md`](./py/AGENTS.md) |
 | `py-data` | `py-data/` — A pandas/notebook surface layered on the sibling Python SDK, not an SDK client library. | [`py-data/AGENTS.md`](./py-data/AGENTS.md) |
 | `rb` | `rb/` | [`rb/AGENTS.md`](./rb/AGENTS.md) |
-| `rust` | `rust/` | [`rust/AGENTS.md`](./rust/AGENTS.md) |
-| `scala` | `scala/` | [`scala/AGENTS.md`](./scala/AGENTS.md) |
 | `swift` | `swift/` | [`swift/AGENTS.md`](./swift/AGENTS.md) |
-| `ts` | `ts/` | [`ts/AGENTS.md`](./ts/AGENTS.md) |
 | `zig` | `zig/` | [`zig/AGENTS.md`](./zig/AGENTS.md) |
 
 **Features** (20): `audit`, `cache`, `clienttrack`, `cost`, `debug`, `idempotency`, `log`, `metrics`, `netsim`, `paging`, `proxy`, `ratelimit`, `rbac`, `retry`, `secrets`, `streaming`, `telemetry`, `test`, `timeout`, `validate`.

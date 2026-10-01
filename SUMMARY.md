@@ -6,7 +6,7 @@
 
 This guide introduces the API, the client libraries, and the companion tools in this repository. Start with the API capabilities, choose a client for your application, and use the linked reference when you need exact request and response details.
 
-The selected API surface contains 28 entities and 89 HTTP routes. There are 20 SDK targets and 3 companion tools.
+The selected API surface contains 28 entities and 89 HTTP routes. There are 13 SDK targets and 3 companion tools.
 
 An entity groups related API operations. An operation can have several routes with different inputs or authentication requirements. The SDK exposes the entity and its operations using the conventions of the selected language.
 
@@ -381,25 +381,18 @@ Choose the language already used by your application or service. The clients rep
 
 | Client | Repository directory | Distribution |
 | --- | --- | --- |
-| C | `c/` | Build from source |
 | Clojure | `clojure/` | Build from source |
 | C++ | `cpp/` | Build from source |
 | C# | `csharp/` | Build from source |
 | Elixir | `elixir/` | Build from source |
 | Golang | `go/` | Build from source |
 | Java | `java/` | Build from source |
-| JavaScript | `js/` | Build from source |
 | Kotlin | `kotlin/` | Build from source |
 | Lua | `lua/` | Build from source |
 | OCaml | `ocaml/` | Build from source |
-| Perl | `perl/` | Build from source |
-| PHP | `php/` | Build from source |
 | Python | `py/` | Build from source |
 | Ruby | `rb/` | Build from source |
-| Rust | `rust/` | Build from source |
-| Scala | `scala/` | Build from source |
 | Swift | `swift/` | Build from source |
-| TypeScript | `ts/` | Build from source |
 | Zig | `zig/` | Build from source |
 
 Build-from-source entries are not marked as published in the project model. Follow the build instructions in that target’s README, then consume the resulting package using your language’s local dependency mechanism. Published entries give the installation command recorded for that client.

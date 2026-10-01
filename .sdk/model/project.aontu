@@ -35,7 +35,7 @@ main: kit: feature: secrets: active: true
 # README prose (sdkgen ReadmeTop reads these slots). Segment B framing:
 # SMSAPI already ships official SDKs, so this leads with the agent surface.
 main: kit: info: {
-  tagline: `An MCP server and CLI for the SMSAPI REST API, plus clients in 20 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.`
+  tagline: `An MCP server and CLI for the SMSAPI REST API, plus clients in 13 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.`
 
   about_md: `**Unofficial. Not affiliated with SMSAPI.** This is an unofficial SDK for the SMSAPI public API, built by [Voxgig](https://voxgig.com/sdk). It is not affiliated with, endorsed by, or sponsored by SMSAPI or LINK Mobility.
 
@@ -43,7 +43,7 @@ SMSAPI already publishes official client libraries for PHP, C#, Python, JavaScri
 
 Because every surface here is generated from SMSAPI's own OpenAPI documents, none of them drift from the API. Hand-written agent integrations usually fall behind on the first release; this one is regenerated instead.
 
-The same generator also emits clients in further languages, included here as a reference.
+**Languages included:** Go, Python, Python Data (pandas), Ruby, Lua, C++, C#, Clojure, Elixir, Java, Kotlin, OCaml, Swift and Zig, plus a Go CLI and a Go MCP server. Every one of them passes its generated offline test suite. There is no TypeScript or JavaScript client here; for those, use SMSAPI's official JavaScript library.
 
 ### Honest state
 

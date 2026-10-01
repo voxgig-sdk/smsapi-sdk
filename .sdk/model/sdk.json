@@ -6773,9 +6773,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -6800,9 +6797,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -6810,12 +6804,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -6827,16 +6815,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -6918,9 +6897,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -6945,9 +6921,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -6955,12 +6928,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -6972,16 +6939,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -7063,9 +7021,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -7090,9 +7045,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -7100,12 +7052,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -7117,16 +7063,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -7224,9 +7161,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -7251,9 +7185,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -7261,12 +7192,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -7278,16 +7203,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -7383,9 +7299,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -7410,9 +7323,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -7420,12 +7330,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -7437,16 +7341,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -7535,9 +7430,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -7562,9 +7454,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -7572,12 +7461,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -7589,16 +7472,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -7710,9 +7584,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -7737,9 +7608,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -7747,12 +7615,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -7764,16 +7626,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -7862,9 +7715,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -7889,9 +7739,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -7899,12 +7746,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -7916,16 +7757,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -8017,9 +7849,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -8044,9 +7873,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -8054,12 +7880,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -8071,16 +7891,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -8164,9 +7975,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -8191,9 +7999,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -8201,12 +8006,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -8218,16 +8017,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -8307,9 +8097,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -8334,9 +8121,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -8344,12 +8128,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -8361,16 +8139,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -8450,9 +8219,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -8477,9 +8243,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -8487,12 +8250,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -8504,16 +8261,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -8595,9 +8343,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -8622,9 +8367,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -8632,12 +8374,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -8649,16 +8385,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -8749,9 +8476,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -8776,9 +8500,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -8786,12 +8507,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -8803,16 +8518,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -9781,9 +9487,6 @@
             "authexchange": "exchange"
           },
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -9808,9 +9511,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -9818,12 +9518,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -9835,16 +9529,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -9924,9 +9609,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -9951,9 +9633,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -9961,12 +9640,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -9978,16 +9651,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -10079,9 +9743,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -10106,9 +9767,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -10116,12 +9774,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -10133,16 +9785,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -10228,9 +9871,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -10255,9 +9895,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -10265,12 +9902,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -10282,16 +9913,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -10370,9 +9992,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -10397,9 +10016,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -10407,12 +10023,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -10424,16 +10034,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -10531,9 +10132,6 @@
           "plugin": {},
           "spec": {},
           "target": {
-            "c": {
-              "deps": {}
-            },
             "clojure": {
               "deps": {}
             },
@@ -10558,9 +10156,6 @@
             "java": {
               "deps": {}
             },
-            "js": {
-              "deps": {}
-            },
             "kotlin": {
               "deps": {}
             },
@@ -10568,12 +10163,6 @@
               "deps": {}
             },
             "ocaml": {
-              "deps": {}
-            },
-            "perl": {
-              "deps": {}
-            },
-            "php": {
               "deps": {}
             },
             "py": {
@@ -10585,16 +10174,7 @@
             "rb": {
               "deps": {}
             },
-            "rust": {
-              "deps": {}
-            },
-            "scala": {
-              "deps": {}
-            },
             "swift": {
-              "deps": {}
-            },
-            "ts": {
               "deps": {}
             },
             "zig": {
@@ -12008,7 +11588,7 @@
         }
       },
       "info": {
-        "about_md": "**Unofficial. Not affiliated with SMSAPI.** This is an unofficial SDK for the SMSAPI public API, built by [Voxgig](https://voxgig.com/sdk). It is not affiliated with, endorsed by, or sponsored by SMSAPI or LINK Mobility.\n\nSMSAPI already publishes official client libraries for PHP, C#, Python, JavaScript, Java, Go and Bash, and they remain the place to start for those languages. This repository is about the surface those libraries do not cover: an MCP server, so AI agents such as Claude and Cursor can look up contacts, groups, templates, sender names, callbacks, opt-outs and account data in SMSAPI, and a command-line tool with an interactive REPL. The generated MCP server is read-only, with list and load tools, and the CLI covers list, load and update; sending a message goes through the SDKs.\n\nBecause every surface here is generated from SMSAPI's own OpenAPI documents, none of them drift from the API. Hand-written agent integrations usually fall behind on the first release; this one is regenerated instead.\n\nThe same generator also emits clients in further languages, included here as a reference.\n\n### Honest state\n\nGenerated from SMSAPI's public OpenAPI documents (the Panel and Contacts specifications behind smsapi.com/rest) on 2026-10-01. Not production-tuned. Known rough edge: entity names are derived from the paths, and a few resources come out split in two. Contact groups are Group (load, update) and Contactsgroup (create, list, remove, members, permissions); sender names and SMS templates have the same split, and sending an SMS is the create operation of an entity named Smsdo, after the /sms.do path. Every operation is present; the grouping is not yet tidy. Use it as a starting point or a reference.\n\nWhen teams want SDKs and agent surfaces like these production-grade, tested and released through a real pipeline, Voxgig does that work as a consulting engagement. Questions: richard@voxgig.com.\n\nIf you are from SMSAPI and would like this repository removed, or transferred to your own GitHub organisation, email richard@voxgig.com and it will be done within two business days, no questions asked.",
+        "about_md": "**Unofficial. Not affiliated with SMSAPI.** This is an unofficial SDK for the SMSAPI public API, built by [Voxgig](https://voxgig.com/sdk). It is not affiliated with, endorsed by, or sponsored by SMSAPI or LINK Mobility.\n\nSMSAPI already publishes official client libraries for PHP, C#, Python, JavaScript, Java, Go and Bash, and they remain the place to start for those languages. This repository is about the surface those libraries do not cover: an MCP server, so AI agents such as Claude and Cursor can look up contacts, groups, templates, sender names, callbacks, opt-outs and account data in SMSAPI, and a command-line tool with an interactive REPL. The generated MCP server is read-only, with list and load tools, and the CLI covers list, load and update; sending a message goes through the SDKs.\n\nBecause every surface here is generated from SMSAPI's own OpenAPI documents, none of them drift from the API. Hand-written agent integrations usually fall behind on the first release; this one is regenerated instead.\n\n**Languages included:** Go, Python, Python Data (pandas), Ruby, Lua, C++, C#, Clojure, Elixir, Java, Kotlin, OCaml, Swift and Zig, plus a Go CLI and a Go MCP server. Every one of them passes its generated offline test suite. There is no TypeScript or JavaScript client here; for those, use SMSAPI's official JavaScript library.\n\n### Honest state\n\nGenerated from SMSAPI's public OpenAPI documents (the Panel and Contacts specifications behind smsapi.com/rest) on 2026-10-01. Not production-tuned. Known rough edge: entity names are derived from the paths, and a few resources come out split in two. Contact groups are Group (load, update) and Contactsgroup (create, list, remove, members, permissions); sender names and SMS templates have the same split, and sending an SMS is the create operation of an entity named Smsdo, after the /sms.do path. Every operation is present; the grouping is not yet tidy. Use it as a starting point or a reference.\n\nWhen teams want SDKs and agent surfaces like these production-grade, tested and released through a real pipeline, Voxgig does that work as a consulting engagement. Questions: richard@voxgig.com.\n\nIf you are from SMSAPI and would like this repository removed, or transferred to your own GitHub organisation, email richard@voxgig.com and it will be done within two business days, no questions asked.",
         "description": "[SMSAPI.com main page](https://www.smsapi.com/)\n\n[API documentation](https://www.smsapi.com/docs)\n### URL adresses\nAPI URL adresses:\n* `https://api.smsapi.com/` - for secure SSL connections\n* `https://api2.smsapi.com/` - backup for secure SSL connections\n\n### Authorization\nAuthorization at SMSAPI utilizes OAuth 2 mechanism.\nYou can generate OAuth token in our customer panel [API Tokens](https://ssl.smsapi.com/react/oauth/manage).\nAuthorization header will be necessary in request to our API.\n\n`Authorization: Bearer <token>`\n",
         "docs_url": "https://www.smsapi.com/docs",
         "security": {
@@ -12027,7 +11607,7 @@
           }
         ],
         "summary": "[SMSAPI.com main page](https://www.smsapi.com/)",
-        "tagline": "An MCP server and CLI for the SMSAPI REST API, plus clients in 20 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.",
+        "tagline": "An MCP server and CLI for the SMSAPI REST API, plus clients in 13 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.",
         "title": "SMSAPI REST API",
         "version": "1.0.0",
         "website": "https://smsapi.com"
@@ -12095,76 +11675,6 @@
         "path": ""
       },
       "target": {
-        "c": {
-          "active": true,
-          "author": {
-            "name": "",
-            "url": ""
-          },
-          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
-          "comment": {
-            "line": "//"
-          },
-          "deps": {},
-          "ext": "c",
-          "feature": {
-            "fullset": [
-              "tests/feature_test.c",
-              "tests/sdk_pipeline_test.c"
-            ],
-            "trim": true
-          },
-          "module": {
-            "goversion": "",
-            "name": "smsapi",
-            "package": "",
-            "path": ""
-          },
-          "name": "c",
-          "origname": "",
-          "output": {
-            "adopt": false,
-            "create": true,
-            "path": "",
-            "repo": "",
-            "root": false,
-            "sdkrel": ""
-          },
-          "package": "@voxgig/sdkgen",
-          "provides": {
-            "schema": true,
-            "sekreto": true
-          },
-          "publish": {
-            "registry": {
-              "active": false,
-              "name": "none",
-              "package": "",
-              "state": "pending",
-              "url": "",
-              "vault": {
-                "alias": "none",
-                "env": "NONE",
-                "recipe": ""
-              }
-            },
-            "tag": {
-              "active": true,
-              "prefix": "",
-              "vault": {
-                "alias": "github",
-                "recipe": "github"
-              },
-              "via": "port"
-            },
-            "version": "0.0.1"
-          },
-          "srcfeature": false,
-          "superseded": [
-            "tests/runner.h"
-          ],
-          "title": "C"
-        },
         "clojure": {
           "active": true,
           "author": {
@@ -12730,78 +12240,6 @@
           ],
           "title": "Java"
         },
-        "js": {
-          "active": true,
-          "author": {
-            "name": "",
-            "url": ""
-          },
-          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
-          "comment": {
-            "line": "//"
-          },
-          "deps": {
-            "dotenv": {
-              "active": true,
-              "kind": "dev",
-              "version": "^17.4.2"
-            }
-          },
-          "ext": "js",
-          "feature": {
-            "fullset": [],
-            "trim": true
-          },
-          "module": {
-            "goversion": "",
-            "name": "smsapi",
-            "package": "",
-            "path": ""
-          },
-          "name": "js",
-          "origname": "",
-          "output": {
-            "adopt": false,
-            "create": true,
-            "path": "",
-            "repo": "",
-            "root": false,
-            "sdkrel": ""
-          },
-          "package": "@voxgig/sdkgen",
-          "provides": {
-            "schema": true,
-            "sekreto": true
-          },
-          "publish": {
-            "registry": {
-              "active": false,
-              "name": "npm",
-              "package": "",
-              "state": "pending",
-              "url": "https://registry.npmjs.org",
-              "vault": {
-                "alias": "npm",
-                "env": "",
-                "recipe": "npm"
-              }
-            },
-            "tag": {
-              "active": true,
-              "prefix": "",
-              "vault": {
-                "alias": "github",
-                "recipe": "github"
-              },
-              "via": "port"
-            },
-            "version": "0.0.1"
-          },
-          "superseded": [
-            "test/runner.js"
-          ],
-          "title": "JavaScript"
-        },
         "kotlin": {
           "active": true,
           "author": {
@@ -13010,140 +12448,6 @@
             "test/corpus_runner.ml"
           ],
           "title": "OCaml"
-        },
-        "perl": {
-          "active": true,
-          "author": {
-            "name": "",
-            "url": ""
-          },
-          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
-          "comment": {
-            "line": "#"
-          },
-          "deps": {},
-          "ext": "pl",
-          "feature": {
-            "fullset": [],
-            "trim": true
-          },
-          "module": {
-            "goversion": "",
-            "name": "smsapi",
-            "package": "",
-            "path": ""
-          },
-          "name": "perl",
-          "origname": "",
-          "output": {
-            "adopt": false,
-            "create": true,
-            "path": "",
-            "repo": "",
-            "root": false,
-            "sdkrel": ""
-          },
-          "package": "@voxgig/sdkgen",
-          "provides": {
-            "schema": true,
-            "sekreto": true
-          },
-          "publish": {
-            "registry": {
-              "active": false,
-              "name": "cpan",
-              "package": "",
-              "state": "pending",
-              "url": "https://www.cpan.org",
-              "vault": {
-                "alias": "cpan",
-                "env": "",
-                "recipe": "cpan"
-              }
-            },
-            "tag": {
-              "active": true,
-              "prefix": "",
-              "vault": {
-                "alias": "github",
-                "recipe": "github"
-              },
-              "via": "port"
-            },
-            "version": "0.0.1"
-          },
-          "srcfeature": false,
-          "superseded": [
-            "t/struct_runner.pm"
-          ],
-          "title": "Perl"
-        },
-        "php": {
-          "active": true,
-          "author": {
-            "name": "",
-            "url": ""
-          },
-          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
-          "comment": {
-            "line": "//"
-          },
-          "deps": {},
-          "ext": "php",
-          "feature": {
-            "fullset": [],
-            "trim": true
-          },
-          "module": {
-            "goversion": "",
-            "name": "smsapi",
-            "package": "",
-            "path": ""
-          },
-          "name": "php",
-          "origname": "",
-          "output": {
-            "adopt": false,
-            "create": true,
-            "path": "",
-            "repo": "",
-            "root": false,
-            "sdkrel": ""
-          },
-          "package": "@voxgig/sdkgen",
-          "provides": {
-            "schema": true,
-            "sekreto": true
-          },
-          "publish": {
-            "registry": {
-              "active": false,
-              "name": "packagist",
-              "package": "",
-              "state": "pending",
-              "url": "https://packagist.org",
-              "vault": {
-                "alias": "packagist",
-                "env": "PACKAGIST_API_TOKEN",
-                "recipe": ""
-              }
-            },
-            "tag": {
-              "active": true,
-              "prefix": "",
-              "vault": {
-                "alias": "github",
-                "recipe": "github"
-              },
-              "via": "port"
-            },
-            "version": "0.0.1"
-          },
-          "srcfeature": false,
-          "superseded": [
-            "test/StructRunner.php"
-          ],
-          "title": "PHP"
         },
         "py": {
           "active": true,
@@ -13376,146 +12680,6 @@
           ],
           "title": "Ruby"
         },
-        "rust": {
-          "active": true,
-          "author": {
-            "name": "",
-            "url": ""
-          },
-          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
-          "comment": {
-            "line": "//"
-          },
-          "deps": {
-            "ureq": {
-              "active": true,
-              "kind": "prod",
-              "version": "2"
-            }
-          },
-          "ext": "rs",
-          "feature": {
-            "fullset": [
-              "tests/feature_test.rs"
-            ],
-            "trim": true
-          },
-          "module": {
-            "goversion": "",
-            "name": "smsapi",
-            "package": "",
-            "path": ""
-          },
-          "name": "rust",
-          "origname": "",
-          "output": {
-            "adopt": false,
-            "create": true,
-            "path": "",
-            "repo": "",
-            "root": false,
-            "sdkrel": ""
-          },
-          "package": "@voxgig/sdkgen",
-          "provides": {
-            "schema": true,
-            "sekreto": true
-          },
-          "publish": {
-            "registry": {
-              "active": false,
-              "name": "crates.io",
-              "package": "",
-              "state": "pending",
-              "url": "https://crates.io",
-              "vault": {
-                "alias": "cratesio",
-                "env": "CARGO_REGISTRY_TOKEN",
-                "recipe": ""
-              }
-            },
-            "tag": {
-              "active": true,
-              "prefix": "",
-              "vault": {
-                "alias": "github",
-                "recipe": "github"
-              },
-              "via": "port"
-            },
-            "version": "0.0.1"
-          },
-          "srcfeature": false,
-          "superseded": [
-            "tests/struct_runner/mod.rs"
-          ],
-          "title": "Rust"
-        },
-        "scala": {
-          "active": true,
-          "author": {
-            "name": "",
-            "url": ""
-          },
-          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
-          "comment": {
-            "line": "//"
-          },
-          "deps": {},
-          "ext": "scala",
-          "feature": {
-            "fullset": [],
-            "trim": false
-          },
-          "module": {
-            "goversion": "",
-            "name": "smsapi",
-            "package": "",
-            "path": ""
-          },
-          "name": "scala",
-          "origname": "",
-          "output": {
-            "adopt": false,
-            "create": true,
-            "path": "",
-            "repo": "",
-            "root": false,
-            "sdkrel": ""
-          },
-          "package": "@voxgig/sdkgen",
-          "provides": {
-            "schema": true,
-            "sekreto": true
-          },
-          "publish": {
-            "registry": {
-              "active": false,
-              "name": "maven-central",
-              "package": "",
-              "state": "pending",
-              "url": "https://central.sonatype.com",
-              "vault": {
-                "alias": "central",
-                "env": "",
-                "recipe": "maven"
-              }
-            },
-            "tag": {
-              "active": true,
-              "prefix": "",
-              "vault": {
-                "alias": "github",
-                "recipe": "github"
-              },
-              "via": "port"
-            },
-            "version": "0.0.1"
-          },
-          "srcfeature": false,
-          "superseded": [],
-          "title": "Scala"
-        },
         "swift": {
           "active": true,
           "author": {
@@ -13582,88 +12746,6 @@
           "srcfeature": false,
           "superseded": [],
           "title": "Swift"
-        },
-        "ts": {
-          "active": true,
-          "author": {
-            "name": "",
-            "url": ""
-          },
-          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
-          "comment": {
-            "line": "//"
-          },
-          "deps": {
-            "@types/node": {
-              "active": true,
-              "kind": "dev",
-              "version": "^25.6.0"
-            },
-            "typescript": {
-              "active": true,
-              "kind": "dev",
-              "version": "^5.9.3"
-            }
-          },
-          "ext": "ts",
-          "feature": {
-            "fullset": [],
-            "trim": true
-          },
-          "module": {
-            "goversion": "",
-            "name": "smsapi",
-            "package": "",
-            "path": ""
-          },
-          "name": "ts",
-          "origname": "",
-          "output": {
-            "adopt": false,
-            "create": true,
-            "path": "",
-            "repo": "",
-            "root": false,
-            "sdkrel": ""
-          },
-          "package": "@voxgig/sdkgen",
-          "provides": {
-            "schema": true,
-            "sekreto": true
-          },
-          "publish": {
-            "registry": {
-              "active": false,
-              "name": "npm",
-              "package": "",
-              "state": "pending",
-              "url": "https://registry.npmjs.org",
-              "vault": {
-                "alias": "npm",
-                "env": "",
-                "recipe": "npm"
-              }
-            },
-            "tag": {
-              "active": true,
-              "prefix": "",
-              "vault": {
-                "alias": "github",
-                "recipe": "github"
-              },
-              "via": "port"
-            },
-            "version": "0.0.1"
-          },
-          "superseded": [
-            "test/runner.ts",
-            "test/vendor/omni/compat.ts",
-            "src/feature/secrets/sekreto/Providers.ts",
-            "src/feature/secrets/sekreto/Sigv4.ts",
-            "src/feature/secrets/sekreto/provider/Registry.ts",
-            "src/feature/secrets/sekreto/provider/http.ts"
-          ],
-          "title": "TypeScript"
         },
         "zig": {
           "active": true,

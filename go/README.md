@@ -1,12 +1,12 @@
 # Smsapi Golang SDK
 
-An MCP server and CLI for the SMSAPI REST API, plus clients in 20 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.
+An MCP server and CLI for the SMSAPI REST API, plus clients in 13 languages and a pandas data layer, generated from SMSAPI's public OpenAPI spec so AI agents can reach SMSAPI the way the official SDKs already let developers.
 
 The Golang SDK for the Smsapi API — an entity-oriented client using standard Go conventions. No generics required; data flows as `map[string]any`.
 
 It exposes the API as capitalised, semantic **Entities** — e.g. `client.Available(nil)` — each with the same small set of operations (`List`, `Load`, `Create`, `Update`, `Remove`) instead of raw URL paths and query strings. You call meaning, not endpoints, which keeps the cognitive load low.
 
-> Also generated from this model: `c`, `clojure`, `cpp`, `csharp`, `elixir`, `go-cli`, `go-mcp`, `java`, `js`, `kotlin`, `lua`, `ocaml`, `perl`, `php`, `py`, `py-data`, `rb`, `rust`, `scala`, `swift`, `ts`, `zig` — see
+> Also generated from this model: `clojure`, `cpp`, `csharp`, `elixir`, `go-cli`, `go-mcp`, `java`, `kotlin`, `lua`, `ocaml`, `py`, `py-data`, `rb`, `swift`, `zig` — see
 > the [top-level README](../README.md).
 
 
