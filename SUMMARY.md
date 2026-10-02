@@ -1,6 +1,19 @@
 # SMSAPI REST API
 
-[SMSAPI.com main page](https://www.smsapi.com/) [API documentation](https://www.smsapi.com/docs) ### URL adresses API URL adresses: * `https://api.smsapi.com/` - for secure SSL connections * `https://api2.smsapi.com/` - backup for secure SSL connections ### Authorization Authorization at SMSAPI utilizes OAuth 2 mechanism. You can generate OAuth token in our customer panel [API Tokens](https://ssl.smsapi.com/react/oauth/manage). Authorization header will be necessary in request to our API. `Authorization: Bearer &lt;token&gt;`
+> [SMSAPI.com main page](https://www.smsapi.com/)
+>
+> [API documentation](https://www.smsapi.com/docs)
+> ### URL adresses
+> API URL adresses:
+> * `https://api.smsapi.com/` - for secure SSL connections
+> * `https://api2.smsapi.com/` - backup for secure SSL connections
+>
+> ### Authorization
+> Authorization at SMSAPI utilizes OAuth 2 mechanism.
+> You can generate OAuth token in our customer panel [API Tokens](https://ssl.smsapi.com/react/oauth/manage).
+> Authorization header will be necessary in request to our API.
+>
+> `Authorization: Bearer &lt;token&gt;`
 
 ## Start here
 
@@ -216,10 +229,10 @@ SDK operations: `create`.
 
 Key fields to recognise:
 
-- `allow_duplicates`: When parameter allow_duplicates is set to &quot;1&quot; allows to send message to duplicated numbers in one request (useful that is
-- `check_idx`: When parameter check_idx is set to „1” prevents from sending more than one message with the same idx in last 24h.
+- `allow_duplicates`: When parameter `allow_duplicates` is set to &quot;1&quot; allows to send message to duplicated numbers in one request (useful that is
+- `check_idx`: When parameter `check_idx` is set to „1” prevents from sending more than one message with the same idx in last 24h.
 - `date`: Date in UNIX timestamp (&amp;date=1287734110) or in ISO 8601 (&amp;date=2012-05-10T08:40:27+00:00) when message will be sent (&amp;date=1287734110).
-- `date_validate`: When parameter date_validate is set to &quot;1&quot; checks if date if given in proper format.
+- `date_validate`: When parameter `date_validate` is set to &quot;1&quot; checks if date if given in proper format.
 - `details`: When details parameter is set to &quot;1&quot; more details in response will be displayed (message length and sms count).
 
 ### Smssendername
