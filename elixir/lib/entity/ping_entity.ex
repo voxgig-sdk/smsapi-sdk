@@ -1,12 +1,11 @@
 # Smsapi SDK Ping entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Ping do
   alias Voxgig.Struct, as: S
-  alias Smsapi.Helpers, as: H
   alias Smsapi.{EntityBase, Context, Pipeline}
 
   def new(client, entopts \\ nil) do
@@ -28,9 +27,10 @@ defmodule Smsapi.Entity.Ping do
   
 
   
-  # Returns a list of ping entity maps (Smsapi.Types.ping/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of ping entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.ping/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.ping_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -61,6 +61,8 @@ defmodule Smsapi.Entity.Ping do
   end
 
 
+
+  
 
   
 

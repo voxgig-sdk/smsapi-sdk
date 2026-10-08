@@ -18,7 +18,7 @@ final class TransformRequest {
       ctx.spec.step = "reqform";
     }
 
-    Object reqdata = omit(ctx.reqdata, headerArgNames(ctx));
+    Object reqdata = omit(ctx.reqdata, routedArgNames(ctx));
 
     Map<String, Object> transform =
         Helpers.toMapAny(Struct.getprop(ctx.point, "transform"));
@@ -43,21 +43,34 @@ final class TransformRequest {
     return omit(reqdata, List.of("$action"));
   }
 
-  // A header argument travels as a header, which PrepareHeaders sends, so the
-  // body is built from the request data without it.
-  @SuppressWarnings("unchecked")
-  private static List<String> headerArgNames(Context ctx) {
+  // A header, cookie or query argument travels where PrepareHeaders or
+  // PrepareQuery sends it, so the body is built from the request data without
+  // it, unless the point marks it as a field the body keeps.
+  private static List<String> routedArgNames(Context ctx) {
     List<String> names = new ArrayList<>();
-    Object hl = ctx.point == null ? null : Struct.getpath(ctx.point, List.of("args", "header"));
-    if (hl instanceof List) {
-      for (Object hd : (List<Object>) hl) {
-        Object name = Struct.getprop(hd, "name", null);
-        if (name instanceof String && !((String) name).isEmpty()) {
-          names.add((String) name);
+    for (String kind : List.of("header", "cookie", "query")) {
+      for (Param.CallArg arg : Param.callArgs(ctx, kind)) {
+        if (!fieldArg(ctx, arg.name())) {
+          names.add(arg.name());
         }
       }
     }
     return names;
+  }
+
+  private static boolean fieldArg(Context ctx, String name) {
+    for (String kind : List.of("header", "cookie", "query")) {
+      Object defs = ctx.point == null ? null : Struct.getpath(ctx.point, List.of("args", kind));
+      if (defs instanceof List) {
+        for (Object ad : (List<?>) defs) {
+          if (name.equals(Struct.getprop(ad, "name", null)) &&
+              Boolean.TRUE.equals(Struct.getprop(ad, "field", null))) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   private static Object omit(Object reqdata, List<String> names) {

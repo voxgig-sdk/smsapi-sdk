@@ -42,7 +42,7 @@ const TestClean = cmp(function TestClean(props: any) {
     .filter((e: any) => false !== e.active)
     .forEach((entity: any) => {
       const ops = Object.keys(entity.op || {})
-        .filter((op) => ['list', 'load', 'create', 'update', 'remove'].includes(op))
+        .filter((op) => ['list', 'load', 'create', 'update', 'patch', 'remove'].includes(op))
         .sort((a, b) => (rank[a] ?? 2) - (rank[b] ?? 2))
       for (const op of ops) {
         candidates.push({
@@ -74,14 +74,21 @@ function pointParams(opdef: any): string[] {
 
 function candidate(ProjectName: string, c: Candidate): string {
   const call = 'list' === c.op
-    ? `auto ents = c.${c.accessor}()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;`
-    : `return c.${c.accessor}()->${c.op}(m, ctrl)->data();`
+    ? `auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());`
+    : `Value out = ent->${c.op}(m, ctrl)->data();`
   return `    {"${c.name}", {${c.params.map(cppstr).join(', ')}},
-     [](${ProjectName}SDK& c, const Value& m, const Value& ctrl) -> Value {
-      ${call}
+     [](${ProjectName}SDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.${c.accessor}();
+      try {
+        ${call}
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](${ProjectName}SDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.${c.accessor}()->stream(${cppstr(c.op)}, m, callopts);
@@ -343,9 +350,34 @@ static bool hasFeature(const std::string& name) {
 }
 
 
+// Offline, as every generated suite is: the test OPTION resolves a required
+// server variable to test-<name>, and installs no transport.
+static Value offline(const Value& opts) {
+  Value out = vmap();
+  if (opts.is_map()) {
+    for (const auto& kv : *opts.as_map()) map_put(out, kv.first, kv.second);
+  }
+  map_put(out, "test", vmap({{"active", Value(true)}}));
+  return out;
+}
+
+// A client the sweep cannot build leaves nothing swept: a harness error, not
+// a leak.
+static std::shared_ptr<${ProjectName}SDK> construct(const Value& opts) {
+  const std::string harness = "clean harness: the client could not be constructed, so nothing was swept: ";
+  try {
+    return std::make_shared<${ProjectName}SDK>(offline(opts));
+  } catch (const SdkErrorPtr& e) {
+    throw std::runtime_error(harness + e->msg);
+  } catch (const std::exception& e) {
+    throw std::runtime_error(harness + e.what());
+  }
+}
+
 static std::shared_ptr<${ProjectName}SDK> makeSdk(const Scenario& scenario, std::vector<Sink>* sinks,
                                               const Value& cleanopts,
-                                              FeaturePtr extra = nullptr) {
+                                              FeaturePtr extra = nullptr,
+                                              const Value& auth = Value::undef()) {
   Value feature = vmap();
   if (hasFeature("log")) {
     // The log feature hands [level, record] to its logger.
@@ -387,7 +419,8 @@ static std::shared_ptr<${ProjectName}SDK> makeSdk(const Scenario& scenario, std:
     {"feature", feature},
     {"system", vmap({{"fetch", Value(fetch)}})},
   });
-  auto sdk = std::make_shared<${ProjectName}SDK>(opts);
+  if (auth.is_map()) map_put(opts, "auth", auth);
+  auto sdk = construct(opts);
   sdk->getRootCtx()->utility->featureAdd(sdk->getRootCtx(), std::make_shared<CaptureFeature>(sinks));
   if (extra) sdk->getRootCtx()->utility->featureAdd(sdk->getRootCtx(), extra);
   return sdk;
@@ -397,7 +430,8 @@ static std::shared_ptr<${ProjectName}SDK> makeSdk(const Scenario& scenario, std:
 struct Candidate {
   std::string name;
   std::vector<std::string> params;
-  std::function<Value(${ProjectName}SDK&, const Value&, const Value&)> run;
+  // The operation's data, and the match its entity then holds.
+  std::function<Value(${ProjectName}SDK&, const Value&, const Value&, Value*)> run;
   std::function<std::vector<Value>(${ProjectName}SDK&, const Value&, const Value&)> stream;
 };
 
@@ -427,13 +461,13 @@ static Target usableOp(const std::vector<Candidate>& cands) {
     {"apikey", Value(CANARY_APIKEY)},
     {"system", vmap({{"fetch", Value(fetch)}})},
   });
-  auto plain = std::make_shared<${ProjectName}SDK>(opts);
+  auto plain = construct(opts);
   for (size_t i = 0; i < cands.size(); i++) {
     Value filled = vmap();
     for (const auto& p : cands[i].params) map_put(filled, p, Value("p1"));
     for (const Value& match : {vmap(), filled}) {
       try {
-        cands[i].run(*plain, Struct::clone(match), vmap());
+        cands[i].run(*plain, Struct::clone(match), vmap(), nullptr);
         return {static_cast<int>(i), match};
       } catch (const SdkErrorPtr&) {
         continue;
@@ -456,9 +490,10 @@ static SdkErrorPtr drive(${ProjectName}SDK& sdk, const Candidate& cand, const Ta
   Value held = getp(ctrl, "explain");
   SdkErrorPtr err;
   Value out = Value::undef();
+  Value match = Value::undef();
   bool got = false;
   try {
-    out = cand.run(sdk, Struct::clone(target.match), ctrl);
+    out = cand.run(sdk, Struct::clone(target.match), ctrl, &match);
     got = true;
   } catch (const SdkErrorPtr& e) {
     err = e;
@@ -468,6 +503,8 @@ static SdkErrorPtr drive(${ProjectName}SDK& sdk, const Candidate& cand, const Ta
   }
   if (err) addError(sinks, "error", err);
   if (got) addForms(sinks, "result", out);
+  // Raw, as a caller copying the match into another query reads it.
+  addForms(sinks, "match", match);
   Value explain = getp(ctrl, "explain");
   if (explain.is_map()) addForms(sinks, "explain", explain);
   if (held.is_map() && (!explain.is_map() || held.as_map() != explain.as_map())) {
@@ -518,14 +555,19 @@ static void no_credential_leaves_the_sdk() {
     }
   }
 
+  // A name given at run time replaces the declared one: the match leaves out
+  // whichever name prepareAuth placed.
+  drive(*makeSdk(scenarios()[0], &sinks, Value::undef(), nullptr, vmap({{"name", Value("zzcred")}})),
+        cand, target, vmap(), sinks);
+
   // A credential mistyped as a map is rejected by validation, whose message
   // quotes the value it rejected.
   SdkErrorPtr rejected;
   try {
-    std::make_shared<${ProjectName}SDK>(vmap({
+    std::make_shared<${ProjectName}SDK>(offline(vmap({
       {"apikey", vmap({{"value", Value(CANARY_APIKEY)}})},
       {"clean", vmap({{"values", Value(CANARY_VALUE)}})},
-    }));
+    })));
   } catch (const SdkErrorPtr& e) {
     rejected = e;
   }
@@ -585,7 +627,7 @@ static void no_credential_leaves_the_sdk() {
     Value url = vs::getelem(args, Value(int64_t(0)));
     return notfoundsc.respond(url.is_string() ? url.as_string() : "", vs::getelem(args, Value(int64_t(1))));
   };
-  auto bare = std::make_shared<${ProjectName}SDK>(vmap({
+  auto bare = construct(vmap({
     {"apikey", Value(CANARY_APIKEY)},
     {"secret", Value(CANARY_SECRET)},
     {"headers", vmap({{"X-Custom-Token", Value(CANARY_HEADER)}})},
@@ -694,7 +736,7 @@ static void the_sweep_can_see_a_leak() {
 // A registered value used as a property name is masked; names that mask
 // alike are all kept.
 static void a_registered_value_used_as_a_name_is_masked() {
-  auto sdk = std::make_shared<${ProjectName}SDK>(vmap({
+  auto sdk = construct(vmap({
     {"clean", vmap({{"values", Value("ZZVAL-abc123,ZZVAL-xyz789")}})},
   }));
   Value out = util::clean(sdk->getRootCtx(), vmap({
@@ -709,7 +751,7 @@ static void a_registered_value_used_as_a_name_is_masked() {
 
 // The generated config's own clean block is honoured, and left unchanged.
 static void the_generated_configs_own_clean_block_is_honoured() {
-  auto client = std::make_shared<${ProjectName}SDK>(vmap());
+  auto client = construct(vmap());
   UtilityPtr utility = client->getUtility();
   Value config = vmap({{"options", vmap({{"clean", vmap({
     {"keys", Value("zzsens")}, {"values", Value("CONFIG-SEEDED-1")},
@@ -735,13 +777,17 @@ static void the_generated_configs_own_clean_block_is_honoured() {
 // A feature's name is not a field name: a feature called secrets does not
 // make its settings secret, though a sensitive field inside it still is. An
 // entity block, of per-entity settings or seeded records keyed by entity name
-// and id, is not read at all.
+// and id, is not read at all, and nor are rbac's rules, keyed by entity and
+// operation names.
 static void a_feature_name_is_read_as_a_name() {
-  auto client = std::make_shared<${ProjectName}SDK>(vmap({
+  auto client = construct(vmap({
     {"apikey", Value(CANARY_APIKEY)},
     {"feature", vmap({
       {"secrets", vmap({
         {"active", Value(false)}, {"name", Value("ZZNAME-feat123")}, {"token", Value("ZZTOKEN-feat456")},
+      })},
+      {"rbac", vmap({
+        {"active", Value(false)}, {"rules", vmap({{"zztoken.load", Value("PLAINRULE-k7j5h3g1")}})},
       })},
       {"test", vmap({
         {"active", Value(false)},
@@ -757,6 +803,8 @@ static void a_feature_name_is_read_as_a_name() {
                 Value("record PLAINRECORD-t5r3e1w9"), "a record seeded under an entity block is not registered");
   ASSERT_EQ_VAL(util::clean(ctx, Value("alias PLAINALIAS-m2n4b6v8")),
                 Value("alias PLAINALIAS-m2n4b6v8"), "an entity's own settings are not registered");
+  ASSERT_EQ_VAL(util::clean(ctx, Value("rule PLAINRULE-k7j5h3g1")),
+                Value("rule PLAINRULE-k7j5h3g1"), "an rbac rule keyed by entity and operation is not registered");
 }
 
 

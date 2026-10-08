@@ -1,7 +1,7 @@
 # Smsapi SDK Sendername entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Sendername do
@@ -26,9 +26,10 @@ defmodule Smsapi.Entity.Sendername do
     do: EntityBase.stream(ent, action, args, callopts)
 
   
-  # Returns the sendername entity map (Smsapi.Types.sendername/0) on
-  # success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the sendername entity, whose data_get/1 reads its record
+  # (Smsapi.Types.sendername/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec load(map(), Smsapi.Types.sendername_load_match() | nil, map() | nil) :: term()
   def load(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -63,9 +64,10 @@ defmodule Smsapi.Entity.Sendername do
 
 
   
-  # Returns a list of sendername entity maps (Smsapi.Types.sendername/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of sendername entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.sendername/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.sendername_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -98,9 +100,10 @@ defmodule Smsapi.Entity.Sendername do
 
 
   
-  # Returns the created sendername entity map (Smsapi.Types.sendername/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the created sendername entity, whose data_get/1 reads its record
+  # (Smsapi.Types.sendername/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec create(map(), Smsapi.Types.sendername_create_data() | nil, map() | nil) :: term()
   def create(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -129,6 +132,8 @@ defmodule Smsapi.Entity.Sendername do
   end
 
 
+
+  
 
   
 

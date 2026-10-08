@@ -3,6 +3,7 @@ package voxgig.smsapisdk.sdktest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -16,14 +17,24 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
+import voxgig.smsapisdk.core.Config;
+import voxgig.smsapisdk.core.Context;
 import voxgig.smsapisdk.core.Helpers;
 import voxgig.smsapisdk.core.SdkEntity;
+import voxgig.smsapisdk.core.SdkError;
 import voxgig.smsapisdk.core.SmsapiSDK;
+import voxgig.smsapisdk.feature.BaseFeature;
 import voxgig.smsapisdk.utility.Json;
 import voxgig.smsapisdk.utility.struct.Struct;
 
 @SuppressWarnings({"unchecked", "unused"})
 public class ContactsgroupEntityTest {
+
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  static final boolean LIVE_STRICT = true;
 
   @Test
   public void instance() {
@@ -44,10 +55,13 @@ public class ContactsgroupEntityTest {
           reason == null || "".equals(reason)
               ? "skipped via sdk-test-control.json" : reason);
     }
-    // The basic flow consumes synthetic IDs from the fixture. In live mode
-    // without an *_ENTID env override, those IDs hit the live API and 4xx.
-    Assumptions.assumeFalse(setup.syntheticOnly,
-        "live entity test uses synthetic IDs from fixture — set SMSAPI_TEST_CONTACTSGROUP_ENTID JSON to run live");
+    if (setup.live) {
+      for (String liveKey : new String[] { "group01" }) {
+        if (setup.syntheticOnly || setup.idmap.get(liveKey) == null) {
+          RunnerSupport.liveMiss(LIVE_STRICT, "Live entity test blocked: needs " + liveKey + " via SMSAPI_TEST_CONTACTSGROUP_ENTID");
+        }
+      }
+    }
     SmsapiSDK client = setup.client;
 
     // CREATE
@@ -59,11 +73,9 @@ public class ContactsgroupEntityTest {
     Object contactsgroupRef01DataResult = contactsgroupRef01Ent.create(contactsgroupRef01Data, null);
     contactsgroupRef01Data = Helpers.toMapAny(contactsgroupRef01DataResult instanceof SdkEntity ? ((SdkEntity) contactsgroupRef01DataResult).data() : contactsgroupRef01DataResult);
     assertNotNull(contactsgroupRef01Data, "expected create result to be a map");
-    assertNotNull(contactsgroupRef01Data.get("id"), "expected created entity to have an id");
 
     // LIST
     Map<String, Object> contactsgroupRef01Match = new LinkedHashMap<>();
-    contactsgroupRef01Match.put("group_id", setup.idmap.get("group01"));
 
     Object contactsgroupRef01ListResult = contactsgroupRef01Ent.list(contactsgroupRef01Match, null);
     assertTrue(contactsgroupRef01ListResult instanceof List,
@@ -77,19 +89,10 @@ public class ContactsgroupEntityTest {
 
     // UPDATE
     Map<String, Object> contactsgroupRef01DataUp0Up = new LinkedHashMap<>();
-    contactsgroupRef01DataUp0Up.put("id", contactsgroupRef01Data.get("id"));
-
-    String contactsgroupRef01MarkdefUp0Name = "birthday_date";
-    String contactsgroupRef01MarkdefUp0Value = "Mark01-contactsgroup_ref01_" + setup.now;
-    contactsgroupRef01DataUp0Up.put(contactsgroupRef01MarkdefUp0Name, contactsgroupRef01MarkdefUp0Value);
 
     Object contactsgroupRef01ResdataUp0Result = contactsgroupRef01Ent.update(contactsgroupRef01DataUp0Up, null);
     Map<String, Object> contactsgroupRef01ResdataUp0 = Helpers.toMapAny(contactsgroupRef01ResdataUp0Result instanceof SdkEntity ? ((SdkEntity) contactsgroupRef01ResdataUp0Result).data() : contactsgroupRef01ResdataUp0Result);
     assertNotNull(contactsgroupRef01ResdataUp0, "expected update result to be a map");
-    assertEquals(contactsgroupRef01DataUp0Up.get("id"), contactsgroupRef01ResdataUp0.get("id"),
-        "expected update result id to match");
-    assertEquals(contactsgroupRef01MarkdefUp0Value, contactsgroupRef01ResdataUp0.get(contactsgroupRef01MarkdefUp0Name),
-        "expected " + contactsgroupRef01MarkdefUp0Name + " to be updated");
 
     // REMOVE
     Map<String, Object> contactsgroupRef01MatchRm0 = new LinkedHashMap<>();
@@ -98,7 +101,6 @@ public class ContactsgroupEntityTest {
 
     // LIST
     Map<String, Object> contactsgroupRef01MatchRt0 = new LinkedHashMap<>();
-    contactsgroupRef01MatchRt0.put("group_id", setup.idmap.get("group01"));
 
     Object contactsgroupRef01ListRt0Result = contactsgroupRef01Ent.list(contactsgroupRef01MatchRt0, null);
     assertTrue(contactsgroupRef01ListRt0Result instanceof List,
@@ -150,6 +152,88 @@ public class ContactsgroupEntityTest {
         "expected fallback stream to yield the materialised items");
   }
 
+  static boolean hasFeature(String name) {
+    Map<String, Object> fm = Helpers.toMapAny(Config.makeConfig().get("feature"));
+    return fm != null && fm.get(name) != null;
+  }
+
+  public static final class FailHook extends BaseFeature {
+    int unexpected = 0;
+
+    FailHook() {
+      super("failhook", "0.0.1", true);
+    }
+
+    @Override
+    public void preSpec(Context ctx) {
+      throw new RuntimeException("contactsgroup hook failed");
+    }
+
+    @Override
+    public void preUnexpected(Context ctx) {
+      this.unexpected++;
+    }
+  }
+
+  @Test
+  public void streamError() {
+    Map<String, Object> offline = Struct.jm("net", Struct.jm("offline", true));
+    RuntimeException err = assertThrows(RuntimeException.class, () ->
+        SmsapiSDK.testSDK(offline, null).contactsgroup(null).stream("list", null, null)
+            .collect(Collectors.toList()));
+    assertTrue(err.getMessage().contains("offline"), err.getMessage());
+
+    SmsapiSDK.testSDK(offline, null).contactsgroup(null)
+        .stream("list", null, Struct.jm("ctrl", Struct.jm("throw", false)))
+        .collect(Collectors.toList());
+
+    if (hasFeature("rbac")) {
+      SmsapiSDK denied = SmsapiSDK.testSDK(null,
+          Struct.jm("feature", Struct.jm("rbac", Struct.jm("active", true, "deny", true))));
+      SdkError denyerr = assertThrows(SdkError.class, () ->
+          denied.contactsgroup(null).stream("list", null, null).collect(Collectors.toList()));
+      assertEquals("rbac_denied", denyerr.code);
+    }
+  }
+
+  @Test
+  public void streamCtrl() {
+    Map<String, Object> explain = new LinkedHashMap<>();
+    Map<String, Object> ctrl = new LinkedHashMap<>();
+    ctrl.put("explain", explain);
+    SmsapiSDK.testSDK().contactsgroup(null).stream("list", null, Struct.jm("ctrl", ctrl))
+        .collect(Collectors.toList());
+    assertEquals(List.of("explain"), new ArrayList<>(ctrl.keySet()));
+    assertTrue(explain == ctrl.get("explain") && !explain.isEmpty());
+  }
+
+  @Test
+  public void unexpected() {
+    FailHook hook = new FailHook();
+    SmsapiSDK client = new SmsapiSDK(Struct.jm(
+        "feature", Struct.jm("test", Struct.jm("active", true)),
+        "extend", Struct.jt(hook)));
+
+    RuntimeException err = assertThrows(RuntimeException.class, () ->
+        client.contactsgroup(null).list(null, null));
+    assertTrue(err.getMessage().contains("hook failed"), err.getMessage());
+    assertTrue(0 < hook.unexpected);
+
+    int fired = hook.unexpected;
+    client.contactsgroup(null).list(null, Struct.jm("throw", false));
+    assertTrue(fired < hook.unexpected);
+  }
+
+  @Test
+  public void validate() {
+    Assumptions.assumeTrue(hasFeature("validate"), "feature not present in this SDK: validate");
+    SmsapiSDK client = SmsapiSDK.testSDK(null,
+        Struct.jm("feature", Struct.jm("validate", Struct.jm("active", true))));
+    SdkError err = assertThrows(SdkError.class, () ->
+        client.contactsgroup(null).create(Struct.jm("group_id", 1, "read", true, "send", true, "username", "x", "write", true), null));
+    assertEquals("validate_failed", err.code);
+  }
+
   static RunnerSupport.EntityTestSetup contactsgroupBasicSetup(Map<String, Object> extra) {
     RunnerSupport.loadEnvLocal();
 
@@ -185,10 +269,8 @@ public class ContactsgroupEntityTest {
         + "\"`$VAL`\": [\"`$FORMAT`\", \"upper\", \"`$COPY`\"]"
         + "}]}"));
 
-    // Detect ENTID env override before envOverride consumes it. When live
-    // mode is on without a real override, the basic test runs against
-    // synthetic IDs from the fixture and 4xx's. Surface this so the test
-    // can skip.
+    // Whether *_ENTID supplied the idmap, read before envOverride consumes
+    // it: without it, the ids a live flow binds are the fixture's synthetic ones.
     String entidEnvRaw = RunnerSupport.getenv("SMSAPI_TEST_CONTACTSGROUP_ENTID");
     boolean idmapOverridden = entidEnvRaw != null
         && entidEnvRaw.trim().startsWith("{");

@@ -1,7 +1,7 @@
 # Smsapi SDK Callback entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Callback do
@@ -26,9 +26,10 @@ defmodule Smsapi.Entity.Callback do
     do: EntityBase.stream(ent, action, args, callopts)
 
   
-  # Returns the callback entity map (Smsapi.Types.callback/0) on
-  # success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the callback entity, whose data_get/1 reads its record
+  # (Smsapi.Types.callback/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec load(map(), Smsapi.Types.callback_load_match() | nil, map() | nil) :: term()
   def load(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -63,9 +64,10 @@ defmodule Smsapi.Entity.Callback do
 
 
   
-  # Returns a list of callback entity maps (Smsapi.Types.callback/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of callback entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.callback/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.callback_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -98,9 +100,10 @@ defmodule Smsapi.Entity.Callback do
 
 
   
-  # Returns the created callback entity map (Smsapi.Types.callback/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the created callback entity, whose data_get/1 reads its record
+  # (Smsapi.Types.callback/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec create(map(), Smsapi.Types.callback_create_data() | nil, map() | nil) :: term()
   def create(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -131,9 +134,10 @@ defmodule Smsapi.Entity.Callback do
 
 
   
-  # Returns the updated callback entity map (Smsapi.Types.callback/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the updated callback entity, whose data_get/1 reads its record
+  # (Smsapi.Types.callback/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec update(map(), Smsapi.Types.callback_update_data() | nil, map() | nil) :: term()
   def update(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -166,9 +170,12 @@ defmodule Smsapi.Entity.Callback do
 
 
   
-  # Returns the removed callback entity map (Smsapi.Types.callback/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed callback entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.callback/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.callback_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

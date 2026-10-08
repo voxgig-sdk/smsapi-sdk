@@ -179,7 +179,6 @@ class EntityFrames:
           email (string)
           first_name (string)
           gender (string, required)
-          group_id (string)
           groups (object, required)
           id (string, required)
           idx (string)
@@ -187,10 +186,8 @@ class EntityFrames:
           name (string, required)
           permissions (object)
           phone_number (string)
-          read (boolean)
-          send (boolean)
           size (Int64, required)
-          … and 5 more (see README.md, or df.dtypes)
+          source (string)
 
         Every page is fetched by default. Pass limit= for a slice.
         Keyword arguments not named above are passed to the API as filters.
@@ -219,7 +216,6 @@ class EntityFrames:
                 "email": "string",
                 "first_name": "string",
                 "gender": "string",
-                "group_id": "string",
                 "groups": "object",
                 "id": "string",
                 "idx": "string",
@@ -227,14 +223,8 @@ class EntityFrames:
                 "name": "string",
                 "permissions": "object",
                 "phone_number": "string",
-                "read": "boolean",
-                "send": "boolean",
                 "size": "Int64",
                 "source": "string",
-                "type": "string",
-                "username": "string",
-                "value": "string",
-                "write": "boolean",
             },
             order=[
                 "birthday_date",
@@ -250,7 +240,6 @@ class EntityFrames:
                 "email",
                 "first_name",
                 "gender",
-                "group_id",
                 "groups",
                 "id",
                 "idx",
@@ -258,14 +247,8 @@ class EntityFrames:
                 "name",
                 "permissions",
                 "phone_number",
-                "read",
-                "send",
                 "size",
                 "source",
-                "type",
-                "username",
-                "value",
-                "write",
             ],
             flatten=flatten,
             dtype=dtype,
@@ -286,31 +269,9 @@ class EntityFrames:
         """All contacts_field records as a DataFrame.
 
         Columns:
-          birthday_date (string)
-          city (string)
-          contact_expire_after (Int64, required)
-          contacts_count (Int64)
-          country (string)
-          created_by (string, required)
-          date_created (string, required)
-          date_updated (string, required)
-          description (string)
-          email (string)
-          first_name (string)
-          gender (string, required)
-          group_id (string)
-          groups (object, required)
           id (string)
-          idx (string)
-          last_name (string)
           name (string)
-          permissions (object)
-          phone_number (string)
-          read (boolean)
-          send (boolean)
-          source (string)
           type (string)
-          … and 3 more (see README.md, or df.dtypes)
 
         Every page is fetched by default. Pass limit= for a slice.
         Keyword arguments not named above are passed to the API as filters.
@@ -326,62 +287,14 @@ class EntityFrames:
         return build_frame(
             rows,
             dtypes={
-                "birthday_date": "string",
-                "city": "string",
-                "contact_expire_after": "Int64",
-                "contacts_count": "Int64",
-                "country": "string",
-                "created_by": "string",
-                "date_created": "string",
-                "date_updated": "string",
-                "description": "string",
-                "email": "string",
-                "first_name": "string",
-                "gender": "string",
-                "group_id": "string",
-                "groups": "object",
                 "id": "string",
-                "idx": "string",
-                "last_name": "string",
                 "name": "string",
-                "permissions": "object",
-                "phone_number": "string",
-                "read": "boolean",
-                "send": "boolean",
-                "source": "string",
                 "type": "string",
-                "username": "string",
-                "value": "string",
-                "write": "boolean",
             },
             order=[
-                "birthday_date",
-                "city",
-                "contact_expire_after",
-                "contacts_count",
-                "country",
-                "created_by",
-                "date_created",
-                "date_updated",
-                "description",
-                "email",
-                "first_name",
-                "gender",
-                "group_id",
-                "groups",
                 "id",
-                "idx",
-                "last_name",
                 "name",
-                "permissions",
-                "phone_number",
-                "read",
-                "send",
-                "source",
                 "type",
-                "username",
-                "value",
-                "write",
             ],
             flatten=flatten,
             dtype=dtype,
@@ -401,32 +314,8 @@ class EntityFrames:
     ) -> pd.DataFrame:
         """All contacts_field_option records as a DataFrame.
 
-        Columns:
-          birthday_date (string)
-          city (string)
-          contact_expire_after (Int64, required)
-          contacts_count (Int64)
-          country (string)
-          created_by (string, required)
-          date_created (string, required)
-          date_updated (string, required)
-          description (string)
-          email (string)
-          first_name (string)
-          gender (string, required)
-          group_id (string)
-          groups (object, required)
-          id (string, required)
-          idx (string)
-          last_name (string)
-          name (string)
-          permissions (object)
-          phone_number (string)
-          read (boolean)
-          send (boolean)
-          source (string)
-          type (string)
-          … and 3 more (see README.md, or df.dtypes)
+        No fields are declared for this entity in the API model;
+        the frame's columns come from whatever the API returns.
 
         Every page is fetched by default. Pass limit= for a slice.
         Keyword arguments not named above are passed to the API as filters.
@@ -441,64 +330,8 @@ class EntityFrames:
         )
         return build_frame(
             rows,
-            dtypes={
-                "birthday_date": "string",
-                "city": "string",
-                "contact_expire_after": "Int64",
-                "contacts_count": "Int64",
-                "country": "string",
-                "created_by": "string",
-                "date_created": "string",
-                "date_updated": "string",
-                "description": "string",
-                "email": "string",
-                "first_name": "string",
-                "gender": "string",
-                "group_id": "string",
-                "groups": "object",
-                "id": "string",
-                "idx": "string",
-                "last_name": "string",
-                "name": "string",
-                "permissions": "object",
-                "phone_number": "string",
-                "read": "boolean",
-                "send": "boolean",
-                "source": "string",
-                "type": "string",
-                "username": "string",
-                "value": "string",
-                "write": "boolean",
-            },
-            order=[
-                "birthday_date",
-                "city",
-                "contact_expire_after",
-                "contacts_count",
-                "country",
-                "created_by",
-                "date_created",
-                "date_updated",
-                "description",
-                "email",
-                "first_name",
-                "gender",
-                "group_id",
-                "groups",
-                "id",
-                "idx",
-                "last_name",
-                "name",
-                "permissions",
-                "phone_number",
-                "read",
-                "send",
-                "source",
-                "type",
-                "username",
-                "value",
-                "write",
-            ],
+            dtypes={},
+            order=[],
             flatten=flatten,
             dtype=dtype,
             parse_dates=parse_dates,
@@ -518,31 +351,11 @@ class EntityFrames:
         """All contactsgroup records as a DataFrame.
 
         Columns:
-          birthday_date (string)
-          city (string)
-          contact_expire_after (Int64, required)
-          contacts_count (Int64)
-          country (string)
-          created_by (string, required)
-          date_created (string, required)
-          date_updated (string, required)
-          description (string)
-          email (string)
-          first_name (string)
-          gender (string, required)
           group_id (string, required)
-          groups (object, required)
-          id (string, required)
-          idx (string)
-          last_name (string)
-          name (string)
-          permissions (object)
-          phone_number (string)
           read (boolean, required)
           send (boolean, required)
-          source (string)
-          type (string)
-          … and 3 more (see README.md, or df.dtypes)
+          username (string, required)
+          write (boolean, required)
 
         Every page is fetched by default. Pass limit= for a slice.
         Keyword arguments not named above are passed to the API as filters.
@@ -558,61 +371,17 @@ class EntityFrames:
         return build_frame(
             rows,
             dtypes={
-                "birthday_date": "string",
-                "city": "string",
-                "contact_expire_after": "Int64",
-                "contacts_count": "Int64",
-                "country": "string",
-                "created_by": "string",
-                "date_created": "string",
-                "date_updated": "string",
-                "description": "string",
-                "email": "string",
-                "first_name": "string",
-                "gender": "string",
                 "group_id": "string",
-                "groups": "object",
-                "id": "string",
-                "idx": "string",
-                "last_name": "string",
-                "name": "string",
-                "permissions": "object",
-                "phone_number": "string",
                 "read": "boolean",
                 "send": "boolean",
-                "source": "string",
-                "type": "string",
                 "username": "string",
-                "value": "string",
                 "write": "boolean",
             },
             order=[
-                "birthday_date",
-                "city",
-                "contact_expire_after",
-                "contacts_count",
-                "country",
-                "created_by",
-                "date_created",
-                "date_updated",
-                "description",
-                "email",
-                "first_name",
-                "gender",
                 "group_id",
-                "groups",
-                "id",
-                "idx",
-                "last_name",
-                "name",
-                "permissions",
-                "phone_number",
                 "read",
                 "send",
-                "source",
-                "type",
                 "username",
-                "value",
                 "write",
             ],
             flatten=flatten,
@@ -1189,17 +958,8 @@ class EntityFrames:
     ) -> pd.DataFrame:
         """All user_rcs_sender_collection records as a DataFrame.
 
-        Columns:
-          deliveredAt (string)
-          expiredAt (string)
-          id (string)
-          interface (string)
-          messageType (string)
-          readAt (string)
-          recipient (string)
-          sender (string)
-          senderId (string)
-          sentAt (string)
+        No fields are declared for this entity in the API model;
+        the frame's columns come from whatever the API returns.
 
         Every page is fetched by default. Pass limit= for a slice.
         Keyword arguments not named above are passed to the API as filters.
@@ -1214,30 +974,8 @@ class EntityFrames:
         )
         return build_frame(
             rows,
-            dtypes={
-                "deliveredAt": "string",
-                "expiredAt": "string",
-                "id": "string",
-                "interface": "string",
-                "messageType": "string",
-                "readAt": "string",
-                "recipient": "string",
-                "sender": "string",
-                "senderId": "string",
-                "sentAt": "string",
-            },
-            order=[
-                "deliveredAt",
-                "expiredAt",
-                "id",
-                "interface",
-                "messageType",
-                "readAt",
-                "recipient",
-                "sender",
-                "senderId",
-                "sentAt",
-            ],
+            dtypes={},
+            order=[],
             flatten=flatten,
             dtype=dtype,
             parse_dates=parse_dates,
@@ -1305,7 +1043,6 @@ class EntityFrames:
           email (string)
           first_name (string)
           gender (string, required)
-          group_id (string)
           groups (object, required)
           id (string, required)
           idx (string)
@@ -1313,10 +1050,8 @@ class EntityFrames:
           name (string, required)
           permissions (object)
           phone_number (string)
-          read (boolean)
-          send (boolean)
           size (Int64, required)
-          … and 5 more (see README.md, or df.dtypes)
+          source (string)
         """
         rec = self.sdk.Contact().load({"id": id})
         return to_series(
@@ -1335,7 +1070,6 @@ class EntityFrames:
                 "email": "string",
                 "first_name": "string",
                 "gender": "string",
-                "group_id": "string",
                 "groups": "object",
                 "id": "string",
                 "idx": "string",
@@ -1343,14 +1077,8 @@ class EntityFrames:
                 "name": "string",
                 "permissions": "object",
                 "phone_number": "string",
-                "read": "boolean",
-                "send": "boolean",
                 "size": "Int64",
                 "source": "string",
-                "type": "string",
-                "username": "string",
-                "value": "string",
-                "write": "boolean",
             },
             flatten=flatten,
             dtype=dtype,

@@ -49,4 +49,17 @@ defmodule Smsapi.BlacklistEntityTest do
     assert S.ismap(made)
     assert S.getprop(made, "id") != nil
   end
+
+  test "should refuse an invalid request" do
+    if Smsapi.FeatureHarness.has_feature("validate") do
+      client = Smsapi.test(nil, S.jm(["feature", S.jm(["validate", S.jm(["active", true])])]))
+
+      err =
+        assert_raise Smsapi.Error, fn ->
+          Smsapi.Entity.Blacklist.load(Smsapi.blacklist(client), S.jm(["limit", "x"]))
+        end
+
+      assert err.code == "validate_failed"
+    end
+  end
 end

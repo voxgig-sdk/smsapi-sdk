@@ -9,6 +9,12 @@ namespace SmsapiSdk.Test;
 
 public class ContactsFieldOptionDirectTest
 {
+    // main.kit.test.live.strict is true (the default is true): a live
+    // request that fails, or a live test missing an input it needs,
+    // fails the test.
+    // An account with no record for a test to read skips it either way.
+    private const bool LIVE_STRICT = true;
+
     [Fact]
     public void DirectList()
     {
@@ -30,7 +36,8 @@ public class ContactsFieldOptionDirectTest
             {
                 if (StructUtils.GetProp(setup.Idmap, _liveKey) == null)
                 {
-                    return; // live test needs *_ENTID env var (synthetic IDs only)
+                    TestRunner.LiveMiss(LIVE_STRICT, "Live test blocked: needs " + _liveKey + " via SMSAPI_TEST_CONTACTS_FIELD_OPTION_ENTID");
+                    return;
                 }
             }
         }
@@ -54,16 +61,14 @@ public class ContactsFieldOptionDirectTest
         });
         if (setup.Live)
         {
-            // Live mode is lenient: synthetic IDs frequently 4xx and the
-            // list-response shape varies wildly across public APIs. Bail
-            // rather than fail when the call doesn't return a usable list.
-            if (!Equals(result["ok"], true))
+            if (!TestRunner.LiveOk(result))
             {
+                TestRunner.LiveMiss(LIVE_STRICT, "Live list failed: " + TestRunner.LiveDescribe(result));
                 return;
             }
-            var status = Helpers.ToInt(result["status"]);
-            if (status < 200 || status >= 300)
+            if (TestRunner.LiveList(result["data"]) == null)
             {
+                TestRunner.LiveMiss(LIVE_STRICT, "Live list returned no list: " + TestRunner.LiveDescribe(result));
                 return;
             }
         }

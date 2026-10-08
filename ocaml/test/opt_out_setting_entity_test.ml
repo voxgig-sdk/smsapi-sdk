@@ -23,3 +23,14 @@ let () =
       let loaded_data = loaded.e_data_get () in
       check "load data is a map" (ismap loaded_data);
       ())
+
+let () =
+  test "opt_out_setting.validate" (fun () ->
+      if Harness.has_feature "validate" then begin
+        let client = Sdk_client.test_with Noval
+            (jo [("feature", jo [("validate", jo [("active", Bool true)])])]) in
+        let ent = Sdk_client.opt_out_setting client Noval in
+        let err = (try ignore (ent.e_load (jo [("brand", Num 1.)]) Noval); None with e -> Some e) in
+        check_str "validate refuses an invalid request"
+          (match err with Some (Sdk_error_exc er) -> er.err_code | _ -> "<no SDK error>") "validate_failed"
+      end)

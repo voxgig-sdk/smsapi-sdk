@@ -122,18 +122,11 @@ class Contact(ContactRequired, total=False):
     description: str
     email: str
     first_name: str
-    group_id: str
     idx: str
     last_name: str
     permissions: list
     phone_number: str
-    read: bool
-    send: bool
     source: str
-    type: str
-    username: str
-    value: str
-    write: bool
 
 
 class ContactLoadMatch(TypedDict):
@@ -175,18 +168,11 @@ class ContactCreateData(ContactCreateDataRequired, total=False):
     description: str
     email: str
     first_name: str
-    group_id: str
     idx: str
     last_name: str
     permissions: list
     phone_number: str
-    read: bool
-    send: bool
     source: str
-    type: str
-    username: str
-    value: str
-    write: bool
 
 
 class ContactUpdateDataRequired(TypedDict):
@@ -207,121 +193,36 @@ class ContactUpdateData(ContactUpdateDataRequired, total=False):
     email: str
     first_name: str
     gender: str
-    group_id: str
     groups: list
     idx: str
     last_name: str
     name: str
     permissions: list
     phone_number: str
-    read: bool
-    send: bool
     size: int
     source: str
-    type: str
-    username: str
-    value: str
-    write: bool
 
 
 class ContactRemoveMatch(TypedDict):
     id: str
 
 
-class ContactsFieldRequired(TypedDict):
-    contact_expire_after: int
-    created_by: str
-    date_created: str
-    date_updated: str
-    gender: str
-    groups: list
-
-
-class ContactsField(ContactsFieldRequired, total=False):
-    birthday_date: str
-    city: str
-    contacts_count: int
-    country: str
-    description: str
-    email: str
-    first_name: str
-    group_id: str
+class ContactsField(TypedDict, total=False):
     id: str
-    idx: str
-    last_name: str
     name: str
-    permissions: list
-    phone_number: str
-    read: bool
-    send: bool
-    source: str
     type: str
-    username: str
-    value: str
-    write: bool
 
 
 class ContactsFieldListMatch(TypedDict, total=False):
-    birthday_date: str
-    city: str
-    contact_expire_after: int
-    contacts_count: int
-    country: str
-    created_by: str
-    date_created: str
-    date_updated: str
-    description: str
-    email: str
-    first_name: str
-    gender: str
-    group_id: str
-    groups: list
     id: str
-    idx: str
-    last_name: str
     name: str
-    permissions: list
-    phone_number: str
-    read: bool
-    send: bool
-    source: str
     type: str
-    username: str
-    value: str
-    write: bool
 
 
-class ContactsFieldCreateDataRequired(TypedDict):
-    contact_expire_after: int
-    created_by: str
-    date_created: str
-    date_updated: str
-    gender: str
-    groups: list
-
-
-class ContactsFieldCreateData(ContactsFieldCreateDataRequired, total=False):
-    birthday_date: str
-    city: str
-    contacts_count: int
-    country: str
-    description: str
-    email: str
-    first_name: str
-    group_id: str
+class ContactsFieldCreateData(TypedDict, total=False):
     id: str
-    idx: str
-    last_name: str
     name: str
-    permissions: list
-    phone_number: str
-    read: bool
-    send: bool
-    source: str
     type: str
-    username: str
-    value: str
-    write: bool
 
 
 class ContactsFieldUpdateDataRequired(TypedDict):
@@ -329,143 +230,40 @@ class ContactsFieldUpdateDataRequired(TypedDict):
 
 
 class ContactsFieldUpdateData(ContactsFieldUpdateDataRequired, total=False):
-    birthday_date: str
-    city: str
-    contact_expire_after: int
-    contacts_count: int
-    country: str
-    created_by: str
-    date_created: str
-    date_updated: str
-    description: str
-    email: str
-    first_name: str
-    gender: str
-    group_id: str
-    groups: list
-    idx: str
-    last_name: str
     name: str
-    permissions: list
-    phone_number: str
-    read: bool
-    send: bool
-    source: str
     type: str
-    username: str
-    value: str
-    write: bool
 
 
 class ContactsFieldRemoveMatch(TypedDict):
     id: str
 
 
-class ContactsFieldOptionRequired(TypedDict):
-    contact_expire_after: int
-    created_by: str
-    date_created: str
-    date_updated: str
-    gender: str
-    groups: list
-    id: str
-
-
-class ContactsFieldOption(ContactsFieldOptionRequired, total=False):
-    birthday_date: str
-    city: str
-    contacts_count: int
-    country: str
-    description: str
-    email: str
-    first_name: str
-    group_id: str
-    idx: str
-    last_name: str
-    name: str
-    permissions: list
-    phone_number: str
-    read: bool
-    send: bool
-    source: str
-    type: str
-    username: str
-    value: str
-    write: bool
+class ContactsFieldOption(TypedDict):
+    pass
 
 
 class ContactsFieldOptionListMatch(TypedDict):
     field_id: str
 
 
-class ContactsgroupRequired(TypedDict):
-    contact_expire_after: int
-    created_by: str
-    date_created: str
-    date_updated: str
-    gender: str
+class Contactsgroup(TypedDict):
     group_id: str
-    groups: list
-    id: str
     read: bool
     send: bool
     username: str
     write: bool
-
-
-class Contactsgroup(ContactsgroupRequired, total=False):
-    birthday_date: str
-    city: str
-    contacts_count: int
-    country: str
-    description: str
-    email: str
-    first_name: str
-    idx: str
-    last_name: str
-    name: str
-    permissions: list
-    phone_number: str
-    source: str
-    type: str
-    value: str
 
 
 class ContactsgroupListMatch(TypedDict, total=False):
     name: dict
 
 
-class ContactsgroupCreateDataRequired(TypedDict):
-    contact_expire_after: int
-    created_by: str
-    date_created: str
-    date_updated: str
-    gender: str
+class ContactsgroupCreateData(TypedDict):
     group_id: str
-    groups: list
-    id: str
     read: bool
     send: bool
     username: str
     write: bool
-
-
-class ContactsgroupCreateData(ContactsgroupCreateDataRequired, total=False):
-    birthday_date: str
-    city: str
-    contacts_count: int
-    country: str
-    description: str
-    email: str
-    first_name: str
-    idx: str
-    last_name: str
-    name: str
-    permissions: list
-    phone_number: str
-    source: str
-    type: str
-    value: str
 
 
 class ContactsgroupUpdateDataRequired(TypedDict):
@@ -474,30 +272,8 @@ class ContactsgroupUpdateDataRequired(TypedDict):
 
 class ContactsgroupUpdateData(ContactsgroupUpdateDataRequired, total=False):
     username: str
-    birthday_date: str
-    city: str
-    contact_expire_after: int
-    contacts_count: int
-    country: str
-    created_by: str
-    date_created: str
-    date_updated: str
-    description: str
-    email: str
-    first_name: str
-    gender: str
-    groups: list
-    id: str
-    idx: str
-    last_name: str
-    name: str
-    permissions: list
-    phone_number: str
     read: bool
     send: bool
-    source: str
-    type: str
-    value: str
     write: bool
 
 
@@ -631,7 +407,6 @@ class Permission(PermissionRequired, total=False):
 class PermissionLoadMatch(TypedDict):
     group_id: str
     id: str
-    username: str
 
 
 class PermissionCreateDataRequired(TypedDict):
@@ -733,7 +508,7 @@ class SendernameStatementListMatch(TypedDict, total=False):
 
 class SentRcsMessageRequired(TypedDict):
     phone_number: str
-    sender: Any
+    sender: str
 
 
 class SentRcsMessage(SentRcsMessageRequired, total=False):
@@ -743,7 +518,7 @@ class SentRcsMessage(SentRcsMessageRequired, total=False):
 
 class SentRcsMessageCreateDataRequired(TypedDict):
     phone_number: str
-    sender: Any
+    sender: str
 
 
 class SentRcsMessageCreateData(SentRcsMessageCreateDataRequired, total=False):
@@ -877,7 +652,7 @@ class Smssendername(TypedDict):
 
 
 class SmssendernameCreateData(TypedDict):
-    sendername_id: str
+    sender: str
 
 
 class SmssendernameRemoveMatch(TypedDict):
@@ -975,27 +750,9 @@ class TemplateUpdateData(TemplateUpdateDataRequired, total=False):
     template: str
 
 
-class UserRcsSenderCollection(TypedDict, total=False):
-    deliveredAt: str
-    expiredAt: str
-    id: str
-    interface: str
-    messageType: str
-    readAt: str
-    recipient: str
-    sender: str
-    senderId: str
-    sentAt: str
+class UserRcsSenderCollection(TypedDict):
+    pass
 
 
-class UserRcsSenderCollectionListMatch(TypedDict, total=False):
-    deliveredAt: str
-    expiredAt: str
-    id: str
-    interface: str
-    messageType: str
-    readAt: str
-    recipient: str
-    sender: str
-    senderId: str
-    sentAt: str
+class UserRcsSenderCollectionListMatch(TypedDict):
+    pass

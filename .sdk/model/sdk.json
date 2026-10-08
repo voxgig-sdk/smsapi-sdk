@@ -170,6 +170,10 @@
                   "o": "/sms/templates/available",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -219,6 +223,10 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "expire_at",
+                    "phone_number"
+                  ],
                   "co": {
                     "id": "POST /blacklist/phone_numbers",
                     "source": "openapi3",
@@ -232,6 +240,28 @@
                     "$action": "phone_number"
                   },
                   "r": {},
+                  "rb": {
+                    "alternatives": [
+                      {
+                        "fields": [
+                          {
+                            "name": "expire_at"
+                          },
+                          {
+                            "name": "phone_number"
+                          }
+                        ],
+                        "kind": "form",
+                        "media": "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "blacklist"
@@ -258,6 +288,21 @@
                   "o": "/blacklist/phone_numbers/imports",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "alternatives": [
+                      {
+                        "kind": "raw",
+                        "media": "text/csv"
+                      }
+                    ],
+                    "fields": [
+                      {
+                        "name": "import"
+                      }
+                    ],
+                    "kind": "multipart",
+                    "media": "multipart/form-data"
+                  },
                   "s": [
                     {
                       "lit": "blacklist"
@@ -342,16 +387,19 @@
                   "m": "GET",
                   "o": "/blacklist/phone_numbers",
                   "q": {
-                    "$action": "phone_number",
-                    "exist": [
-                      "accept",
-                      "limit",
-                      "offset",
-                      "q",
-                      "x_async"
-                    ]
+                    "$action": "phone_number"
                   },
                   "r": {},
+                  "rs": {
+                    "alternatives": [
+                      {
+                        "kind": "raw",
+                        "media": "text/csv"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "blacklist"
@@ -439,10 +487,7 @@
                   "m": "DELETE",
                   "o": "/blacklist/phone_numbers",
                   "q": {
-                    "$action": "phone_number",
-                    "exist": [
-                      "phone_number"
-                    ]
+                    "$action": "phone_number"
                   },
                   "r": {},
                   "s": [
@@ -551,6 +596,13 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "api_version",
+                    "receiver_number",
+                    "receiver_type",
+                    "type",
+                    "url"
+                  ],
                   "co": {
                     "id": "POST /callbacks",
                     "source": "openapi3",
@@ -562,6 +614,10 @@
                   "o": "/callbacks",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "callbacks"
@@ -591,6 +647,10 @@
                   "o": "/callbacks",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "callbacks"
@@ -636,6 +696,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "callbacks"
@@ -679,6 +743,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "callbacks"
@@ -754,6 +822,10 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "api_version",
+                    "url"
+                  ],
                   "co": {
                     "id": "PUT /callbacks/{id}",
                     "source": "openapi3",
@@ -781,6 +853,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "callbacks"
@@ -924,12 +1000,6 @@
               "a": true,
               "h": "Collection",
               "n": "collection",
-              "op": {
-                "update": {
-                  "req": false,
-                  "type": "`$ARRAY`"
-                }
-              },
               "r": true,
               "t": "`$ARRAY`"
             },
@@ -945,12 +1015,6 @@
               "a": true,
               "h": "Contacts Count",
               "n": "contacts_count",
-              "op": {
-                "list": {
-                  "req": false,
-                  "type": "`$INTEGER`"
-                }
-              },
               "r": true,
               "t": "`$INTEGER`"
             },
@@ -1019,15 +1083,6 @@
               "r": true,
               "t": "`$STRING`"
             },
-            "group_id": {
-              "a": true,
-              "fo": "oid",
-              "h": "Group Id",
-              "n": "group_id",
-              "r": false,
-              "sh": "Object ID",
-              "t": "`$STRING`"
-            },
             "groups": {
               "a": true,
               "h": "Groups",
@@ -1063,12 +1118,6 @@
               "a": true,
               "h": "Name",
               "n": "name",
-              "op": {
-                "list": {
-                  "req": false,
-                  "type": "`$STRING`"
-                }
-              },
               "r": true,
               "sh": "Group name",
               "t": "`$STRING`"
@@ -1087,22 +1136,6 @@
               "r": false,
               "t": "`$STRING`"
             },
-            "read": {
-              "a": true,
-              "h": "Read",
-              "n": "read",
-              "r": false,
-              "sh": "Has read permission",
-              "t": "`$BOOLEAN`"
-            },
-            "send": {
-              "a": true,
-              "h": "Send",
-              "n": "send",
-              "r": false,
-              "sh": "Has send permission",
-              "t": "`$BOOLEAN`"
-            },
             "size": {
               "a": true,
               "h": "Size",
@@ -1116,35 +1149,6 @@
               "n": "source",
               "r": false,
               "t": "`$STRING`"
-            },
-            "type": {
-              "a": true,
-              "h": "Type",
-              "n": "type",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "username": {
-              "a": true,
-              "h": "Username",
-              "n": "username",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "value": {
-              "a": true,
-              "h": "Value",
-              "n": "value",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "write": {
-              "a": true,
-              "h": "Write",
-              "n": "write",
-              "r": false,
-              "sh": "Has write permission",
-              "t": "`$BOOLEAN`"
             }
           },
           "id": {
@@ -1191,6 +1195,14 @@
                       "contactId": "id"
                     }
                   },
+                  "rb": {
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -1220,6 +1232,61 @@
                   "o": "/contacts",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "birthday_date"
+                      },
+                      {
+                        "name": "browser"
+                      },
+                      {
+                        "name": "city"
+                      },
+                      {
+                        "name": "country"
+                      },
+                      {
+                        "name": "description"
+                      },
+                      {
+                        "name": "device"
+                      },
+                      {
+                        "name": "email"
+                      },
+                      {
+                        "name": "first_name"
+                      },
+                      {
+                        "name": "gender"
+                      },
+                      {
+                        "name": "idx"
+                      },
+                      {
+                        "name": "last_name"
+                      },
+                      {
+                        "name": "operating_system"
+                      },
+                      {
+                        "name": "phone_number"
+                      },
+                      {
+                        "name": "source"
+                      },
+                      {
+                        "name": "undelivered_messages"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -1236,6 +1303,60 @@
               "input": "data",
               "name": "list",
               "points": [
+                {
+                  "a": true,
+                  "co": {
+                    "id": "GET /contacts/{contactId}/groups",
+                    "source": "openapi3",
+                    "version": 2
+                  },
+                  "g": {
+                    "params": [
+                      {
+                        "a": true,
+                        "ex": "0f0f0f0f0f0f0f0f0f0f0f0f",
+                        "k": "param",
+                        "n": "id",
+                        "or": "contactId",
+                        "r": true,
+                        "t": "`$STRING`"
+                      }
+                    ]
+                  },
+                  "k": "http",
+                  "m": "GET",
+                  "o": "/contacts/{contactId}/groups",
+                  "q": {
+                    "$action": "group",
+                    "exist": [
+                      "id"
+                    ]
+                  },
+                  "r": {
+                    "param": {
+                      "contactId": "id"
+                    }
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
+                  "s": [
+                    {
+                      "lit": "contacts"
+                    },
+                    {
+                      "var": "id"
+                    },
+                    {
+                      "lit": "groups"
+                    }
+                  ],
+                  "t": {
+                    "req": "`reqdata`",
+                    "res": "`body.collection`"
+                  }
+                },
                 {
                   "a": true,
                   "co": {
@@ -1341,75 +1462,15 @@
                   "k": "http",
                   "m": "GET",
                   "o": "/contacts",
-                  "q": {
-                    "exist": [
-                      "birthday_date",
-                      "email",
-                      "first_name",
-                      "gender",
-                      "group_id",
-                      "last_name",
-                      "limit",
-                      "offset",
-                      "order_by",
-                      "phone_number",
-                      "q"
-                    ]
-                  },
+                  "q": {},
                   "r": {},
-                  "s": [
-                    {
-                      "lit": "contacts"
-                    }
-                  ],
-                  "t": {
-                    "req": "`reqdata`",
-                    "res": "`body.collection`"
-                  }
-                },
-                {
-                  "a": true,
-                  "co": {
-                    "id": "GET /contacts/{contactId}/groups",
-                    "source": "openapi3",
-                    "version": 2
-                  },
-                  "g": {
-                    "params": [
-                      {
-                        "a": true,
-                        "ex": "0f0f0f0f0f0f0f0f0f0f0f0f",
-                        "k": "param",
-                        "n": "id",
-                        "or": "contactId",
-                        "r": true,
-                        "t": "`$STRING`"
-                      }
-                    ]
-                  },
-                  "k": "http",
-                  "m": "GET",
-                  "o": "/contacts/{contactId}/groups",
-                  "q": {
-                    "$action": "group",
-                    "exist": [
-                      "id"
-                    ]
-                  },
-                  "r": {
-                    "param": {
-                      "contactId": "id"
-                    }
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
                   },
                   "s": [
                     {
                       "lit": "contacts"
-                    },
-                    {
-                      "var": "id"
-                    },
-                    {
-                      "lit": "groups"
                     }
                   ],
                   "t": {
@@ -1466,6 +1527,10 @@
                       "contactId": "contact_id",
                       "groupId": "group_id"
                     }
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
                   },
                   "s": [
                     {
@@ -1533,6 +1598,10 @@
                       "groupId": "group_id"
                     }
                   },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -1584,6 +1653,10 @@
                     "param": {
                       "contactId": "id"
                     }
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
                   },
                   "s": [
                     {
@@ -1786,6 +1859,10 @@
                       "groupId": "group_id"
                     }
                   },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -1852,6 +1929,10 @@
                       "groupId": "group_id"
                     }
                   },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -1904,6 +1985,43 @@
                       "contactId": "id"
                     }
                   },
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "birthday_date"
+                      },
+                      {
+                        "name": "city"
+                      },
+                      {
+                        "name": "description"
+                      },
+                      {
+                        "name": "email"
+                      },
+                      {
+                        "name": "first_name"
+                      },
+                      {
+                        "name": "gender"
+                      },
+                      {
+                        "name": "last_name"
+                      },
+                      {
+                        "name": "phone_number"
+                      },
+                      {
+                        "name": "source"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -1937,183 +2055,19 @@
             "field": {}
           },
           "fields": {
-            "birthday_date": {
-              "a": true,
-              "fo": "date",
-              "h": "Birthday Date",
-              "n": "birthday_date",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "city": {
-              "a": true,
-              "h": "City",
-              "n": "city",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "contact_expire_after": {
-              "a": true,
-              "h": "Contact Expire After",
-              "n": "contact_expire_after",
-              "r": true,
-              "sh": "Contact expire after days",
-              "t": "`$INTEGER`"
-            },
-            "contacts_count": {
-              "a": true,
-              "h": "Contacts Count",
-              "n": "contacts_count",
-              "r": false,
-              "t": "`$INTEGER`"
-            },
-            "country": {
-              "a": true,
-              "h": "Country",
-              "n": "country",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "created_by": {
-              "a": true,
-              "h": "Created By",
-              "n": "created_by",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "date_created": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Date Created",
-              "n": "date_created",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "date_updated": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Date Updated",
-              "n": "date_updated",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "description": {
-              "a": true,
-              "h": "Description",
-              "n": "description",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "email": {
-              "a": true,
-              "fo": "email",
-              "h": "Email",
-              "n": "email",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "first_name": {
-              "a": true,
-              "h": "First Name",
-              "n": "first_name",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "gender": {
-              "a": true,
-              "h": "Gender",
-              "n": "gender",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "group_id": {
-              "a": true,
-              "fo": "oid",
-              "h": "Group Id",
-              "n": "group_id",
-              "r": false,
-              "sh": "Object ID",
-              "t": "`$STRING`"
-            },
-            "groups": {
-              "a": true,
-              "h": "Groups",
-              "n": "groups",
-              "r": true,
-              "t": "`$ARRAY`"
-            },
             "id": {
               "a": true,
               "fo": "oid",
               "h": "Id",
               "n": "id",
-              "op": {
-                "list": {
-                  "req": true,
-                  "type": "`$STRING`"
-                }
-              },
               "r": false,
               "sh": "Object ID",
-              "t": "`$STRING`"
-            },
-            "idx": {
-              "a": true,
-              "h": "Idx",
-              "n": "idx",
-              "r": false,
-              "sh": "User provided resource id",
-              "t": "`$STRING`"
-            },
-            "last_name": {
-              "a": true,
-              "h": "Last Name",
-              "n": "last_name",
-              "r": false,
               "t": "`$STRING`"
             },
             "name": {
               "a": true,
               "h": "Name",
               "n": "name",
-              "r": false,
-              "sh": "Group name",
-              "t": "`$STRING`"
-            },
-            "permissions": {
-              "a": true,
-              "h": "Permissions",
-              "n": "permissions",
-              "r": false,
-              "t": "`$ARRAY`"
-            },
-            "phone_number": {
-              "a": true,
-              "h": "Phone Number",
-              "n": "phone_number",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "read": {
-              "a": true,
-              "h": "Read",
-              "n": "read",
-              "r": false,
-              "sh": "Has read permission",
-              "t": "`$BOOLEAN`"
-            },
-            "send": {
-              "a": true,
-              "h": "Send",
-              "n": "send",
-              "r": false,
-              "sh": "Has send permission",
-              "t": "`$BOOLEAN`"
-            },
-            "source": {
-              "a": true,
-              "h": "Source",
-              "n": "source",
               "r": false,
               "t": "`$STRING`"
             },
@@ -2123,28 +2077,6 @@
               "n": "type",
               "r": false,
               "t": "`$STRING`"
-            },
-            "username": {
-              "a": true,
-              "h": "Username",
-              "n": "username",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "value": {
-              "a": true,
-              "h": "Value",
-              "n": "value",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "write": {
-              "a": true,
-              "h": "Write",
-              "n": "write",
-              "r": false,
-              "sh": "Has write permission",
-              "t": "`$BOOLEAN`"
             }
           },
           "id": {
@@ -2170,6 +2102,22 @@
                   "o": "/contacts/fields",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "name"
+                      },
+                      {
+                        "name": "type"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -2202,6 +2150,10 @@
                   "o": "/contacts/fields",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -2309,6 +2261,19 @@
                       "fieldId": "id"
                     }
                   },
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "name"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -2337,215 +2302,7 @@
           "alias": {
             "field": {}
           },
-          "fields": {
-            "birthday_date": {
-              "a": true,
-              "fo": "date",
-              "h": "Birthday Date",
-              "n": "birthday_date",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "city": {
-              "a": true,
-              "h": "City",
-              "n": "city",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "contact_expire_after": {
-              "a": true,
-              "h": "Contact Expire After",
-              "n": "contact_expire_after",
-              "r": true,
-              "sh": "Contact expire after days",
-              "t": "`$INTEGER`"
-            },
-            "contacts_count": {
-              "a": true,
-              "h": "Contacts Count",
-              "n": "contacts_count",
-              "r": false,
-              "t": "`$INTEGER`"
-            },
-            "country": {
-              "a": true,
-              "h": "Country",
-              "n": "country",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "created_by": {
-              "a": true,
-              "h": "Created By",
-              "n": "created_by",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "date_created": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Date Created",
-              "n": "date_created",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "date_updated": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Date Updated",
-              "n": "date_updated",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "description": {
-              "a": true,
-              "h": "Description",
-              "n": "description",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "email": {
-              "a": true,
-              "fo": "email",
-              "h": "Email",
-              "n": "email",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "first_name": {
-              "a": true,
-              "h": "First Name",
-              "n": "first_name",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "gender": {
-              "a": true,
-              "h": "Gender",
-              "n": "gender",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "group_id": {
-              "a": true,
-              "fo": "oid",
-              "h": "Group Id",
-              "n": "group_id",
-              "r": false,
-              "sh": "Object ID",
-              "t": "`$STRING`"
-            },
-            "groups": {
-              "a": true,
-              "h": "Groups",
-              "n": "groups",
-              "r": true,
-              "t": "`$ARRAY`"
-            },
-            "id": {
-              "a": true,
-              "fo": "oid",
-              "h": "Id",
-              "n": "id",
-              "r": true,
-              "sh": "Object ID",
-              "t": "`$STRING`"
-            },
-            "idx": {
-              "a": true,
-              "h": "Idx",
-              "n": "idx",
-              "r": false,
-              "sh": "User provided resource id",
-              "t": "`$STRING`"
-            },
-            "last_name": {
-              "a": true,
-              "h": "Last Name",
-              "n": "last_name",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "name": {
-              "a": true,
-              "h": "Name",
-              "n": "name",
-              "r": false,
-              "sh": "Group name",
-              "t": "`$STRING`"
-            },
-            "permissions": {
-              "a": true,
-              "h": "Permissions",
-              "n": "permissions",
-              "r": false,
-              "t": "`$ARRAY`"
-            },
-            "phone_number": {
-              "a": true,
-              "h": "Phone Number",
-              "n": "phone_number",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "read": {
-              "a": true,
-              "h": "Read",
-              "n": "read",
-              "r": false,
-              "sh": "Has read permission",
-              "t": "`$BOOLEAN`"
-            },
-            "send": {
-              "a": true,
-              "h": "Send",
-              "n": "send",
-              "r": false,
-              "sh": "Has send permission",
-              "t": "`$BOOLEAN`"
-            },
-            "source": {
-              "a": true,
-              "h": "Source",
-              "n": "source",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "type": {
-              "a": true,
-              "h": "Type",
-              "n": "type",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "username": {
-              "a": true,
-              "h": "Username",
-              "n": "username",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "value": {
-              "a": true,
-              "h": "Value",
-              "n": "value",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "write": {
-              "a": true,
-              "h": "Write",
-              "n": "write",
-              "r": false,
-              "sh": "Has write permission",
-              "t": "`$BOOLEAN`"
-            }
-          },
-          "id": {
-            "field": "id",
-            "name": "id"
-          },
+          "fields": {},
           "name": "contacts_field_option",
           "op": {
             "list": {
@@ -2585,6 +2342,10 @@
                       "fieldId": "field_id"
                     }
                   },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -2617,173 +2378,19 @@
             "field": {}
           },
           "fields": {
-            "birthday_date": {
-              "a": true,
-              "fo": "date",
-              "h": "Birthday Date",
-              "n": "birthday_date",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "city": {
-              "a": true,
-              "h": "City",
-              "n": "city",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "contact_expire_after": {
-              "a": true,
-              "h": "Contact Expire After",
-              "n": "contact_expire_after",
-              "r": true,
-              "sh": "Contact expire after days",
-              "t": "`$INTEGER`"
-            },
-            "contacts_count": {
-              "a": true,
-              "h": "Contacts Count",
-              "n": "contacts_count",
-              "r": false,
-              "t": "`$INTEGER`"
-            },
-            "country": {
-              "a": true,
-              "h": "Country",
-              "n": "country",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "created_by": {
-              "a": true,
-              "h": "Created By",
-              "n": "created_by",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "date_created": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Date Created",
-              "n": "date_created",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "date_updated": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Date Updated",
-              "n": "date_updated",
-              "r": true,
-              "t": "`$STRING`"
-            },
-            "description": {
-              "a": true,
-              "h": "Description",
-              "n": "description",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "email": {
-              "a": true,
-              "fo": "email",
-              "h": "Email",
-              "n": "email",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "first_name": {
-              "a": true,
-              "h": "First Name",
-              "n": "first_name",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "gender": {
-              "a": true,
-              "h": "Gender",
-              "n": "gender",
-              "r": true,
-              "t": "`$STRING`"
-            },
             "group_id": {
               "a": true,
               "fo": "oid",
               "h": "Group Id",
               "n": "group_id",
-              "op": {
-                "list": {
-                  "req": false,
-                  "type": "`$STRING`"
-                }
-              },
               "r": true,
               "sh": "Object ID",
-              "t": "`$STRING`"
-            },
-            "groups": {
-              "a": true,
-              "h": "Groups",
-              "n": "groups",
-              "r": true,
-              "t": "`$ARRAY`"
-            },
-            "id": {
-              "a": true,
-              "fo": "oid",
-              "h": "Id",
-              "n": "id",
-              "r": true,
-              "sh": "Object ID",
-              "t": "`$STRING`"
-            },
-            "idx": {
-              "a": true,
-              "h": "Idx",
-              "n": "idx",
-              "r": false,
-              "sh": "User provided resource id",
-              "t": "`$STRING`"
-            },
-            "last_name": {
-              "a": true,
-              "h": "Last Name",
-              "n": "last_name",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "name": {
-              "a": true,
-              "h": "Name",
-              "n": "name",
-              "r": false,
-              "sh": "Group name",
-              "t": "`$STRING`"
-            },
-            "permissions": {
-              "a": true,
-              "h": "Permissions",
-              "n": "permissions",
-              "r": false,
-              "t": "`$ARRAY`"
-            },
-            "phone_number": {
-              "a": true,
-              "h": "Phone Number",
-              "n": "phone_number",
-              "r": false,
               "t": "`$STRING`"
             },
             "read": {
               "a": true,
               "h": "Read",
               "n": "read",
-              "op": {
-                "list": {
-                  "req": false,
-                  "type": "`$BOOLEAN`"
-                }
-              },
               "r": true,
               "sh": "Has read permission",
               "t": "`$BOOLEAN`"
@@ -2792,68 +2399,25 @@
               "a": true,
               "h": "Send",
               "n": "send",
-              "op": {
-                "list": {
-                  "req": false,
-                  "type": "`$BOOLEAN`"
-                }
-              },
               "r": true,
               "sh": "Has send permission",
               "t": "`$BOOLEAN`"
-            },
-            "source": {
-              "a": true,
-              "h": "Source",
-              "n": "source",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "type": {
-              "a": true,
-              "h": "Type",
-              "n": "type",
-              "r": false,
-              "t": "`$STRING`"
             },
             "username": {
               "a": true,
               "h": "Username",
               "n": "username",
-              "op": {
-                "list": {
-                  "req": false,
-                  "type": "`$STRING`"
-                }
-              },
               "r": true,
-              "t": "`$STRING`"
-            },
-            "value": {
-              "a": true,
-              "h": "Value",
-              "n": "value",
-              "r": false,
               "t": "`$STRING`"
             },
             "write": {
               "a": true,
               "h": "Write",
               "n": "write",
-              "op": {
-                "list": {
-                  "req": false,
-                  "type": "`$BOOLEAN`"
-                }
-              },
               "r": true,
               "sh": "Has write permission",
               "t": "`$BOOLEAN`"
             }
-          },
-          "id": {
-            "field": "id",
-            "name": "id"
           },
           "name": "contactsgroup",
           "op": {
@@ -2894,6 +2458,42 @@
                       "groupId": "group_id"
                     }
                   },
+                  "rb": {
+                    "fields": [
+                      {
+                        "list": true,
+                        "name": "birthday_date"
+                      },
+                      {
+                        "list": true,
+                        "name": "email"
+                      },
+                      {
+                        "list": true,
+                        "name": "first_name"
+                      },
+                      {
+                        "name": "gender"
+                      },
+                      {
+                        "list": true,
+                        "name": "group_id"
+                      },
+                      {
+                        "list": true,
+                        "name": "last_name"
+                      },
+                      {
+                        "list": true,
+                        "name": "phone_number"
+                      },
+                      {
+                        "name": "q"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -2926,6 +2526,28 @@
                   "o": "/contacts/groups",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "contact_expire_after"
+                      },
+                      {
+                        "name": "description"
+                      },
+                      {
+                        "name": "idx"
+                      },
+                      {
+                        "name": "name"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -2945,57 +2567,6 @@
               "input": "data",
               "name": "list",
               "points": [
-                {
-                  "a": true,
-                  "co": {
-                    "id": "GET /contacts/groups",
-                    "source": "openapi3",
-                    "version": 2
-                  },
-                  "g": {
-                    "query": [
-                      {
-                        "a": true,
-                        "ex": "{\"name\" : \"group name\"}",
-                        "k": "query",
-                        "n": "name",
-                        "or": "name",
-                        "r": false,
-                        "t": "`$OBJECT`"
-                      },
-                      {
-                        "a": true,
-                        "k": "query",
-                        "n": "with",
-                        "or": "with",
-                        "r": false,
-                        "t": "`$ARRAY`"
-                      }
-                    ]
-                  },
-                  "k": "http",
-                  "m": "GET",
-                  "o": "/contacts/groups",
-                  "q": {
-                    "exist": [
-                      "name",
-                      "with"
-                    ]
-                  },
-                  "r": {},
-                  "s": [
-                    {
-                      "lit": "contacts"
-                    },
-                    {
-                      "lit": "groups"
-                    }
-                  ],
-                  "t": {
-                    "req": "`reqdata`",
-                    "res": "`body.collection`"
-                  }
-                },
                 {
                   "a": true,
                   "co": {
@@ -3029,6 +2600,10 @@
                       "groupId": "group_id"
                     }
                   },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -3041,6 +2616,56 @@
                     },
                     {
                       "lit": "permissions"
+                    }
+                  ],
+                  "t": {
+                    "req": "`reqdata`",
+                    "res": "`body.collection`"
+                  }
+                },
+                {
+                  "a": true,
+                  "co": {
+                    "id": "GET /contacts/groups",
+                    "source": "openapi3",
+                    "version": 2
+                  },
+                  "g": {
+                    "query": [
+                      {
+                        "a": true,
+                        "ex": "{\"name\" : \"group name\"}",
+                        "k": "query",
+                        "n": "name",
+                        "or": "name",
+                        "r": false,
+                        "t": "`$OBJECT`"
+                      },
+                      {
+                        "a": true,
+                        "k": "query",
+                        "n": "with",
+                        "or": "with",
+                        "r": false,
+                        "t": "`$ARRAY`"
+                      }
+                    ]
+                  },
+                  "k": "http",
+                  "m": "GET",
+                  "o": "/contacts/groups",
+                  "q": {},
+                  "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
+                  "s": [
+                    {
+                      "lit": "contacts"
+                    },
+                    {
+                      "lit": "groups"
                     }
                   ],
                   "t": {
@@ -3140,18 +2765,8 @@
                       },
                       {
                         "a": true,
-                        "k": "param",
-                        "n": "username",
-                        "or": "username",
-                        "r": true,
-                        "t": "`$STRING`"
-                      }
-                    ],
-                    "query": [
-                      {
-                        "a": true,
                         "ex": "example_username",
-                        "k": "query",
+                        "k": "param",
                         "n": "username",
                         "or": "username",
                         "r": true,
@@ -3228,6 +2843,15 @@
                       "groupId": "group_id"
                     }
                   },
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "delete_contacts"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -3276,6 +2900,42 @@
                     "param": {
                       "groupId": "group_id"
                     }
+                  },
+                  "rb": {
+                    "fields": [
+                      {
+                        "list": true,
+                        "name": "birthday_date"
+                      },
+                      {
+                        "list": true,
+                        "name": "email"
+                      },
+                      {
+                        "list": true,
+                        "name": "first_name"
+                      },
+                      {
+                        "name": "gender"
+                      },
+                      {
+                        "list": true,
+                        "name": "group_id"
+                      },
+                      {
+                        "list": true,
+                        "name": "last_name"
+                      },
+                      {
+                        "list": true,
+                        "name": "phone_number"
+                      },
+                      {
+                        "name": "q"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
                   },
                   "s": [
                     {
@@ -3348,18 +3008,8 @@
                       },
                       {
                         "a": true,
-                        "k": "param",
-                        "n": "username",
-                        "or": "username",
-                        "r": true,
-                        "t": "`$STRING`"
-                      }
-                    ],
-                    "query": [
-                      {
-                        "a": true,
                         "ex": "example_username",
-                        "k": "query",
+                        "k": "param",
                         "n": "username",
                         "or": "username",
                         "r": true,
@@ -3380,6 +3030,25 @@
                     "param": {
                       "groupId": "group_id"
                     }
+                  },
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "read"
+                      },
+                      {
+                        "name": "send"
+                      },
+                      {
+                        "name": "write"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
                   },
                   "s": [
                     {
@@ -3435,6 +3104,42 @@
                     "param": {
                       "groupId": "group_id"
                     }
+                  },
+                  "rb": {
+                    "fields": [
+                      {
+                        "list": true,
+                        "name": "birthday_date"
+                      },
+                      {
+                        "list": true,
+                        "name": "email"
+                      },
+                      {
+                        "list": true,
+                        "name": "first_name"
+                      },
+                      {
+                        "name": "gender"
+                      },
+                      {
+                        "list": true,
+                        "name": "group_id"
+                      },
+                      {
+                        "list": true,
+                        "name": "last_name"
+                      },
+                      {
+                        "list": true,
+                        "name": "phone_number"
+                      },
+                      {
+                        "name": "q"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
                   },
                   "s": [
                     {
@@ -3620,6 +3325,10 @@
                   "o": "/contacts/fields/available",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -3770,6 +3479,10 @@
                       "groupId": "id"
                     }
                   },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -3824,6 +3537,28 @@
                     "param": {
                       "groupId": "id"
                     }
+                  },
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "contact_expire_after"
+                      },
+                      {
+                        "name": "description"
+                      },
+                      {
+                        "name": "idx"
+                      },
+                      {
+                        "name": "name"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
                   },
                   "s": [
                     {
@@ -3898,6 +3633,12 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "content",
+                    "fast",
+                    "from",
+                    "phone_number"
+                  ],
                   "co": {
                     "id": "POST /mfa/codes",
                     "source": "openapi3",
@@ -3909,6 +3650,10 @@
                   "o": "/mfa/codes",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "mfa"
@@ -3937,6 +3682,18 @@
                     "$action": "verification"
                   },
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "code"
+                      },
+                      {
+                        "name": "phone_number"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
                   "s": [
                     {
                       "lit": "mfa"
@@ -4066,16 +3823,18 @@
                   "k": "http",
                   "m": "GET",
                   "o": "/opt_outs",
-                  "q": {
-                    "exist": [
-                      "accept",
-                      "limit",
-                      "offset",
-                      "phone_number",
-                      "x_async"
-                    ]
-                  },
+                  "q": {},
                   "r": {},
+                  "rs": {
+                    "alternatives": [
+                      {
+                        "kind": "raw",
+                        "media": "text/csv"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "opt_outs"
@@ -4177,6 +3936,10 @@
                   "o": "/opt_outs/settings",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "opt_outs"
@@ -4198,6 +3961,9 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "brand"
+                  ],
                   "co": {
                     "id": "PUT /opt_outs/settings",
                     "source": "openapi3",
@@ -4209,6 +3975,10 @@
                   "o": "/opt_outs/settings",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "opt_outs"
@@ -4326,6 +4096,28 @@
                       "groupId": "group_id"
                     }
                   },
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "read"
+                      },
+                      {
+                        "name": "send"
+                      },
+                      {
+                        "name": "username"
+                      },
+                      {
+                        "name": "write"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "contacts"
@@ -4371,19 +4163,9 @@
                       },
                       {
                         "a": true,
+                        "ex": "example_username",
                         "k": "param",
                         "n": "id",
-                        "or": "username",
-                        "r": true,
-                        "t": "`$STRING`"
-                      }
-                    ],
-                    "query": [
-                      {
-                        "a": true,
-                        "ex": "example_username",
-                        "k": "query",
-                        "n": "username",
                         "or": "username",
                         "r": true,
                         "t": "`$STRING`"
@@ -4396,8 +4178,7 @@
                   "q": {
                     "exist": [
                       "group_id",
-                      "id",
-                      "username"
+                      "id"
                     ]
                   },
                   "r": {
@@ -4405,6 +4186,10 @@
                       "groupId": "group_id",
                       "username": "id"
                     }
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
                   },
                   "s": [
                     {
@@ -4479,6 +4264,10 @@
                   "o": "/ping",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "ping"
@@ -4588,12 +4377,13 @@
                   "m": "GET",
                   "o": "/profile/prices",
                   "q": {
-                    "$action": "price",
-                    "exist": [
-                      "type"
-                    ]
+                    "$action": "price"
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "profile"
@@ -4626,6 +4416,10 @@
                   "o": "/profile",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "profile"
@@ -4670,6 +4464,10 @@
                     "$action": "message"
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "rcs"
@@ -4757,6 +4555,19 @@
                   "o": "/sms/sendernames",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "sender"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -4789,6 +4600,10 @@
                   "o": "/sms/sendernames",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -4839,6 +4654,10 @@
                     "param": {
                       "sender": "id"
                     }
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
                   },
                   "s": [
                     {
@@ -4910,6 +4729,10 @@
                   "o": "/sms/sendernames/statement",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -4957,10 +4780,12 @@
             },
             "sender": {
               "a": true,
+              "fo": "oid",
               "h": "Sender",
               "n": "sender",
               "r": true,
-              "t": "`$ANY`"
+              "sh": "RCS sender ID (object ID of the agent/sender the user has access to).",
+              "t": "`$STRING`"
             },
             "text": {
               "a": true,
@@ -4979,6 +4804,12 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "content",
+                    "phone_number",
+                    "sender",
+                    "text"
+                  ],
                   "co": {
                     "id": "POST /rcs/messages",
                     "source": "openapi3",
@@ -4990,6 +4821,34 @@
                   "o": "/rcs/messages",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "alternatives": [
+                      {
+                        "fields": [
+                          {
+                            "name": "content"
+                          },
+                          {
+                            "name": "phone_number"
+                          },
+                          {
+                            "name": "sender"
+                          },
+                          {
+                            "name": "text"
+                          }
+                        ],
+                        "kind": "form",
+                        "media": "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "rcs"
@@ -5092,14 +4951,18 @@
                   "k": "http",
                   "m": "GET",
                   "o": "/shipment/country_volumes",
-                  "q": {
-                    "exist": [
-                      "accept",
-                      "month",
-                      "year"
-                    ]
-                  },
+                  "q": {},
                   "r": {},
+                  "rs": {
+                    "alternatives": [
+                      {
+                        "kind": "raw",
+                        "media": "text/csv"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "shipment"
@@ -5214,6 +5077,14 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "description",
+                    "expire_time",
+                    "expire_unit",
+                    "file",
+                    "name",
+                    "url"
+                  ],
                   "co": {
                     "id": "POST /short_url/links",
                     "source": "openapi3",
@@ -5227,6 +5098,20 @@
                     "$action": "link"
                   },
                   "r": {},
+                  "rb": {
+                    "alternatives": [
+                      {
+                        "kind": "form",
+                        "media": "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "short_url"
@@ -5261,6 +5146,10 @@
                     "$action": "link"
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "short_url"
@@ -5309,6 +5198,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "short_url"
@@ -5411,6 +5304,25 @@
                     ]
                   },
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "description"
+                      },
+                      {
+                        "name": "name"
+                      },
+                      {
+                        "name": "url"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "short_url"
@@ -5642,6 +5554,29 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "allow_duplicates",
+                    "check_idx",
+                    "date",
+                    "date_validate",
+                    "details",
+                    "encoding",
+                    "expiration_date",
+                    "fallback",
+                    "fast",
+                    "flash",
+                    "format",
+                    "from",
+                    "group",
+                    "idx",
+                    "max_parts",
+                    "message",
+                    "normalize",
+                    "notify_url",
+                    "test",
+                    "time_restriction",
+                    "to"
+                  ],
                   "co": {
                     "id": "POST /sms.do",
                     "source": "openapi3",
@@ -5653,6 +5588,92 @@
                   "o": "/sms.do",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "alternatives": [
+                      {
+                        "fields": [
+                          {
+                            "name": "allow_duplicates"
+                          },
+                          {
+                            "name": "check_idx"
+                          },
+                          {
+                            "name": "date"
+                          },
+                          {
+                            "name": "date_validate"
+                          },
+                          {
+                            "name": "details"
+                          },
+                          {
+                            "name": "encoding"
+                          },
+                          {
+                            "name": "expiration_date"
+                          },
+                          {
+                            "list": true,
+                            "name": "fallback"
+                          },
+                          {
+                            "name": "fast"
+                          },
+                          {
+                            "name": "flash"
+                          },
+                          {
+                            "name": "format"
+                          },
+                          {
+                            "name": "from"
+                          },
+                          {
+                            "name": "group"
+                          },
+                          {
+                            "name": "idx"
+                          },
+                          {
+                            "name": "max_parts"
+                          },
+                          {
+                            "name": "message"
+                          },
+                          {
+                            "name": "normalize"
+                          },
+                          {
+                            "name": "notify_url"
+                          },
+                          {
+                            "name": "test"
+                          },
+                          {
+                            "name": "time_restriction"
+                          },
+                          {
+                            "name": "to"
+                          }
+                        ],
+                        "kind": "form",
+                        "media": "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
+                  "rs": {
+                    "alternatives": [
+                      {
+                        "kind": "raw",
+                        "media": "text/plain"
+                      }
+                    ],
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms.do"
@@ -5694,7 +5715,7 @@
                       {
                         "a": true,
                         "k": "param",
-                        "n": "sendername_id",
+                        "n": "sender",
                         "or": "sender",
                         "r": true,
                         "t": "`$STRING`"
@@ -5706,14 +5727,10 @@
                   "o": "/sms/sendernames/{sender}/commands/make_default",
                   "q": {
                     "exist": [
-                      "sendername_id"
+                      "sender"
                     ]
                   },
-                  "r": {
-                    "param": {
-                      "sender": "sendername_id"
-                    }
-                  },
+                  "r": {},
                   "s": [
                     {
                       "lit": "sms"
@@ -5722,7 +5739,7 @@
                       "lit": "sendernames"
                     },
                     {
-                      "var": "sendername_id"
+                      "var": "sender"
                     },
                     {
                       "lit": "commands"
@@ -5941,6 +5958,12 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "active",
+                    "credentials",
+                    "description",
+                    "points"
+                  ],
                   "co": {
                     "id": "POST /subusers",
                     "source": "openapi3",
@@ -5952,6 +5975,10 @@
                   "o": "/subusers",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "subusers"
@@ -5998,6 +6025,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "subusers"
@@ -6047,6 +6078,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "subusers"
@@ -6088,12 +6123,12 @@
                   "k": "http",
                   "m": "GET",
                   "o": "/subusers",
-                  "q": {
-                    "exist": [
-                      "q"
-                    ]
-                  },
+                  "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "subusers"
@@ -6139,6 +6174,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "subusers"
@@ -6208,6 +6247,12 @@
               "points": [
                 {
                   "a": true,
+                  "bf": [
+                    "active",
+                    "credentials",
+                    "description",
+                    "points"
+                  ],
                   "co": {
                     "id": "PUT /subusers/{id}",
                     "source": "openapi3",
@@ -6235,6 +6280,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "subusers"
@@ -6250,6 +6299,10 @@
                 },
                 {
                   "a": true,
+                  "bf": [
+                    "access",
+                    "senders"
+                  ],
                   "co": {
                     "id": "PUT /subusers/{id}/shares/sendernames",
                     "source": "openapi3",
@@ -6299,6 +6352,10 @@
                 },
                 {
                   "a": true,
+                  "bf": [
+                    "access",
+                    "templates"
+                  ],
                   "co": {
                     "id": "PUT /subusers/{id}/shares/templates",
                     "source": "openapi3",
@@ -6411,6 +6468,25 @@
                   "o": "/sms/templates",
                   "q": {},
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "name"
+                      },
+                      {
+                        "name": "normalize"
+                      },
+                      {
+                        "name": "template"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -6443,6 +6519,10 @@
                   "o": "/sms/templates",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -6490,6 +6570,10 @@
                     ]
                   },
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -6540,6 +6624,25 @@
                     ]
                   },
                   "r": {},
+                  "rb": {
+                    "fields": [
+                      {
+                        "name": "name"
+                      },
+                      {
+                        "name": "normalize"
+                      },
+                      {
+                        "name": "template"
+                      }
+                    ],
+                    "kind": "form",
+                    "media": "application/x-www-form-urlencoded"
+                  },
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "sms"
@@ -6568,93 +6671,7 @@
           "alias": {
             "field": {}
           },
-          "fields": {
-            "deliveredAt": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Delivered At",
-              "n": "deliveredAt",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "expiredAt": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Expired At",
-              "n": "expiredAt",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "id": {
-              "a": true,
-              "fo": "oid",
-              "h": "Id",
-              "n": "id",
-              "r": false,
-              "sh": "Object ID",
-              "t": "`$STRING`"
-            },
-            "interface": {
-              "a": true,
-              "h": "Interface",
-              "n": "interface",
-              "r": false,
-              "sh": "Interface through which the message was sent (www, api, ...).",
-              "t": "`$STRING`"
-            },
-            "messageType": {
-              "a": true,
-              "h": "Message Type",
-              "n": "messageType",
-              "r": false,
-              "sh": "RCS message type (basic, single, ...).",
-              "t": "`$STRING`"
-            },
-            "readAt": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Read At",
-              "n": "readAt",
-              "r": false,
-              "t": "`$STRING`"
-            },
-            "recipient": {
-              "a": true,
-              "h": "Recipient",
-              "n": "recipient",
-              "r": false,
-              "sh": "Recipient phone number (without +).",
-              "t": "`$STRING`"
-            },
-            "sender": {
-              "a": true,
-              "h": "Sender",
-              "n": "sender",
-              "r": false,
-              "sh": "Sender name",
-              "t": "`$STRING`"
-            },
-            "senderId": {
-              "a": true,
-              "h": "Sender Id",
-              "n": "senderId",
-              "r": false,
-              "sh": "Sender id",
-              "t": "`$STRING`"
-            },
-            "sentAt": {
-              "a": true,
-              "fo": "date-time",
-              "h": "Sent At",
-              "n": "sentAt",
-              "r": false,
-              "t": "`$STRING`"
-            }
-          },
-          "id": {
-            "field": "id",
-            "name": "id"
-          },
+          "fields": {},
           "name": "user_rcs_sender_collection",
           "op": {
             "list": {
@@ -6674,6 +6691,10 @@
                   "o": "/rcs/senders",
                   "q": {},
                   "r": {},
+                  "rs": {
+                    "kind": "json",
+                    "media": "application/json"
+                  },
                   "s": [
                     {
                       "lit": "rcs"
@@ -9934,6 +9955,7 @@
             },
             "optspec": {
               "clearTimer": "`$FUNCTION`",
+              "now": "`$FUNCTION`",
               "setTimer": "`$FUNCTION`"
             },
             "strict": false
@@ -10403,9 +10425,7 @@
               "a": true,
               "d": {},
               "i": {},
-              "m": {
-                "contact_id": "contact01"
-              },
+              "m": {},
               "o": "list",
               "s": [],
               "v": [
@@ -10478,9 +10498,7 @@
               "i": {
                 "suffix": "_rt0"
               },
-              "m": {
-                "contact_id": "contact01"
-              },
+              "m": {},
               "o": "list",
               "s": [],
               "v": [
@@ -10536,7 +10554,7 @@
                 "ref": "contacts_field_ref01",
                 "srcdatavar": "contacts_field_ref01_data",
                 "suffix": "_up0",
-                "textfield": "birthday_date"
+                "textfield": "name"
               },
               "m": {},
               "o": "update",
@@ -10637,9 +10655,7 @@
               "a": true,
               "d": {},
               "i": {},
-              "m": {
-                "group_id": "group01"
-              },
+              "m": {},
               "o": "list",
               "s": [],
               "v": [
@@ -10657,8 +10673,7 @@
               "i": {
                 "ref": "contactsgroup_ref01",
                 "srcdatavar": "contactsgroup_ref01_data",
-                "suffix": "_up0",
-                "textfield": "birthday_date"
+                "suffix": "_up0"
               },
               "m": {},
               "o": "update",
@@ -10690,9 +10705,7 @@
               "i": {
                 "suffix": "_rt0"
               },
-              "m": {
-                "group_id": "group01"
-              },
+              "m": {},
               "o": "list",
               "s": [],
               "v": [
@@ -11337,7 +11350,7 @@
                 "ref": "smssendername_ref01"
               },
               "m": {
-                "sendername_id": "sendername01"
+                "sender": "sender01"
               },
               "o": "create",
               "s": [],
@@ -11616,7 +11629,7 @@
       "optspec": {
         "allow": {
           "method": "GET,PUT,POST,PATCH,DELETE,OPTIONS",
-          "op": "create,update,load,list,remove,command,direct,graphql"
+          "op": "create,update,patch,load,list,remove,command,direct,graphql"
         },
         "apikey": "",
         "auth": {
@@ -11669,6 +11682,11 @@
         "top": {
           "active": true
         }
+      },
+      "publisher": {
+        "name": "",
+        "security": "",
+        "url": ""
       },
       "repo": {
         "host": "github.com",
@@ -12169,7 +12187,10 @@
             "version": "0.0.1"
           },
           "superseded": [],
-          "title": "Go MCP server"
+          "title": "Go MCP server",
+          "tool": {
+            "write": false
+          }
         },
         "java": {
           "active": true,
@@ -12821,6 +12842,17 @@
           "base": "",
           "strict": true
         }
+      },
+      "text": {
+        "about_md": "",
+        "docs_url": "",
+        "entity_desc": {},
+        "homepage": "",
+        "meta_source": "",
+        "summary": "",
+        "tagline": "",
+        "title": "",
+        "website": ""
       }
     }
   },

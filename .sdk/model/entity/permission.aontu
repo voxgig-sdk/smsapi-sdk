@@ -88,6 +88,28 @@ main: kit: entity: permission: {
               groupId: "group_id"
             }
           }
+          rb: {
+            fields: [
+              {
+                name: "read"
+              }
+              {
+                name: "send"
+              }
+              {
+                name: "username"
+              }
+              {
+                name: "write"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -129,18 +151,9 @@ main: kit: entity: permission: {
                 t: "`$STRING`"
               }
               {
+                ex: "example_username"
                 k: "param"
                 n: "id"
-                or: "username"
-                r: true
-                t: "`$STRING`"
-              }
-            ]
-            query: [
-              {
-                ex: "example_username"
-                k: "query"
-                n: "username"
                 or: "username"
                 r: true
                 t: "`$STRING`"
@@ -153,7 +166,6 @@ main: kit: entity: permission: {
             exist: [
               "group_id"
               "id"
-              "username"
             ]
           }
           r: {
@@ -161,6 +173,10 @@ main: kit: entity: permission: {
               groupId: "group_id"
               username: "id"
             }
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

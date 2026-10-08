@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <cctype>
 #include <string>
 #include <vector>
@@ -19,6 +21,7 @@
 // (it includes only core/struct.hpp), so this cannot close a cycle with
 // core/config.hpp, which pulls in the feature headers.
 #include "../core/schema.hpp"
+#include "cookie.hpp"
 
 // prepareAuth is GENERATED, not templated: WHERE the credential goes -
 // header, query or cookie, and under what name - is a fact about THIS API
@@ -65,7 +68,7 @@ inline CtxPtr makeContext(const CtxSpec& cs, CtxPtr basectx) {
 //
 // The configuration is the derived clean block makeOptions builds
 // (`options.__derived__.clean`): a plain map, so the registry list inside
-// it stays mutable after construction - features register later.
+// it can be replaced after construction - features register later.
 
 constexpr int CLEAN_MAXDEPTH = 32;
 
@@ -175,36 +178,51 @@ inline std::vector<std::string> cleanForms(const std::string& value) {
   return out;
 }
 
+inline Value cleanValues(const Value& cfg) {
+  std::shared_lock<std::shared_mutex> guard(cleanRegistryLock());
+  return getp(cfg, "values");
+}
+
+inline bool cleanKnown(const Value& values, const std::string& form) {
+  if (!values.is_list()) return false;
+  for (const auto& v : *values.as_list()) {
+    if (v.is_string() && v.as_string() == form) return true;
+  }
+  return false;
+}
+
 // Register a secret value. Idempotent; shorter than `min` is not a secret
-// the SDK can mask without blanking ordinary text.
+// the SDK can mask without blanking ordinary text. A registration publishes
+// a new list and never changes a published one.
 inline void cleanAddCfg(const Value& cfg, const Value& value) {
   if (!cfg.is_map() || !value.is_string()) return;
   size_t min = static_cast<size_t>(cleanCount(getp(cfg, "min"), 4));
   const std::string& raw = value.as_string();
   if (raw.size() < min) return;
-  Value values = getp(cfg, "values");
-  if (!values.is_list()) {
-    values = vlist();
-    map_put(cfg, "values", values);
-  }
-  auto& list = *values.as_list();
-  bool changed = false;
+  std::vector<std::string> forms;
   for (const auto& form : cleanForms(raw)) {
-    if (form.size() < min) continue;
-    bool known = false;
-    for (const auto& v : list) {
-      if (v.is_string() && v.as_string() == form) { known = true; break; }
-    }
-    if (!known) {
-      list.push_back(Value(form));
-      changed = true;
-    }
+    if (min <= form.size()) forms.push_back(form);
   }
-  if (changed) {
-    std::stable_sort(list.begin(), list.end(), [](const Value& a, const Value& b) {
-      return a.as_string().size() > b.as_string().size();
-    });
-  }
+  auto unknown = [&forms](const Value& values) {
+    std::vector<std::string> out;
+    for (const auto& form : forms) {
+      if (!cleanKnown(values, form)) out.push_back(form);
+    }
+    return out;
+  };
+  if (unknown(cleanValues(cfg)).empty()) return;
+  std::unique_lock<std::shared_mutex> guard(cleanRegistryLock());
+  Value values = getp(cfg, "values");
+  std::vector<std::string> added = unknown(values);
+  if (added.empty()) return;
+  Value next = vlist();
+  if (values.is_list()) *next.as_list() = *values.as_list();
+  auto& list = *next.as_list();
+  for (const auto& form : added) list.push_back(Value(form));
+  std::stable_sort(list.begin(), list.end(), [](const Value& a, const Value& b) {
+    return a.as_string().size() > b.as_string().size();
+  });
+  map_put(cfg, "values", next);
 }
 
 inline void cleanAdd(CtxPtr ctx, const Value& value) {
@@ -220,7 +238,7 @@ inline std::string cleanMaskValue(const Value& cfg, const std::string& value) {
 
 inline std::string cleanString(const Value& cfg, const std::string& text) {
   std::string out = text;
-  Value values = getp(cfg, "values");
+  Value values = cleanValues(cfg);
   if (!values.is_list()) return out;
   for (const auto& v : *values.as_list()) {
     if (!v.is_string() || v.as_string().empty()) continue;
@@ -579,6 +597,8 @@ inline Value fetcher(CtxPtr ctx, const std::string& fullurl, const Value& fetchd
 
 // ---- makeFetchDef -----------------------------------------------------
 
+inline bool isJsonRequest(const Value& point);
+
 inline Value makeFetchDef(CtxPtr ctx) {
   SpecPtr spec = ctx->spec;
   if (!spec) {
@@ -597,11 +617,15 @@ inline Value makeFetchDef(CtxPtr ctx) {
   map_put(fetchdef, "method", Value(spec->method));
   map_put(fetchdef, "headers", spec->headers);
 
+  // A map or a list is JSON, and so is a scalar on a point that declares a
+  // JSON body. Anything else goes as given.
   if (!is_nullish(spec->body)) {
-    if (spec->body.is_map()) {
-      map_put(fetchdef, "body", Value(Struct::jsonify(spec->body)));
+    const Value& body = spec->body;
+    bool scalar = body.is_string() || body.is_number() || body.is_bool();
+    if (body.is_map() || body.is_list() || (scalar && isJsonRequest(ctx->point))) {
+      map_put(fetchdef, "body", Value(Struct::jsonify(body)));
     } else {
-      map_put(fetchdef, "body", spec->body);
+      map_put(fetchdef, "body", body);
     }
   }
 
@@ -638,6 +662,23 @@ inline std::string makeUrl(CtxPtr ctx) {
     }
   }
 
+  // A placeholder left in the route would send the request to the wrong route.
+  // The base's own placeholders are server variables, resolved with the options.
+  std::string base = spec->base;
+  while (!base.empty() && '/' == base.back()) base.pop_back();
+  const std::string route = 0 == url.compare(0, base.size(), base) ? url.substr(base.size()) : url;
+  std::string unfilled;
+  for (size_t at = route.find('{'); std::string::npos != at; at = route.find('{', at + 1)) {
+    size_t end = route.find_first_of("{}/", at + 1);
+    if (std::string::npos != end && '}' == route[end] && end > at + 1) {
+      unfilled += (unfilled.empty() ? "" : ", ") + route.substr(at, end - at + 1);
+      at = end;
+    }
+  }
+  if (!unfilled.empty()) {
+    throw ctx->makeError("url_param_missing", "URL path has no value for " + unfilled + ".");
+  }
+
   std::string qsep = "?";
   for (const auto& item : Struct::items(spec->query)) {
     std::string key = as_str(pair_key(item));
@@ -645,7 +686,10 @@ inline std::string makeUrl(CtxPtr ctx) {
     if (!is_nullish(val)) {
       url += qsep + Struct::escurl(Value(key)) + "=" + Struct::escurl(Value(Struct::stringify(val)));
       qsep = "&";
-      map_put(resmatch, key, val);
+      // Sent with the request, never recorded as the entity's match.
+      if (spec->authquery.end() == std::find(spec->authquery.begin(), spec->authquery.end(), key)) {
+        map_put(resmatch, key, val);
+      }
     }
   }
 
@@ -654,6 +698,50 @@ inline std::string makeUrl(CtxPtr ctx) {
 }
 
 // ---- makePoint --------------------------------------------------------
+
+// The name a point gives a parameter in the call, if it renames it.
+inline std::string paramAlias(const Value& point, const std::string& key) {
+  if (!point.is_map()) return "";
+  Value alias = Helpers::toMapAny(getp(point, "alias"));
+  if (!alias.is_map()) return "";
+  Value ak = getp(alias, key);
+  return ak.is_string() ? ak.as_string() : "";
+}
+
+// The value the call or its entity gives a point's parameter, under its name
+// or the point's alias for it.
+inline Value paramValue(CtxPtr ctx, const Value& point, const std::string& key) {
+  std::string akey = paramAlias(point, key);
+
+  Value val = getp(ctx->reqmatch, key, Value(nullptr));
+  if (val.is_null()) val = getp(ctx->match, key, Value(nullptr));
+  if (val.is_null() && !akey.empty()) val = getp(ctx->reqmatch, akey, Value(nullptr));
+  if (val.is_null()) val = getp(ctx->reqdata, key, Value(nullptr));
+  if (val.is_null()) val = getp(ctx->data, key, Value(nullptr));
+  if (val.is_null() && !akey.empty()) {
+    val = getp(ctx->reqdata, akey, Value(nullptr));
+    if (val.is_null()) val = getp(ctx->data, akey, Value(nullptr));
+  }
+
+  return val;
+}
+
+// The path parameters of a point that neither the call nor the entity gives a
+// value for, looked up as param looks them up.
+inline std::vector<std::string> unfilledParams(CtxPtr ctx, const Value& point) {
+  std::vector<std::string> missing;
+  Value parts = getp(point, "parts");
+  if (!parts.is_list()) return missing;
+  for (const auto& part : *parts.as_list()) {
+    if (!part.is_string()) continue;
+    const std::string& text = part.as_string();
+    if (text.size() < 3 || '{' != text.front() ||
+        text.size() - 1 != text.find_first_of("{}/", 1) || '}' != text.back()) continue;
+    std::string name = text.substr(1, text.size() - 2);
+    if (is_nullish(paramValue(ctx, point, name))) missing.push_back(name);
+  }
+  return missing;
+}
 
 inline Value makePoint(CtxPtr ctx) {
   // A PrePoint feature hook (e.g. rbac) may short-circuit by storing an
@@ -669,8 +757,9 @@ inline Value makePoint(CtxPtr ctx) {
   OperationPtr op = ctx->op;
   Value options = ctx->options;
 
-  std::string allowOp = as_str(Struct::getpath(options, {"allow", "op"}));
-  if (allowOp.find(op->name) == std::string::npos) {
+  Value allowOpVal = Struct::getpath(options, {"allow", "op"});
+  std::string allowOp = as_str(allowOpVal);
+  if (!Helpers::allowed(allowOpVal, op->name)) {
     throw ctx->makeError("point_op_allow",
         "Operation \"" + op->name + "\" not allowed by SDK option allow.op value: \"" + allowOp + "\"");
   }
@@ -761,18 +850,50 @@ inline Value makePoint(CtxPtr ctx) {
         return last.is_string() && 0 == last.as_string().rfind("{", 0);
       };
 
-      point = op->points[0];
-      for (size_t i = 0; i < op->points.size(); i++) {
-        const Value& cand = op->points[i];
-        bool candTerm = terminalParam(cand);
-        bool bestTerm = terminalParam(point);
-        if (candTerm != bestTerm) {
-          if (candTerm) point = cand;
+      auto ownPoint = [&](const std::vector<Value>& points) {
+        Value best = points[0];
+        for (const auto& cand : points) {
+          bool candTerm = terminalParam(cand);
+          bool bestTerm = terminalParam(best);
+          if (candTerm != bestTerm) {
+            if (candTerm) best = cand;
+          }
+          else if (partsLen(cand) < partsLen(best)) {
+            best = cand;
+          }
         }
-        else if (partsLen(cand) < partsLen(point)) {
-          point = cand;
+        return best;
+      };
+
+      // A call without an action falls back to a point without one, as
+      // generation does, and only to a route the call can fill.
+      std::vector<Value> plain;
+      for (const auto& cand : op->points) {
+        if (getp(Helpers::toMapAny(getp(cand, "select")), "$action", Value(nullptr)).is_null()) {
+          plain.push_back(cand);
         }
       }
+      if (plain.empty()) {
+        throw ctx->makeError("point_action_required",
+            "Operation \"" + op->name +
+            "\" has only action endpoints; pass $action to choose one.");
+      }
+      std::vector<Value> fillable;
+      for (const auto& cand : plain) {
+        if (unfilledParams(ctx, cand).empty()) fillable.push_back(cand);
+      }
+
+      if (fillable.empty()) {
+        std::string missing;
+        for (const auto& name : unfilledParams(ctx, ownPoint(plain))) {
+          missing += (missing.empty() ? "" : ", ") + name;
+        }
+        throw ctx->makeError("point_no_match",
+            "Operation \"" + op->name +
+            "\" has no endpoint whose path parameters are all given (missing: " + missing + ").");
+      }
+
+      point = ownPoint(fillable);
     }
 
     if (reqselector.is_map()) {
@@ -953,8 +1074,9 @@ inline SpecPtr makeSpec(CtxPtr ctx) {
 
   ctx->spec->method = utility->prepareMethod(ctx);
 
-  std::string allowMethod = as_str(Struct::getpath(options, {"allow", "method"}));
-  if (allowMethod.find(ctx->spec->method) == std::string::npos) {
+  Value allowMethodVal = Struct::getpath(options, {"allow", "method"});
+  std::string allowMethod = as_str(allowMethodVal);
+  if (!Helpers::allowed(allowMethodVal, ctx->spec->method)) {
     throw ctx->makeError("spec_method_allow",
         "Method \"" + ctx->spec->method + "\" not allowed by SDK option allow.method value: \"" + allowMethod + "\"");
   }
@@ -984,7 +1106,25 @@ inline SpecPtr makeSpec(CtxPtr ctx) {
     map_put(ctx->ctrl->explain, "spec", ctx->spec->toValue());
   }
 
+  // Whatever prepareAuth sets in the query, under whichever name, is the
+  // credential; a key it leaves as it was is the caller's.
+  std::vector<std::pair<std::string, Value>> query;
+  for (const auto& item : Struct::items(ctx->spec->query)) {
+    query.emplace_back(as_str(pair_key(item)), pair_val(item));
+  }
+
   SpecPtr spec = utility->prepareAuth(ctx);
+  if (spec) {
+    spec->authquery.clear();
+    for (const auto& item : Struct::items(spec->query)) {
+      std::string key = as_str(pair_key(item));
+      auto was = std::find_if(query.begin(), query.end(),
+        [&](const std::pair<std::string, Value>& kv) { return kv.first == key; });
+      if (query.end() == was || !(was->second == pair_val(item))) {
+        spec->authquery.push_back(key);
+      }
+    }
+  }
   ctx->spec = spec;
   return spec;
 }
@@ -1100,6 +1240,11 @@ inline ResultPtr resultBody(CtxPtr ctx) {
   if (result) {
     if (response && response->jsonFunc && !is_nullish(response->body)) {
       result->body = response->jsonFunc();
+    }
+    if (response && response->unreadable) {
+      Value sent = ctx->spec ? ctx->spec->headers : Value::undef();
+      result->err = unreadableBody(ctx, result->status, result->headers, response->body, sent,
+        result->err);
     }
   }
   return result;
@@ -1255,44 +1400,216 @@ inline std::string prepareMethod(CtxPtr ctx) {
 
 // ---- prepareBody ------------------------------------------------------
 
+// ---- media ------------------------------------------------------------
+
+// The media types a point declares: `response` (the model's `rs`) for the
+// Accept header, and `body` (the model's `rb`) for the request body.
+
+// The data key holding a raw request body. Like `$action`, it can never be a
+// declared argument name.
+inline const char* rawBodyKey() { return "$body"; }
+
+inline std::string mediaLower(std::string s) {
+  for (auto& ch : s) ch = (char)std::tolower((unsigned char)ch);
+  return s;
+}
+
+inline bool isJsonMedia(const Value& v) {
+  if (!v.is_string()) return false;
+  std::string m = v.as_string().substr(0, v.as_string().find(';'));
+  size_t b = m.find_first_not_of(" \t");
+  size_t e = m.find_last_not_of(" \t");
+  m = std::string::npos == b ? "" : mediaLower(m.substr(b, e - b + 1));
+  return m == "application/json" || m == "text/json" ||
+    (m.size() >= 5 && 0 == m.compare(m.size() - 5, 5, "+json"));
+}
+
+// The declared JSON type alone, else every declared type in the model's
+// order; empty when no success response declares a body.
+inline std::string acceptOf(const Value& point) {
+  Value res = getp(point, "response");
+  Value media = getp(res, "media");
+  if (!media.is_string() || media.as_string().empty()) return "";
+  Value kind = getp(res, "kind");
+  if (kind.is_string() && kind.as_string() == "json") return media.as_string();
+  std::string out = media.as_string();
+  Value alts = getp(res, "alternatives");
+  if (alts.is_list()) {
+    for (const auto& alt : *alts.as_list()) {
+      Value m = getp(alt, "media");
+      if (m.is_string() && !m.as_string().empty()) out += ", " + m.as_string();
+    }
+  }
+  return out;
+}
+
+inline bool isRawRequest(const Value& point) {
+  Value kind = getp(getp(point, "body"), "kind");
+  return kind.is_string() && kind.as_string() == "raw";
+}
+
+inline bool isJsonRequest(const Value& point) {
+  Value kind = getp(getp(point, "body"), "kind");
+  return kind.is_string() && kind.as_string() == "json";
+}
+
+inline bool hasMediaHeader(const Value& headers, const std::string& name) {
+  for (const auto& item : Struct::items(headers)) {
+    if (mediaLower(as_str(pair_key(item))) == name) return true;
+  }
+  return false;
+}
+
+// A caller's accept wins. A declared request type replaces each JSON
+// content-type, the SDK default, and leaves any other the caller set.
+inline Value mediaHeaders(const Value& point, Value headers) {
+  std::string accept = acceptOf(point);
+  if (!accept.empty() && !hasMediaHeader(headers, "accept")) {
+    map_put(headers, "accept", Value(accept));
+  }
+
+  Value body = getp(point, "body");
+  Value kind = getp(body, "kind");
+  Value media = getp(body, "media");
+  if (kind.is_string() && (kind.as_string() == "raw" || kind.as_string() == "json") &&
+      media.is_string() && !media.as_string().empty()) {
+    for (const auto& item : Struct::items(headers)) {
+      std::string key = as_str(pair_key(item));
+      if (mediaLower(key) == "content-type" && isJsonMedia(getp(headers, key))) {
+        headers.as_map()->erase(key);
+      }
+    }
+    if (!hasMediaHeader(headers, "content-type")) map_put(headers, "content-type", media);
+  }
+  return headers;
+}
+
+// A string Value holds any bytes, and they are sent as they are.
+inline Value rawBody(const Value& reqdata) { return getp(reqdata, rawBodyKey()); }
+
 inline Value prepareBody(CtxPtr ctx) {
   if (ctx->op->input == "data") {
+    if (isRawRequest(ctx->point)) return rawBody(ctx->reqdata);
     return ctx->utility->transformRequest(ctx);
   }
   return Value::undef();
 }
 
+// ---- callArgs ---------------------------------------------------------
+
+// One argument a point declares, with the name it travels under and the
+// value the call passes for it.
+struct CallArg {
+  std::string name;
+  std::string wire;
+  Value val;
+};
+
+// The arguments a point declares in one location, query or header, each with
+// the name it travels under and the value this call passes in its match or
+// else its data. Unlike a path parameter, the entity's stored match and data
+// never supply one.
+inline std::vector<CallArg> callArgs(CtxPtr ctx, const std::string& kind) {
+  std::vector<CallArg> out;
+  Value defs = ctx->point.is_map() ? getp(getp(ctx->point, "args"), kind) : Value::undef();
+  if (!defs.is_list()) return out;
+  for (const auto& ad : *defs.as_list()) {
+    Value name = getp(ad, "name");
+    if (!name.is_string() || name.as_string().empty()) continue;
+    Value orig = getp(ad, "orig");
+    std::string wire = orig.is_string() && !orig.as_string().empty() ?
+      orig.as_string() : name.as_string();
+    Value val = getp(ctx->reqmatch, name.as_string(), Value(nullptr));
+    if (is_nullish(val)) val = getp(ctx->reqdata, name.as_string(), Value(nullptr));
+    out.push_back({name.as_string(), wire, val});
+  }
+  return out;
+}
+
 // ---- prepareHeaders ---------------------------------------------------
+
+// Strips the blanks around a cookie piece.
+inline std::string trimBlank(const std::string& s) {
+  size_t from = s.find_first_not_of(" \t");
+  if (std::string::npos == from) return "";
+  return s.substr(from, s.find_last_not_of(" \t") - from + 1);
+}
+
+// The form style of a cookie parameter: a list repeats the name, a map sends
+// its own keys, and every value is percent-encoded.
+inline std::string cookiePair(const std::string& wire, const Value& val) {
+  auto esc = [](const Value& v) { return Struct::escurl(Value(Struct::stringify(v))); };
+  std::vector<std::string> pairs;
+  if (val.is_list()) {
+    for (const auto& item : *val.as_list()) pairs.push_back(wire + "=" + esc(item));
+  } else if (val.is_map()) {
+    for (const auto& item : Struct::items(val)) {
+      pairs.push_back(Struct::escurl(pair_key(item)) + "=" + esc(pair_val(item)));
+    }
+  } else {
+    pairs.push_back(wire + "=" + esc(val));
+  }
+  std::string joined;
+  for (size_t i = 0; i < pairs.size(); i++) joined += (0 < i ? "; " : "") + pairs[i];
+  return joined;
+}
 
 inline Value prepareHeaders(CtxPtr ctx) {
   Value options = ctx->client->optionsMap();
   Value headers = getp(options, "headers");
   Value out = is_nullish(headers) ? vmap() : Helpers::toMapAny(Struct::clone(headers));
   if (!out.is_map()) out = vmap();
+  out = mediaHeaders(ctx->point, out);
 
-  // A header parameter travels as a header, under the name the definition
-  // gives it, and only from this call's own arguments. It replaces a default
-  // of the same name, whatever its case.
+  // A header argument replaces a default of the same name, whatever its case.
   auto lower = [](std::string s) {
     for (auto& ch : s) ch = (char)std::tolower((unsigned char)ch);
     return s;
   };
-  Value aheader = ctx->point.is_map() ? getp(getp(ctx->point, "args"), "header") : Value::undef();
-  if (aheader.is_list()) {
-    for (const auto& hd : *aheader.as_list()) {
-      Value name = getp(hd, "name");
-      if (!name.is_string() || name.as_string().empty()) continue;
-      Value orig = getp(hd, "orig");
-      std::string wire = lower(orig.is_string() && !orig.as_string().empty() ?
-        orig.as_string() : name.as_string());
-      Value val = getp(ctx->reqmatch, name.as_string(), Value(nullptr));
-      if (val.is_null()) val = getp(ctx->reqdata, name.as_string(), Value(nullptr));
-      if (is_nullish(val)) continue;
-      for (const auto& item : Struct::items(out)) {
-        std::string key = as_str(pair_key(item));
-        if (lower(key) == wire) out.as_map()->erase(key);
+  for (const auto& arg : callArgs(ctx, "header")) {
+    if (is_nullish(arg.val)) continue;
+    std::string wire = lower(arg.wire);
+    for (const auto& item : Struct::items(out)) {
+      std::string key = as_str(pair_key(item));
+      if (lower(key) == wire) out.as_map()->erase(key);
+    }
+    map_put(out, wire, Value(Struct::stringify(arg.val)));
+  }
+
+  // A cookie argument travels in the cookie header, form serialized and
+  // percent-encoded, replacing a cookie of the same name among those the
+  // caller's headers already send.
+  std::vector<CallArg> sent;
+  for (const auto& arg : callArgs(ctx, "cookie")) {
+    if (!is_nullish(arg.val)) sent.push_back(arg);
+  }
+  if (!sent.empty()) {
+    std::vector<std::string> names;
+    for (const auto& arg : sent) {
+      if (arg.val.is_map()) {
+        for (const auto& item : Struct::items(arg.val)) names.push_back(Struct::escurl(pair_key(item)));
+      } else {
+        names.push_back(arg.wire);
       }
-      map_put(out, wire, Value(Struct::stringify(val)));
+    }
+    std::vector<std::string> kept;
+    for (const auto& item : Struct::items(out)) {
+      std::string key = as_str(pair_key(item));
+      if (lower(key) != "cookie") continue;
+      Value given = getp(out, key);
+      if (given.is_string()) {
+        for (const auto& cookie : cookieKeep(given.as_string(), names)) kept.push_back(cookie);
+      }
+      out.as_map()->erase(key);
+    }
+    for (const auto& arg : sent) {
+      std::string pair = cookiePair(arg.wire, arg.val);
+      if (!pair.empty()) kept.push_back(pair);
+    }
+    if (!kept.empty()) {
+      std::string joined;
+      for (size_t i = 0; i < kept.size(); i++) joined += (0 < i ? "; " : "") + kept[i];
+      map_put(out, "cookie", Value(joined));
     }
   }
   return out;
@@ -1301,13 +1618,6 @@ inline Value prepareHeaders(CtxPtr ctx) {
 // ---- param ------------------------------------------------------------
 
 inline Value param(CtxPtr ctx, const Value& paramdef) {
-  Value point = ctx->point;
-  SpecPtr spec = ctx->spec;
-  Value match = ctx->match;
-  Value reqmatch = ctx->reqmatch;
-  Value data = ctx->data;
-  Value reqdata = ctx->reqdata;
-
   int pt = Struct::typify(paramdef);
 
   std::string key;
@@ -1318,29 +1628,14 @@ inline Value param(CtxPtr ctx, const Value& paramdef) {
     key = k.is_string() ? k.as_string() : "";
   }
 
-  std::string akey = "";
-  if (point.is_map()) {
-    Value alias = Helpers::toMapAny(getp(point, "alias"));
-    if (alias.is_map()) {
-      Value ak = getp(alias, key);
-      if (ak.is_string()) akey = ak.as_string();
-    }
+  std::string akey = paramAlias(ctx->point, key);
+  if (ctx->spec && !akey.empty() &&
+      getp(ctx->reqmatch, key, Value(nullptr)).is_null() &&
+      getp(ctx->match, key, Value(nullptr)).is_null()) {
+    map_put(ctx->spec->alias, akey, Value(key));
   }
 
-  Value val = getp(reqmatch, key, Value(nullptr));
-  if (val.is_null()) val = getp(match, key, Value(nullptr));
-  if (val.is_null() && !akey.empty()) {
-    if (spec) map_put(spec->alias, akey, Value(key));
-    val = getp(reqmatch, akey, Value(nullptr));
-  }
-  if (val.is_null()) val = getp(reqdata, key, Value(nullptr));
-  if (val.is_null()) val = getp(data, key, Value(nullptr));
-  if (val.is_null() && !akey.empty()) {
-    val = getp(reqdata, akey, Value(nullptr));
-    if (val.is_null()) val = getp(data, akey, Value(nullptr));
-  }
-
-  return val;
+  return paramValue(ctx, ctx->point, key);
 }
 
 // ---- prepareParams ----------------------------------------------------
@@ -1396,9 +1691,9 @@ inline Value prepareQuery(CtxPtr ctx) {
 
   // A path parameter travels in the path. The generated config lists them as
   // args.params, which prepareParams reads; params is the older list of names.
-  // A header parameter travels in the headers, which prepareHeaders fills.
   Value aparams = point.is_map() ? getp(getp(point, "args"), "params") : Value::undef();
   Value aheader = point.is_map() ? getp(getp(point, "args"), "header") : Value::undef();
+  Value acookie = point.is_map() ? getp(getp(point, "args"), "cookie") : Value::undef();
   auto named = [&](const Value& defs, const std::string& s) {
     if (!defs.is_list()) return false;
     for (const auto& pd : *defs.as_list()) {
@@ -1408,9 +1703,13 @@ inline Value prepareQuery(CtxPtr ctx) {
     return false;
   };
 
+  // A header or cookie parameter travels in the headers, which prepareHeaders
+  // fills, unless a query parameter shares its name: then both are sent.
+  Value aquery = point.is_map() ? getp(getp(point, "args"), "query") : Value::undef();
+  auto elsewhere = [&](const std::string& s) { return (named(aheader, s) || named(acookie, s)) && !named(aquery, s); };
+
   // A query parameter travels under the name the definition gives it, its
   // orig, which the model may have renamed for the caller.
-  Value aquery = point.is_map() ? getp(getp(point, "args"), "query") : Value::undef();
   auto wire_name = [&](const std::string& s) {
     if (aquery.is_list()) {
       for (const auto& qd : *aquery.as_list()) {
@@ -1430,8 +1729,16 @@ inline Value prepareQuery(CtxPtr ctx) {
     std::string key = as_str(pair_key(item));
     Value val = pair_val(item);
     if (!is_nullish(val) && "$action" != key && !contains_str(params, key) &&
-        !named(aparams, key) && !named(aheader, key)) {
+        !named(aparams, key) && !elsewhere(key)) {
       map_put(out, wire_name(key), val);
+    }
+  }
+
+  // A create or update passes its query arguments in its data.
+  for (const auto& arg : callArgs(ctx, "query")) {
+    if (!is_nullish(arg.val) && !contains_str(params, arg.name) &&
+        !named(aparams, arg.name) && !elsewhere(arg.name)) {
+      map_put(out, arg.wire, arg.val);
     }
   }
   return out;
@@ -1470,15 +1777,28 @@ inline Value omitKeys(const Value& reqdata, const std::vector<std::string>& name
 // the body is a copy without it. The caller's map is left untouched.
 inline Value stripAction(const Value& reqdata) { return omitKeys(reqdata, {"$action"}); }
 
-// A header argument travels as a header, which prepareHeaders sends, so the
-// body is built from the request data without it.
-inline std::vector<std::string> headerArgNames(CtxPtr ctx) {
+inline bool fieldArg(CtxPtr ctx, const std::string& name) {
+  if (!ctx->point.is_map()) return false;
+  for (const char* kind : {"header", "cookie", "query"}) {
+    Value defs = getp(getp(ctx->point, "args"), kind);
+    if (!defs.is_list()) continue;
+    for (const auto& ad : *defs.as_list()) {
+      Value n = getp(ad, "name");
+      Value f = getp(ad, "field");
+      if (n.is_string() && n.as_string() == name && f.is_bool() && f.as_bool()) return true;
+    }
+  }
+  return false;
+}
+
+// A header, cookie or query argument travels where prepareHeaders or
+// prepareQuery sends it, so the body is built from the request data without
+// it, unless the point marks it as a field the body keeps.
+inline std::vector<std::string> routedArgNames(CtxPtr ctx) {
   std::vector<std::string> names;
-  Value aheader = ctx->point.is_map() ? getp(getp(ctx->point, "args"), "header") : Value::undef();
-  if (aheader.is_list()) {
-    for (const auto& hd : *aheader.as_list()) {
-      Value name = getp(hd, "name");
-      if (name.is_string() && !name.as_string().empty()) names.push_back(name.as_string());
+  for (const char* kind : {"header", "cookie", "query"}) {
+    for (const auto& arg : callArgs(ctx, kind)) {
+      if (!fieldArg(ctx, arg.name)) names.push_back(arg.name);
     }
   }
   return names;
@@ -1487,7 +1807,7 @@ inline std::vector<std::string> headerArgNames(CtxPtr ctx) {
 inline Value transformRequest(CtxPtr ctx) {
   if (ctx->spec) ctx->spec->step = "reqform";
 
-  Value reqdata = omitKeys(ctx->reqdata, headerArgNames(ctx));
+  Value reqdata = omitKeys(ctx->reqdata, routedArgNames(ctx));
 
   Value transform = Helpers::toMapAny(getp(ctx->point, "transform"));
   if (!transform.is_map()) return stripAction(reqdata);
@@ -1502,11 +1822,13 @@ inline Value transformRequest(CtxPtr ctx) {
 
 // ---- makeOptions ------------------------------------------------------
 
-inline Value optsNoEntity(const Value& settings) {
+inline Value optsPlain(const Value& settings, const std::string& name) {
   if (!settings.is_map()) return settings;
   Value out = vmap();
   for (const auto& kv : *settings.as_map()) {
-    if ("entity" != kv.first) map_put(out, kv.first, kv.second);
+    if ("entity" != kv.first && !("rbac" == name && "rules" == kv.first)) {
+      map_put(out, kv.first, kv.second);
+    }
   }
   return out;
 }
@@ -1514,8 +1836,9 @@ inline Value optsNoEntity(const Value& settings) {
 // The options to scan for secrets. The feature map is keyed by feature
 // names, not field names, so it is scanned as a list: `secrets` must not
 // make every setting of that feature a secret. Entity blocks hold entity
-// settings and seeded records, never a credential, so none is scanned. The
-// raw scan still sees the feature list form, whose entries each carry `name`.
+// settings and seeded records, never a credential, so none is scanned, and
+// nor are rbac's rules, keyed by entity and operation names. The raw scan
+// still sees the feature list form, whose entries each carry `name`.
 inline Value optsWithout(const Value& opts, std::initializer_list<const char*> keys) {
   Value out = vmap();
   if (!opts.is_map()) return out;
@@ -1526,16 +1849,64 @@ inline Value optsWithout(const Value& opts, std::initializer_list<const char*> k
     if ("feature" == kv.first && (kv.second.is_map() || kv.second.is_list())) {
       Value list = vlist();
       if (kv.second.is_map()) {
-        for (const auto& f : *kv.second.as_map()) list.as_list()->push_back(optsNoEntity(f.second));
+        for (const auto& f : *kv.second.as_map()) list.as_list()->push_back(optsPlain(f.second, f.first));
       } else {
-        for (const auto& f : *kv.second.as_list()) list.as_list()->push_back(optsNoEntity(f));
+        for (const auto& f : *kv.second.as_list()) {
+          Value name = f.is_map() ? getp(f, "name") : Value::undef();
+          list.as_list()->push_back(optsPlain(f, name.is_string() ? name.as_string() : ""));
+        }
       }
       map_put(out, kv.first, list);
     } else if ("test" == kv.first) {
-      map_put(out, kv.first, optsNoEntity(kv.second));
+      map_put(out, kv.first, optsPlain(kv.second, ""));
     } else {
       map_put(out, kv.first, kv.second);
     }
+  }
+  return out;
+}
+
+// A templated base URL takes each {name} from options.server. An empty value
+// cannot make a working URL, so it fails construction, except in test mode,
+// where it becomes test-<name>.
+inline std::string resolveServerBase(const std::string& base, const Value& opts,
+                                     const Value& config, CtxPtr ctx) {
+  bool testmode = is_true(Struct::getpath(opts, {"test", "active"}))
+    || is_true(Struct::getpath(opts, {"feature", "test", "active"}));
+  Value server = Helpers::toMapAny(getp(opts, "server"));
+  Value nameV = Struct::getpath(config, {"main", "name"});
+  std::string sdkname = nameV.is_string() && !nameV.as_string().empty()
+    ? nameV.as_string() : "SDK";
+  auto namechar = [](char c) {
+    return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || '_' == c;
+  };
+
+  std::string out;
+  size_t i = 0;
+  while (i < base.size()) {
+    size_t j = i + 1;
+    if ('{' == base[i]) {
+      while (j < base.size() && namechar(base[j])) j++;
+    }
+    // A placeholder only when it closes and the name is [A-Za-z0-9_]+.
+    if ('{' != base[i] || j == i + 1 || j >= base.size() || '}' != base[j]) {
+      out += base[i];
+      i++;
+      continue;
+    }
+    std::string name = base.substr(i + 1, j - i - 1);
+    Value val = server.is_map() ? getp(server, name) : Value::undef();
+    if (val.is_string() && !val.as_string().empty()) {
+      out += val.as_string();
+    } else if (testmode) {
+      out += "test-" + name;
+    } else {
+      throw std::make_shared<SdkError>("server_var_required",
+          sdkname + ": the server variable '" + name + "' is required: the API base URL is '" +
+          base + "' - pass {\"server\", vmap({{\"" + name + "\", Value(\"...\")}})} in the SDK options",
+          ctx.get());
+    }
+    i = j + 1;
   }
   return out;
 }
@@ -1674,6 +2045,11 @@ inline Value makeOptions(CtxPtr ctx) {
       map_put(sm, "fetch", sysFetch);
       map_put(opts, "system", sm);
     }
+  }
+
+  Value baseV = getp(opts, "base");
+  if (baseV.is_string() && std::string::npos != baseV.as_string().find('{')) {
+    map_put(opts, "base", Value(resolveServerBase(baseV.as_string(), opts, config, ctx)));
   }
 
   // Resolve the feature add-order: an explicit list order (above) wins;

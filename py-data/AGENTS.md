@@ -21,9 +21,9 @@ Do not construct the SDK client directly and do not read env vars yourself —
 - `ad.availables()` -> DataFrame of `available`. Columns: name:string, normalize:boolean, template:string
 - `ad.callbacks()` -> DataFrame of `callback`. Columns: active:boolean, api_version:Int64, id:string, invalid:boolean, receiver:object, receiver_type:string, type:string, url:string
 - `ad.contacts()` -> DataFrame of `contact`. Columns: birthday_date:string, city:string, collection:object, contact_expire_after:Int64, contacts_count:Int64, country:string, created_by:string, date_created:string, date_updated:string, description:string, email:string, first_name:string, …
-- `ad.contacts_fields()` -> DataFrame of `contacts_field`. Columns: birthday_date:string, city:string, contact_expire_after:Int64, contacts_count:Int64, country:string, created_by:string, date_created:string, date_updated:string, description:string, email:string, first_name:string, gender:string, …
-- `ad.contacts_field_options()` -> DataFrame of `contacts_field_option`. Columns: birthday_date:string, city:string, contact_expire_after:Int64, contacts_count:Int64, country:string, created_by:string, date_created:string, date_updated:string, description:string, email:string, first_name:string, gender:string, …
-- `ad.contactsgroups()` -> DataFrame of `contactsgroup`. Columns: birthday_date:string, city:string, contact_expire_after:Int64, contacts_count:Int64, country:string, created_by:string, date_created:string, date_updated:string, description:string, email:string, first_name:string, gender:string, …
+- `ad.contacts_fields()` -> DataFrame of `contacts_field`. Columns: id:string, name:string, type:string
+- `ad.contacts_field_options()` -> DataFrame of `contacts_field_option`
+- `ad.contactsgroups()` -> DataFrame of `contactsgroup`. Columns: group_id:string, read:boolean, send:boolean, username:string, write:boolean
 - `ad.field_availables()` -> DataFrame of `field_available`. Columns: built_in:boolean, id:string, name:string, options:object, type:string
 - `ad.opt_outs()` -> DataFrame of `opt_out`. Columns: date:string, id:string, links:object, phoneNumber:Int64
 - `ad.pings()` -> DataFrame of `ping`. Columns: authorized:boolean, unavailable:object
@@ -35,7 +35,7 @@ Do not construct the SDK client directly and do not read env vars yourself —
 - `ad.short_urls()` -> DataFrame of `short_url`. Columns: description:string, expire:string, filename:string, hits:Int64, hits_unique:Int64, id:string, name:string, short_url:string, type:string, url:string
 - `ad.subusers()` -> DataFrame of `subuser`. Columns: active:boolean, credentials:object, description:string, id:string, points:object, username:string
 - `ad.templates()` -> DataFrame of `template`. Columns: id:string, name:string, normalize:boolean, template:string
-- `ad.user_rcs_sender_collections()` -> DataFrame of `user_rcs_sender_collection`. Columns: deliveredAt:string, expiredAt:string, id:string, interface:string, messageType:string, readAt:string, recipient:string, sender:string, senderId:string, sentAt:string
+- `ad.user_rcs_sender_collections()` -> DataFrame of `user_rcs_sender_collection`
 - `ad.callback(id)` -> Series for one `callback`
 - `ad.contact(id)` -> Series for one `contact`
 - `ad.group(id)` -> Series for one `group`

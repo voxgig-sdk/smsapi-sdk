@@ -57,6 +57,10 @@ main: kit: entity: field_available: {
           }
           m: "GET"
           o: "/contacts/fields/available"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"

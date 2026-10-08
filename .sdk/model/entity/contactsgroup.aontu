@@ -5,152 +5,17 @@ main: kit: entity: contactsgroup: {
   alias: field: {}
 
   fields: {
-    birthday_date: {
-      fo: "date"
-      h: "Birthday Date"
-      n: "birthday_date"
-      r: false
-      t: "`$STRING`"
-    }
-    city: {
-      h: "City"
-      n: "city"
-      r: false
-      t: "`$STRING`"
-    }
-    contact_expire_after: {
-      h: "Contact Expire After"
-      n: "contact_expire_after"
-      r: true
-      sh: "Contact expire after days"
-      t: "`$INTEGER`"
-    }
-    contacts_count: {
-      h: "Contacts Count"
-      n: "contacts_count"
-      r: false
-      t: "`$INTEGER`"
-    }
-    country: {
-      h: "Country"
-      n: "country"
-      r: false
-      t: "`$STRING`"
-    }
-    created_by: {
-      h: "Created By"
-      n: "created_by"
-      r: true
-      t: "`$STRING`"
-    }
-    date_created: {
-      fo: "date-time"
-      h: "Date Created"
-      n: "date_created"
-      r: true
-      t: "`$STRING`"
-    }
-    date_updated: {
-      fo: "date-time"
-      h: "Date Updated"
-      n: "date_updated"
-      r: true
-      t: "`$STRING`"
-    }
-    description: {
-      h: "Description"
-      n: "description"
-      r: false
-      t: "`$STRING`"
-    }
-    email: {
-      fo: "email"
-      h: "Email"
-      n: "email"
-      r: false
-      t: "`$STRING`"
-    }
-    first_name: {
-      h: "First Name"
-      n: "first_name"
-      r: false
-      t: "`$STRING`"
-    }
-    gender: {
-      h: "Gender"
-      n: "gender"
-      r: true
-      t: "`$STRING`"
-    }
     group_id: {
       fo: "oid"
       h: "Group Id"
       n: "group_id"
-      op: {
-        list: {
-          req: false
-          type: "`$STRING`"
-        }
-      }
       r: true
       sh: "Object ID"
-      t: "`$STRING`"
-    }
-    groups: {
-      h: "Groups"
-      n: "groups"
-      r: true
-      t: "`$ARRAY`"
-    }
-    id: {
-      fo: "oid"
-      h: "Id"
-      n: "id"
-      r: true
-      sh: "Object ID"
-      t: "`$STRING`"
-    }
-    idx: {
-      h: "Idx"
-      n: "idx"
-      r: false
-      sh: "User provided resource id"
-      t: "`$STRING`"
-    }
-    last_name: {
-      h: "Last Name"
-      n: "last_name"
-      r: false
-      t: "`$STRING`"
-    }
-    name: {
-      h: "Name"
-      n: "name"
-      r: false
-      sh: "Group name"
-      t: "`$STRING`"
-    }
-    permissions: {
-      h: "Permissions"
-      n: "permissions"
-      r: false
-      t: "`$ARRAY`"
-    }
-    phone_number: {
-      h: "Phone Number"
-      n: "phone_number"
-      r: false
       t: "`$STRING`"
     }
     read: {
       h: "Read"
       n: "read"
-      op: {
-        list: {
-          req: false
-          type: "`$BOOLEAN`"
-        }
-      }
       r: true
       sh: "Has read permission"
       t: "`$BOOLEAN`"
@@ -158,64 +23,23 @@ main: kit: entity: contactsgroup: {
     send: {
       h: "Send"
       n: "send"
-      op: {
-        list: {
-          req: false
-          type: "`$BOOLEAN`"
-        }
-      }
       r: true
       sh: "Has send permission"
       t: "`$BOOLEAN`"
     }
-    source: {
-      h: "Source"
-      n: "source"
-      r: false
-      t: "`$STRING`"
-    }
-    type: {
-      h: "Type"
-      n: "type"
-      r: false
-      t: "`$STRING`"
-    }
     username: {
       h: "Username"
       n: "username"
-      op: {
-        list: {
-          req: false
-          type: "`$STRING`"
-        }
-      }
       r: true
-      t: "`$STRING`"
-    }
-    value: {
-      h: "Value"
-      n: "value"
-      r: false
       t: "`$STRING`"
     }
     write: {
       h: "Write"
       n: "write"
-      op: {
-        list: {
-          req: false
-          type: "`$BOOLEAN`"
-        }
-      }
       r: true
       sh: "Has write permission"
       t: "`$BOOLEAN`"
     }
-  }
-
-  id: {
-    field: "id"
-    name: "id"
   }
 
   name: "contactsgroup"
@@ -253,6 +77,42 @@ main: kit: entity: contactsgroup: {
               groupId: "group_id"
             }
           }
+          rb: {
+            fields: [
+              {
+                list: true
+                name: "birthday_date"
+              }
+              {
+                list: true
+                name: "email"
+              }
+              {
+                list: true
+                name: "first_name"
+              }
+              {
+                name: "gender"
+              }
+              {
+                list: true
+                name: "group_id"
+              }
+              {
+                list: true
+                name: "last_name"
+              }
+              {
+                list: true
+                name: "phone_number"
+              }
+              {
+                name: "q"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
           s: [
             {
               lit: "contacts"
@@ -280,6 +140,28 @@ main: kit: entity: contactsgroup: {
           }
           m: "POST"
           o: "/contacts/groups"
+          rb: {
+            fields: [
+              {
+                name: "contact_expire_after"
+              }
+              {
+                name: "description"
+              }
+              {
+                name: "idx"
+              }
+              {
+                name: "name"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -298,52 +180,6 @@ main: kit: entity: contactsgroup: {
     list: {
       name: "list"
       points: [
-        {
-          co: {
-            id: "GET /contacts/groups"
-            source: "openapi3"
-            version: 2
-          }
-          g: {
-            query: [
-              {
-                ex: "{\"name\" : \"group name\"}"
-                k: "query"
-                n: "name"
-                or: "name"
-                r: false
-                t: "`$OBJECT`"
-              }
-              {
-                k: "query"
-                n: "with"
-                or: "with"
-                r: false
-                t: "`$ARRAY`"
-              }
-            ]
-          }
-          m: "GET"
-          o: "/contacts/groups"
-          q: {
-            exist: [
-              "name"
-              "with"
-            ]
-          }
-          s: [
-            {
-              lit: "contacts"
-            }
-            {
-              lit: "groups"
-            }
-          ]
-          t: {
-            req: "`reqdata`"
-            res: "`body.collection`"
-          }
-        }
         {
           co: {
             id: "GET /contacts/groups/{groupId}/permissions"
@@ -374,6 +210,10 @@ main: kit: entity: contactsgroup: {
               groupId: "group_id"
             }
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -386,6 +226,50 @@ main: kit: entity: contactsgroup: {
             }
             {
               lit: "permissions"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
+        {
+          co: {
+            id: "GET /contacts/groups"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            query: [
+              {
+                ex: "{\"name\" : \"group name\"}"
+                k: "query"
+                n: "name"
+                or: "name"
+                r: false
+                t: "`$OBJECT`"
+              }
+              {
+                k: "query"
+                n: "with"
+                or: "with"
+                r: false
+                t: "`$ARRAY`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/contacts/groups"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              lit: "groups"
             }
           ]
           t: {
@@ -477,17 +361,8 @@ main: kit: entity: contactsgroup: {
                 t: "`$STRING`"
               }
               {
-                k: "param"
-                n: "username"
-                or: "username"
-                r: true
-                t: "`$STRING`"
-              }
-            ]
-            query: [
-              {
                 ex: "example_username"
-                k: "query"
+                k: "param"
                 n: "username"
                 or: "username"
                 r: true
@@ -560,6 +435,15 @@ main: kit: entity: contactsgroup: {
               groupId: "group_id"
             }
           }
+          rb: {
+            fields: [
+              {
+                name: "delete_contacts"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
           s: [
             {
               lit: "contacts"
@@ -605,6 +489,42 @@ main: kit: entity: contactsgroup: {
             param: {
               groupId: "group_id"
             }
+          }
+          rb: {
+            fields: [
+              {
+                list: true
+                name: "birthday_date"
+              }
+              {
+                list: true
+                name: "email"
+              }
+              {
+                list: true
+                name: "first_name"
+              }
+              {
+                name: "gender"
+              }
+              {
+                list: true
+                name: "group_id"
+              }
+              {
+                list: true
+                name: "last_name"
+              }
+              {
+                list: true
+                name: "phone_number"
+              }
+              {
+                name: "q"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
           }
           s: [
             {
@@ -668,17 +588,8 @@ main: kit: entity: contactsgroup: {
                 t: "`$STRING`"
               }
               {
-                k: "param"
-                n: "username"
-                or: "username"
-                r: true
-                t: "`$STRING`"
-              }
-            ]
-            query: [
-              {
                 ex: "example_username"
-                k: "query"
+                k: "param"
                 n: "username"
                 or: "username"
                 r: true
@@ -698,6 +609,25 @@ main: kit: entity: contactsgroup: {
             param: {
               groupId: "group_id"
             }
+          }
+          rb: {
+            fields: [
+              {
+                name: "read"
+              }
+              {
+                name: "send"
+              }
+              {
+                name: "write"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -750,6 +680,42 @@ main: kit: entity: contactsgroup: {
             param: {
               groupId: "group_id"
             }
+          }
+          rb: {
+            fields: [
+              {
+                list: true
+                name: "birthday_date"
+              }
+              {
+                list: true
+                name: "email"
+              }
+              {
+                list: true
+                name: "first_name"
+              }
+              {
+                name: "gender"
+              }
+              {
+                list: true
+                name: "group_id"
+              }
+              {
+                list: true
+                name: "last_name"
+              }
+              {
+                list: true
+                name: "phone_number"
+              }
+              {
+                name: "q"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
           }
           s: [
             {

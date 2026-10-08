@@ -77,6 +77,13 @@ main: kit: entity: callback: {
       name: "create"
       points: [
         {
+          bf: [
+            "api_version"
+            "receiver_number"
+            "receiver_type"
+            "type"
+            "url"
+          ]
           co: {
             id: "POST /callbacks"
             source: "openapi3"
@@ -84,6 +91,10 @@ main: kit: entity: callback: {
           }
           m: "POST"
           o: "/callbacks"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "callbacks"
@@ -107,6 +118,10 @@ main: kit: entity: callback: {
           }
           m: "GET"
           o: "/callbacks"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "callbacks"
@@ -147,6 +162,10 @@ main: kit: entity: callback: {
               "id"
             ]
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "callbacks"
@@ -185,6 +204,10 @@ main: kit: entity: callback: {
             exist: [
               "id"
             ]
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -254,6 +277,10 @@ main: kit: entity: callback: {
       name: "update"
       points: [
         {
+          bf: [
+            "api_version"
+            "url"
+          ]
           co: {
             id: "PUT /callbacks/{id}"
             source: "openapi3"
@@ -277,6 +304,10 @@ main: kit: entity: callback: {
             exist: [
               "id"
             ]
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

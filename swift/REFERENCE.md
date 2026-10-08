@@ -232,11 +232,15 @@ let available = client.Available()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Available().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -276,16 +280,18 @@ let blacklist = client.Blacklist()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Blacklist().create(VMap([
 ]), nil)
 ```
 
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Blacklist().load(nil, nil)
@@ -293,7 +299,7 @@ let result = try client.Blacklist().load(nil, nil)
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Blacklist().remove(VMap([("id", .string("id"))]), nil)
@@ -356,7 +362,7 @@ let callback = client.Callback()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Callback().create(VMap([
@@ -365,16 +371,20 @@ let result = try client.Callback().create(VMap([
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Callback().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Callback().load(VMap([("id", .string("callback_id"))]), nil)
@@ -382,7 +392,7 @@ let result = try client.Callback().load(VMap([("id", .string("callback_id"))]), 
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Callback().remove(VMap([("id", .string("callback_id"))]), nil)
@@ -390,7 +400,7 @@ let result = try client.Callback().remove(VMap([("id", .string("callback_id"))])
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.Callback().update(VMap([
@@ -442,7 +452,6 @@ let contact = client.Contact()
 | `email` | `String` | No |  |
 | `first_name` | `String` | No |  |
 | `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
 | `groups` | `[Value]` | Yes |  |
 | `id` | `String` | Yes | Object ID |
 | `idx` | `String` | No | User provided resource id |
@@ -450,14 +459,8 @@ let contact = client.Contact()
 | `name` | `String` | Yes | Group name |
 | `permissions` | `[Value]` | No |  |
 | `phone_number` | `String` | No |  |
-| `read` | `Bool` | No | Has read permission |
-| `send` | `Bool` | No | Has send permission |
 | `size` | `Int` | Yes |  |
 | `source` | `String` | No |  |
-| `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Bool` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -465,9 +468,9 @@ let contact = client.Contact()
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -476,28 +479,21 @@ let contact = client.Contact()
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Contact().create(VMap([
@@ -515,18 +511,24 @@ let result = try client.Contact().create(VMap([
 ]), nil)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Contact().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Contact().load(VMap([("id", .string("contact_id"))]), nil)
@@ -534,7 +536,7 @@ let result = try client.Contact().load(VMap([("id", .string("contact_id"))]), ni
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Contact().remove(VMap([("id", .string("contact_id"))]), nil)
@@ -542,13 +544,15 @@ let result = try client.Contact().remove(VMap([("id", .string("contact_id"))]), 
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.Contact().update(VMap([
     ("id", .string("contact_id"))
 ]), nil)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -581,95 +585,39 @@ let contactsField = client.ContactsField()
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Int` | Yes | Contact expire after days |
-| `contacts_count` | `Int` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
-| `groups` | `[Value]` | Yes |  |
 | `id` | `String` | No | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `[Value]` | No |  |
-| `phone_number` | `String` | No |  |
-| `read` | `Bool` | No | Has read permission |
-| `send` | `Bool` | No | Has send permission |
-| `source` | `String` | No |  |
+| `name` | `String` | No |  |
 | `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Bool` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.ContactsField().create(VMap([
-    ("contact_expire_after", .int(1)),  // Int
-    ("created_by", .string("example_created_by")),  // String
-    ("date_created", .string("example_date_created")),  // String
-    ("date_updated", .string("example_date_updated")),  // String
-    ("gender", .string("example_gender")),  // String
-    ("groups", .list([]))  // [Value]
 ]), nil)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.ContactsField().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.ContactsField().remove(VMap([("id", .string("id"))]), nil)
@@ -677,13 +625,15 @@ let result = try client.ContactsField().remove(VMap([("id", .string("id"))]), ni
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.ContactsField().update(VMap([
     ("id", .string("id"))
 ]), nil)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -712,47 +662,19 @@ Return the entity name.
 let contactsFieldOption = client.ContactsFieldOption()
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Int` | Yes | Contact expire after days |
-| `contacts_count` | `Int` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
-| `groups` | `[Value]` | Yes |  |
-| `id` | `String` | Yes | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `[Value]` | No |  |
-| `phone_number` | `String` | No |  |
-| `read` | `Bool` | No | Has read permission |
-| `send` | `Bool` | No | Has send permission |
-| `source` | `String` | No |  |
-| `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Bool` | No | Has write permission |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
-let results = try client.ContactsFieldOption().list(nil, nil)
-print(results)
+let results = try client.ContactsFieldOption().list(VMap([("field_id", .string("example"))]), nil)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -786,82 +708,21 @@ let contactsgroup = client.Contactsgroup()
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Int` | Yes | Contact expire after days |
-| `contacts_count` | `Int` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
 | `group_id` | `String` | Yes | Object ID |
-| `groups` | `[Value]` | Yes |  |
-| `id` | `String` | Yes | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `[Value]` | No |  |
-| `phone_number` | `String` | No |  |
 | `read` | `Bool` | Yes | Has read permission |
 | `send` | `Bool` | Yes | Has send permission |
-| `source` | `String` | No |  |
-| `type` | `String` | No |  |
 | `username` | `String` | Yes |  |
-| `value` | `String` | No |  |
 | `write` | `Bool` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Contactsgroup().create(VMap([
-    ("contact_expire_after", .int(1)),  // Int
-    ("created_by", .string("example_created_by")),  // String
-    ("date_created", .string("example_date_created")),  // String
-    ("date_updated", .string("example_date_updated")),  // String
-    ("gender", .string("example_gender")),  // String
     ("group_id", .string("example_group_id")),  // String
-    ("groups", .list([])),  // [Value]
-    ("id", .string("example_id")),  // String
     ("read", .bool(true)),  // Bool
     ("send", .bool(true)),  // Bool
     ("username", .string("example_username")),  // String
@@ -869,18 +730,24 @@ let result = try client.Contactsgroup().create(VMap([
 ]), nil)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Contactsgroup().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Contactsgroup().remove(VMap([("group_id", .string("group_id"))]), nil)
@@ -888,13 +755,15 @@ let result = try client.Contactsgroup().remove(VMap([("group_id", .string("group
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.Contactsgroup().update(VMap([
     ("group_id", .string("group_id"))
 ]), nil)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -927,7 +796,7 @@ let contactstrash = client.Contactstrash()
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Contactstrash().remove(nil, nil)
@@ -935,7 +804,7 @@ let result = try client.Contactstrash().remove(nil, nil)
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.Contactstrash().update(VMap([
@@ -983,11 +852,15 @@ let fieldAvailable = client.FieldAvailable()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.FieldAvailable().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -1036,7 +909,7 @@ let group = client.Group()
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Group().load(VMap([("id", .string("group_id"))]), nil)
@@ -1044,13 +917,15 @@ let result = try client.Group().load(VMap([("id", .string("group_id"))]), nil)
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.Group().update(VMap([
     ("id", .string("group_id"))
 ]), nil)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1092,13 +967,15 @@ let mfaCode = client.MfaCode()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.MfaCode().create(VMap([
     ("phone_number", .string("example_phone_number"))  // String
 ]), nil)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1140,16 +1017,20 @@ let optOut = client.OptOut()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.OptOut().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.OptOut().remove(VMap([("id", .string("id"))]), nil)
@@ -1192,7 +1073,7 @@ let optOutSetting = client.OptOutSetting()
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.OptOutSetting().load(nil, nil)
@@ -1200,7 +1081,7 @@ let result = try client.OptOutSetting().load(nil, nil)
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.OptOutSetting().update(VMap([
@@ -1249,7 +1130,7 @@ let permission = client.Permission()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Permission().create(VMap([
@@ -1261,12 +1142,14 @@ let result = try client.Permission().create(VMap([
 ]), nil)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
-let result = try client.Permission().load(VMap([("id", .string("permission_id")), ("group_id", .string("group_id")), ("username", .string("username"))]), nil)
+let result = try client.Permission().load(VMap([("id", .string("permission_id")), ("group_id", .string("group_id"))]), nil)
 ```
 
 ### Common Methods
@@ -1307,11 +1190,15 @@ let ping = client.Ping()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Ping().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -1357,16 +1244,20 @@ let profile = client.Profile()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Profile().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Profile().load(nil, nil)
@@ -1403,11 +1294,15 @@ let rcs = client.Rcs()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Rcs().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -1451,25 +1346,31 @@ let sendername = client.Sendername()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Sendername().create(VMap([
 ]), nil)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Sendername().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Sendername().load(VMap([("id", .string("sendername_id"))]), nil)
@@ -1514,11 +1415,15 @@ let sendernameStatement = client.SendernameStatement()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.SendernameStatement().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -1554,19 +1459,19 @@ let sentRcsMessage = client.SentRcsMessage()
 | --- | --- | --- | --- |
 | `content` | `VMap` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `String` | Yes | Recipient phone number (e.g. |
-| `sender` | `Value` | Yes |  |
+| `sender` | `String` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String` | No | Plain text message content. |
 
 ### Operations
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.SentRcsMessage().create(VMap([
     ("phone_number", .string("example_phone_number")),  // String
-    ("sender", .string("example_sender"))  // Value
+    ("sender", .string("example_sender"))  // String
 ]), nil)
 ```
 
@@ -1610,11 +1515,15 @@ let shipmentCountryVolume = client.ShipmentCountryVolume()
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.ShipmentCountryVolume().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -1663,7 +1572,7 @@ let shortUrl = client.ShortUrl()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.ShortUrl().create(VMap([
@@ -1672,16 +1581,20 @@ let result = try client.ShortUrl().create(VMap([
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.ShortUrl().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.ShortUrl().load(VMap([("id", .string("short_url_id"))]), nil)
@@ -1689,7 +1602,7 @@ let result = try client.ShortUrl().load(VMap([("id", .string("short_url_id"))]),
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.ShortUrl().remove(VMap([("id", .string("short_url_id"))]), nil)
@@ -1697,13 +1610,15 @@ let result = try client.ShortUrl().remove(VMap([("id", .string("short_url_id"))]
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.ShortUrl().update(VMap([
     ("id", .string("short_url_id"))
 ]), nil)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1762,7 +1677,7 @@ let smsdo = client.Smsdo()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Smsdo().create(VMap([
@@ -1800,17 +1715,17 @@ let smssendername = client.Smssendername()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Smssendername().create(VMap([
-    ("sendername_id", .string("example_sendername_id"))  // String
+    ("sender", .string("example_sender"))  // String
 ]), nil)
 ```
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Smssendername().remove(VMap([("sender", .string("sender"))]), nil)
@@ -1853,7 +1768,7 @@ let smstemplate = client.Smstemplate()
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Smstemplate().remove(VMap([("id", .string("id"))]), nil)
@@ -1912,7 +1827,7 @@ let subuser = client.Subuser()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Subuser().create(VMap([
@@ -1922,16 +1837,20 @@ let result = try client.Subuser().create(VMap([
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Subuser().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Subuser().load(VMap([("id", .string("subuser_id"))]), nil)
@@ -1939,7 +1858,7 @@ let result = try client.Subuser().load(VMap([("id", .string("subuser_id"))]), ni
 
 #### `remove(reqmatch, ctrl) throws -> Value`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```swift
 let result = try client.Subuser().remove(VMap([("id", .string("subuser_id"))]), nil)
@@ -1947,7 +1866,7 @@ let result = try client.Subuser().remove(VMap([("id", .string("subuser_id"))]), 
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.Subuser().update(VMap([
@@ -1995,25 +1914,31 @@ let template = client.Template()
 
 #### `create(reqdata, ctrl) throws -> Value`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```swift
 let result = try client.Template().create(VMap([
 ]), nil)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.Template().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 #### `load(reqmatch, ctrl) throws -> Value`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, as a native `Value` that `asNative as? Entity` unwraps, and throws on error.
 
 ```swift
 let result = try client.Template().load(VMap([("id", .string("template_id"))]), nil)
@@ -2021,13 +1946,15 @@ let result = try client.Template().load(VMap([("id", .string("template_id"))]), 
 
 #### `update(reqdata, ctrl) throws -> Value`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```swift
 let result = try client.Template().update(VMap([
     ("id", .string("template_id"))
 ]), nil)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2056,30 +1983,19 @@ Return the entity name.
 let userRcsSenderCollection = client.UserRcsSenderCollection()
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `String` | No |  |
-| `expiredAt` | `String` | No |  |
-| `id` | `String` | No | Object ID |
-| `interface` | `String` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String` | No | RCS message type (basic, single, ...). |
-| `readAt` | `String` | No |  |
-| `recipient` | `String` | No | Recipient phone number (without +). |
-| `sender` | `String` | No | Sender name |
-| `senderId` | `String` | No | Sender id |
-| `sentAt` | `String` | No |  |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) throws -> Value`
 
-List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — call `list(nil, nil)` to list all records. Returns a `Value` list of entities, one per record, and throws on error.
 
 ```swift
 let results = try client.UserRcsSenderCollection().list(nil, nil)
-print(results)
+for item in results.asList?.items ?? [] {
+    if let entity = item.asNative as? Entity {
+        print(entity.data())
+    }
+}
 ```
 
 ### Common Methods
@@ -2758,6 +2674,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

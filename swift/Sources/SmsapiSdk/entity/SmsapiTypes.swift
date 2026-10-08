@@ -119,7 +119,6 @@ public struct Contact {
   public var email: String?
   public var firstName: String?
   public var gender: String
-  public var groupId: String?
   public var groups: [Value]
   public var id: String
   public var idx: String?
@@ -127,14 +126,8 @@ public struct Contact {
   public var name: String
   public var permissions: [Value]?
   public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
   public var size: Int
   public var source: String?
-  public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactLoadMatch is the typed request payload for Contact.load.
@@ -172,7 +165,6 @@ public struct ContactCreateData {
   public var email: String?
   public var firstName: String?
   public var gender: String
-  public var groupId: String?
   public var groups: [Value]
   public var id: String
   public var idx: String?
@@ -180,14 +172,8 @@ public struct ContactCreateData {
   public var name: String
   public var permissions: [Value]?
   public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
   public var size: Int
   public var source: String?
-  public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactUpdateData is the typed request payload for Contact.update.
@@ -206,21 +192,14 @@ public struct ContactUpdateData {
   public var email: String?
   public var firstName: String?
   public var gender: String?
-  public var groupId: String?
   public var groups: [Value]?
   public var idx: String?
   public var lastName: String?
   public var name: String?
   public var permissions: [Value]?
   public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
   public var size: Int?
   public var source: String?
-  public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactRemoveMatch is the typed request payload for Contact.remove.
@@ -230,126 +209,30 @@ public struct ContactRemoveMatch {
 
 /// ContactsField is the typed data model for the contacts_field entity.
 public struct ContactsField {
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String
-  public var dateCreated: String
-  public var dateUpdated: String
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String
-  public var groupId: String?
-  public var groups: [Value]
   public var id: String?
-  public var idx: String?
-  public var lastName: String?
   public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
-  public var source: String?
   public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactsFieldListMatch is the typed request payload for ContactsField.list.
 public struct ContactsFieldListMatch {
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int?
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String?
-  public var dateCreated: String?
-  public var dateUpdated: String?
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String?
-  public var groupId: String?
-  public var groups: [Value]?
   public var id: String?
-  public var idx: String?
-  public var lastName: String?
   public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
-  public var source: String?
   public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactsFieldCreateData is the typed request payload for ContactsField.create.
 public struct ContactsFieldCreateData {
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String
-  public var dateCreated: String
-  public var dateUpdated: String
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String
-  public var groupId: String?
-  public var groups: [Value]
   public var id: String?
-  public var idx: String?
-  public var lastName: String?
   public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
-  public var source: String?
   public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactsFieldUpdateData is the typed request payload for ContactsField.update.
 public struct ContactsFieldUpdateData {
   public var id: String
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int?
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String?
-  public var dateCreated: String?
-  public var dateUpdated: String?
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String?
-  public var groupId: String?
-  public var groups: [Value]?
-  public var idx: String?
-  public var lastName: String?
   public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
-  public var source: String?
   public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactsFieldRemoveMatch is the typed request payload for ContactsField.remove.
@@ -359,33 +242,6 @@ public struct ContactsFieldRemoveMatch {
 
 /// ContactsFieldOption is the typed data model for the contacts_field_option entity.
 public struct ContactsFieldOption {
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String
-  public var dateCreated: String
-  public var dateUpdated: String
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String
-  public var groupId: String?
-  public var groups: [Value]
-  public var id: String
-  public var idx: String?
-  public var lastName: String?
-  public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
-  public var read: Bool?
-  public var send: Bool?
-  public var source: String?
-  public var type: String?
-  public var username: String?
-  public var value: String?
-  public var write: Bool?
 }
 
 /// ContactsFieldOptionListMatch is the typed request payload for ContactsFieldOption.list.
@@ -395,32 +251,10 @@ public struct ContactsFieldOptionListMatch {
 
 /// Contactsgroup is the typed data model for the contactsgroup entity.
 public struct Contactsgroup {
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String
-  public var dateCreated: String
-  public var dateUpdated: String
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String
   public var groupId: String
-  public var groups: [Value]
-  public var id: String
-  public var idx: String?
-  public var lastName: String?
-  public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
   public var read: Bool
   public var send: Bool
-  public var source: String?
-  public var type: String?
   public var username: String
-  public var value: String?
   public var write: Bool
 }
 
@@ -432,32 +266,10 @@ public struct ContactsgroupListMatch {
 
 /// ContactsgroupCreateData is the typed request payload for Contactsgroup.create.
 public struct ContactsgroupCreateData {
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String
-  public var dateCreated: String
-  public var dateUpdated: String
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String
   public var groupId: String
-  public var groups: [Value]
-  public var id: String
-  public var idx: String?
-  public var lastName: String?
-  public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
   public var read: Bool
   public var send: Bool
-  public var source: String?
-  public var type: String?
   public var username: String
-  public var value: String?
   public var write: Bool
 }
 
@@ -465,30 +277,8 @@ public struct ContactsgroupCreateData {
 public struct ContactsgroupUpdateData {
   public var groupId: String
   public var username: String?
-  public var birthdayDate: String?
-  public var city: String?
-  public var contactExpireAfter: Int?
-  public var contactsCount: Int?
-  public var country: String?
-  public var createdBy: String?
-  public var dateCreated: String?
-  public var dateUpdated: String?
-  public var description: String?
-  public var email: String?
-  public var firstName: String?
-  public var gender: String?
-  public var groups: [Value]?
-  public var id: String?
-  public var idx: String?
-  public var lastName: String?
-  public var name: String?
-  public var permissions: [Value]?
-  public var phoneNumber: String?
   public var read: Bool?
   public var send: Bool?
-  public var source: String?
-  public var type: String?
-  public var value: String?
   public var write: Bool?
 }
 
@@ -625,7 +415,6 @@ public struct Permission {
 public struct PermissionLoadMatch {
   public var groupId: String
   public var id: String
-  public var username: String
 }
 
 /// PermissionCreateData is the typed request payload for Permission.create.
@@ -735,7 +524,7 @@ public struct SendernameStatementListMatch {
 public struct SentRcsMessage {
   public var content: VMap?
   public var phoneNumber: String
-  public var sender: Value
+  public var sender: String
   public var text: String?
 }
 
@@ -743,7 +532,7 @@ public struct SentRcsMessage {
 public struct SentRcsMessageCreateData {
   public var content: VMap?
   public var phoneNumber: String
-  public var sender: Value
+  public var sender: String
   public var text: String?
 }
 
@@ -883,7 +672,7 @@ public struct Smssendername {
 
 /// SmssendernameCreateData is the typed request payload for Smssendername.create.
 public struct SmssendernameCreateData {
-  public var sendernameId: String
+  public var sender: String
 }
 
 /// SmssendernameRemoveMatch is the typed request payload for Smssendername.remove.
@@ -985,29 +774,9 @@ public struct TemplateUpdateData {
 
 /// UserRcsSenderCollection is the typed data model for the user_rcs_sender_collection entity.
 public struct UserRcsSenderCollection {
-  public var deliveredAt: String?
-  public var expiredAt: String?
-  public var id: String?
-  public var interface: String?
-  public var messageType: String?
-  public var readAt: String?
-  public var recipient: String?
-  public var sender: String?
-  public var senderId: String?
-  public var sentAt: String?
 }
 
 /// UserRcsSenderCollectionListMatch is the typed request payload for UserRcsSenderCollection.list.
 public struct UserRcsSenderCollectionListMatch {
-  public var deliveredAt: String?
-  public var expiredAt: String?
-  public var id: String?
-  public var interface: String?
-  public var messageType: String?
-  public var readAt: String?
-  public var recipient: String?
-  public var sender: String?
-  public var senderId: String?
-  public var sentAt: String?
 }
 

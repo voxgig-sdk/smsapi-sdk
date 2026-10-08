@@ -1,7 +1,7 @@
 # Smsapi SDK Subuser entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Subuser do
@@ -26,9 +26,10 @@ defmodule Smsapi.Entity.Subuser do
     do: EntityBase.stream(ent, action, args, callopts)
 
   
-  # Returns the subuser entity map (Smsapi.Types.subuser/0) on
-  # success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the subuser entity, whose data_get/1 reads its record
+  # (Smsapi.Types.subuser/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec load(map(), Smsapi.Types.subuser_load_match() | nil, map() | nil) :: term()
   def load(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -63,9 +64,10 @@ defmodule Smsapi.Entity.Subuser do
 
 
   
-  # Returns a list of subuser entity maps (Smsapi.Types.subuser/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of subuser entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.subuser/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.subuser_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -98,9 +100,10 @@ defmodule Smsapi.Entity.Subuser do
 
 
   
-  # Returns the created subuser entity map (Smsapi.Types.subuser/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the created subuser entity, whose data_get/1 reads its record
+  # (Smsapi.Types.subuser/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec create(map(), Smsapi.Types.subuser_create_data() | nil, map() | nil) :: term()
   def create(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -131,9 +134,10 @@ defmodule Smsapi.Entity.Subuser do
 
 
   
-  # Returns the updated subuser entity map (Smsapi.Types.subuser/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the updated subuser entity, whose data_get/1 reads its record
+  # (Smsapi.Types.subuser/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec update(map(), Smsapi.Types.subuser_update_data() | nil, map() | nil) :: term()
   def update(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -166,9 +170,12 @@ defmodule Smsapi.Entity.Subuser do
 
 
   
-  # Returns the removed subuser entity map (Smsapi.Types.subuser/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed subuser entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.subuser/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.subuser_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

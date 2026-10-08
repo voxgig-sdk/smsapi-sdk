@@ -62,6 +62,12 @@ main: kit: entity: subuser: {
       name: "create"
       points: [
         {
+          bf: [
+            "active"
+            "credentials"
+            "description"
+            "points"
+          ]
           co: {
             id: "POST /subusers"
             source: "openapi3"
@@ -69,6 +75,10 @@ main: kit: entity: subuser: {
           }
           m: "POST"
           o: "/subusers"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "subusers"
@@ -109,6 +119,10 @@ main: kit: entity: subuser: {
             exist: [
               "id"
             ]
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -155,6 +169,10 @@ main: kit: entity: subuser: {
               "id"
             ]
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "subusers"
@@ -193,10 +211,9 @@ main: kit: entity: subuser: {
           }
           m: "GET"
           o: "/subusers"
-          q: {
-            exist: [
-              "q"
-            ]
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -237,6 +254,10 @@ main: kit: entity: subuser: {
             exist: [
               "id"
             ]
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -300,6 +321,12 @@ main: kit: entity: subuser: {
       name: "update"
       points: [
         {
+          bf: [
+            "active"
+            "credentials"
+            "description"
+            "points"
+          ]
           co: {
             id: "PUT /subusers/{id}"
             source: "openapi3"
@@ -324,6 +351,10 @@ main: kit: entity: subuser: {
               "id"
             ]
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "subusers"
@@ -338,6 +369,10 @@ main: kit: entity: subuser: {
           }
         }
         {
+          bf: [
+            "access"
+            "senders"
+          ]
           co: {
             id: "PUT /subusers/{id}/shares/sendernames"
             source: "openapi3"
@@ -383,6 +418,10 @@ main: kit: entity: subuser: {
           }
         }
         {
+          bf: [
+            "access"
+            "templates"
+          ]
           co: {
             id: "PUT /subusers/{id}/shares/templates"
             source: "openapi3"

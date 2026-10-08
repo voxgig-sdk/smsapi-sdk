@@ -126,6 +126,14 @@ abstract class SdkClient(sdkopts: MutableMap<String, Any?>?) {
     if ("" == method) {
       method = "GET"
     }
+    method = method.uppercase()
+
+    val allowMethod = Struct.getpath(options, listOf("allow", "method"))
+    if (!Helpers.allowed(allowMethod, method)) {
+      throw ctx.makeError("spec_method_allow",
+        "Method \"" + method + "\" not allowed by SDK option allow.method value: \"" +
+          ((allowMethod as? String) ?: "") + "\"")
+    }
 
     var params = Helpers.toMapAny(Struct.getprop(fetchargs, "params"))
     if (params == null) {
@@ -179,8 +187,7 @@ abstract class SdkClient(sdkopts: MutableMap<String, Any?>?) {
 
   // Is this raw-access op permitted by the SDK's allow.op option?
   private fun opAllowed(op: String): Boolean {
-    val allow = Struct.getpath(this.options, listOf("allow", "op"))
-    return allow is String && allow.contains(op)
+    return Helpers.allowed(Struct.getpath(this.options, listOf("allow", "op")), op)
   }
 
   private fun opDenied(op: String): MutableMap<String, Any?> {
@@ -311,18 +318,28 @@ abstract class SdkClient(sdkopts: MutableMap<String, Any?>?) {
       val noBody = status == 204 || status == 304 || "0" == contentLength
 
       var jsonData: Any? = null
+      var bodyErr: RuntimeException? = null
       if (!noBody) {
         val jf = Struct.getprop(fm, "json")
         if (jf is Supplier<*>) {
           // The supplier returns null on parse error in our fetcher.
           jsonData = (jf as Supplier<Any?>).get()
         }
+        if (true == Struct.getprop(fm, "unreadable")) {
+          val failed = if (status in 200..299) null else ctx.makeError(
+            "request_status", "request: " + status + ": " + Struct.getprop(fm, "statusText"))
+          bodyErr = Response.unreadableBody(ctx, status, headers, Struct.getprop(fm, "body"),
+            fetchdef["headers"], failed)
+        }
       }
 
-      out["ok"] = status in 200..299
+      out["ok"] = bodyErr == null && status in 200..299
       out["status"] = status
       out["headers"] = headers
       out["data"] = jsonData
+      if (bodyErr != null) {
+        out["err"] = utility.clean(ctx, bodyErr)
+      }
       return out
     }
 

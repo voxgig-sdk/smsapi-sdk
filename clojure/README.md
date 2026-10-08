@@ -17,7 +17,7 @@ keeps the cognitive load low.
 
 ## Install
 This package is not yet published to Clojars. Depend on it directly from the
-GitHub release tag (`clojure/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)),
+GitHub release tag (`clojure/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)),
 using a `tools.deps` git dependency:
 
 ```clojure
@@ -55,13 +55,13 @@ loading a specific record.
 
 ### 2. List available records
 
-`list` returns a vector of records (each a map) and raises on error —
-iterate it directly.
+`list` returns a vector of entities, one per record, and raises on error.
+Read each record with `((:data-get available))`.
 
 ```clojure
 (try
   (doseq [available (e-available/list (api/available client nil) nil nil)]
-    (println available))
+    (println ((:data-get available))))
   (catch Exception err
     (println "list failed:" (.getMessage err))))
 ```
@@ -69,12 +69,13 @@ iterate it directly.
 ### 3. Load a permission
 
 Permission is nested under group, so provide the
-`group_id`. `load` returns the bare record (a map) and raises on error.
+`group_id`. `load` returns the entity and raises on error;
+`((:data-get permission))` reads its record.
 
 ```clojure
 (try
-  (let [permission (e-permission/load (api/permission client nil) (vs/jm "group_id" "example_group_id" "username" "example_username" "id" "example_id") nil)]
-    (println permission))
+  (let [permission (e-permission/load (api/permission client nil) (vs/jm "group_id" "example_group_id" "id" "example_id") nil)]
+    (println ((:data-get permission))))
   (catch Exception err
     (println "load failed:" (.getMessage err))))
 ```
@@ -86,15 +87,16 @@ Entity operations reject on failure, so wrap them in `try` / `catch`:
 
 ```ts
 try {
-  const permission = await client.Permission().load({ group_id: "example", id: "example_id", username: "example" })
-  console.log(permission)
+  const templates = await client.Template().list()
+  console.log(templates.map((item) => item.data()))
 } catch (err) {
-  console.error('load failed:', err)
+  console.error('list failed:', err)
 }
 ```
 
 The low-level `direct()` method does **not** throw — it returns the
-value or an `Error`, so check the result before using it:
+result envelope. Branch on `ok`; on failure `status` holds the HTTP status
+(for error responses) and `err` holds the error:
 
 ```ts
 const result = await client.direct({
@@ -103,8 +105,8 @@ const result = await client.direct({
   params: { id: 'example_id' },
 })
 
-if (result instanceof Error) {
-  throw result
+if (!result.ok) {
+  console.error('request failed:', result.status, result.err)
 }
 ```
 
@@ -152,15 +154,15 @@ Create a mock client for unit testing — no server required:
 
 ```clojure
 (require '[sdk.api :as api]
-         '[sdk.entity.permission :as e-permission]
+         '[sdk.entity.template :as e-template]
          '[voxgig.struct :as vs])
 
 (def client (api/test-sdk nil nil))
 
-;; Entity ops return the bare record and raise on error.
-(def permission (e-permission/load (api/permission client nil) (vs/jm "id" "test01") nil))
-;; permission contains the mock response record
-(println permission)
+;; list returns a vector of entities, one per mock record; it raises on error.
+(def templates (e-template/list (api/template client nil) nil nil))
+(doseq [item templates]
+  (println ((:data-get item))))
 ```
 
 ### Use a custom fetch function
@@ -273,11 +275,11 @@ entity map and are called via keyword lookup.
 
 | Member | Signature | Description |
 | --- | --- | --- |
-| `load` | `(ent reqmatch ctrl) -> map` | Load a single entity by match criteria. Raises on error. |
-| `list` | `(ent reqmatch ctrl) -> vector` | List entities matching the criteria. Raises on error. |
-| `create` | `(ent reqdata ctrl) -> map` | Create a new entity. Raises on error. |
-| `update` | `(ent reqdata ctrl) -> map` | Update an existing entity. Raises on error. |
-| `remove` | `(ent reqmatch ctrl) -> map` | Remove an entity. Raises on error. |
+| `load` | `(ent reqmatch ctrl) -> entity` | Load a single entity by match criteria, and return it. Raises on error. |
+| `list` | `(ent reqmatch ctrl) -> vector` | List entities matching the criteria, one per record. Raises on error. |
+| `create` | `(ent reqdata ctrl) -> entity` | Create a new entity, and return it. Raises on error. |
+| `update` | `(ent reqdata ctrl) -> entity` | Update an existing entity, and return it. Raises on error. |
+| `remove` | `(ent reqmatch ctrl) -> entity` | Remove an entity, and return it marked as deleted. Raises on error. |
 | `:data-get` | `() -> map` | Get entity data. |
 | `:data-set` | `(data)` | Set entity data. |
 | `:match-get` | `() -> map` | Get entity match criteria. |
@@ -290,9 +292,10 @@ State accessors are called by looking up the fn and applying it, e.g.
 
 ### Result shape
 
-Entity operations return the bare result data (a `map` for single-entity
-ops, a `vector` for `list`) and raise (via `ex-info`) on error. Wrap
-calls in `try`/`catch` to handle failures.
+Entity operations resolve to the entity, and `list` to a `vector` of
+entities, one per record. Read an entity's record with
+`((:data-get ent))`. They raise (via `ex-info`) on error, so wrap calls
+in `try`/`catch` to handle failures.
 
 The `direct` escape hatch never raises — it returns a result `map` you
 branch on via `(vs/getprop result "ok")`:
@@ -364,7 +367,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -372,14 +374,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -389,33 +385,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -425,33 +397,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -461,32 +406,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -654,7 +577,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -774,16 +697,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -935,7 +848,6 @@ Create an instance: `(def contact (api/contact client nil))`
 | `email` | `string` |  |
 | `first_name` | `string` |  |
 | `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
 | `groups` | `vector` |  |
 | `id` | `string` | Object ID |
 | `idx` | `string` | User provided resource id |
@@ -943,14 +855,8 @@ Create an instance: `(def contact (api/contact client nil))`
 | `name` | `string` | Group name |
 | `permissions` | `vector` |  |
 | `phone_number` | `string` |  |
-| `read` | `boolean` | Has read permission |
-| `send` | `boolean` | Has send permission |
 | `size` | `long` |  |
 | `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` | Has write permission |
 
 #### Example: Load
 
@@ -1003,33 +909,9 @@ Create an instance: `(def contacts_field (api/contacts_field client nil))`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `long` | Contact expire after days |
-| `contacts_count` | `long` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `vector` |  |
 | `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `vector` |  |
-| `phone_number` | `string` |  |
-| `read` | `boolean` | Has read permission |
-| `send` | `boolean` | Has send permission |
-| `source` | `string` |  |
+| `name` | `string` |  |
 | `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` | Has write permission |
 
 #### Example: List
 
@@ -1043,12 +925,6 @@ Create an instance: `(def contacts_field (api/contacts_field client nil))`
 (def contacts_field
   (e-contacts_field/create (api/contacts_field client nil)
     (vs/jm
-      "contact_expire_after" 1  ;; long
-      "created_by" "example_created_by"  ;; string
-      "date_created" "example_date_created"  ;; string
-      "date_updated" "example_date_updated"  ;; string
-      "gender" "example_gender"  ;; string
-      "groups" (vs/jt)  ;; vector
       )
     nil))
 ```
@@ -1064,42 +940,10 @@ Create an instance: `(def contacts_field_option (api/contacts_field_option clien
 | --- | --- |
 | `(list ent match ctrl)` | List entities, optionally matching the given criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `long` | Contact expire after days |
-| `contacts_count` | `long` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `vector` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `vector` |  |
-| `phone_number` | `string` |  |
-| `read` | `boolean` | Has read permission |
-| `send` | `boolean` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` | Has write permission |
-
 #### Example: List
 
 ```clojure
-(def contacts_field_options (e-contacts_field_option/list (api/contacts_field_option client nil) nil nil))
+(def contacts_field_options (e-contacts_field_option/list (api/contacts_field_option client nil) (vs/jm "field_id" "example") nil))
 ```
 
 
@@ -1120,32 +964,10 @@ Create an instance: `(def contactsgroup (api/contactsgroup client nil))`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `long` | Contact expire after days |
-| `contacts_count` | `long` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
 | `group_id` | `string` | Object ID |
-| `groups` | `vector` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `vector` |  |
-| `phone_number` | `string` |  |
 | `read` | `boolean` | Has read permission |
 | `send` | `boolean` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
 | `username` | `string` |  |
-| `value` | `string` |  |
 | `write` | `boolean` | Has write permission |
 
 #### Example: List
@@ -1160,14 +982,7 @@ Create an instance: `(def contactsgroup (api/contactsgroup client nil))`
 (def contactsgroup
   (e-contactsgroup/create (api/contactsgroup client nil)
     (vs/jm
-      "contact_expire_after" 1  ;; long
-      "created_by" "example_created_by"  ;; string
-      "date_created" "example_date_created"  ;; string
-      "date_updated" "example_date_updated"  ;; string
-      "gender" "example_gender"  ;; string
       "group_id" "example_group_id"  ;; string
-      "groups" (vs/jt)  ;; vector
-      "id" "example_id"  ;; string
       "read" true  ;; boolean
       "send" true  ;; boolean
       "username" "example_username"  ;; string
@@ -1356,7 +1171,7 @@ Create an instance: `(def permission (api/permission client nil))`
 #### Example: Load
 
 ```clojure
-(def permission (e-permission/load (api/permission client nil) (vs/jm "id" "permission_id" "group_id" "group_id" "username" "username") nil))
+(def permission (e-permission/load (api/permission client nil) (vs/jm "id" "permission_id" "group_id" "group_id") nil))
 ```
 
 #### Example: Create
@@ -1538,7 +1353,7 @@ Create an instance: `(def sent_rcs_message (api/sent_rcs_message client nil))`
 | --- | --- | --- |
 | `content` | `map` | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Recipient phone number (e.g. |
-| `sender` | `any` |  |
+| `sender` | `string` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | Plain text message content. |
 
 #### Example: Create
@@ -1548,7 +1363,7 @@ Create an instance: `(def sent_rcs_message (api/sent_rcs_message client nil))`
   (e-sent_rcs_message/create (api/sent_rcs_message client nil)
     (vs/jm
       "phone_number" "example_phone_number"  ;; string
-      "sender" "example_sender"  ;; any
+      "sender" "example_sender"  ;; string
       )
     nil))
 ```
@@ -1696,7 +1511,7 @@ Create an instance: `(def smssendername (api/smssendername client nil))`
 (def smssendername
   (e-smssendername/create (api/smssendername client nil)
     (vs/jm
-      "sendername_id" "example_sendername_id"  ;; string
+      "sender" "example_sender"  ;; string
       )
     nil))
 ```
@@ -1822,21 +1637,6 @@ Create an instance: `(def user_rcs_sender_collection (api/user_rcs_sender_collec
 | Method | Description |
 | --- | --- |
 | `(list ent match ctrl)` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `string` |  |
-| `expiredAt` | `string` |  |
-| `id` | `string` | Object ID |
-| `interface` | `string` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | RCS message type (basic, single, ...). |
-| `readAt` | `string` |  |
-| `recipient` | `string` | Recipient phone number (without +). |
-| `sender` | `string` | Sender name |
-| `senderId` | `string` | Sender id |
-| `sentAt` | `string` |  |
 
 #### Example: List
 
@@ -2286,16 +2086,16 @@ only when you call its operations directly.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally. Subsequent
 calls on the same instance can rely on this state.
 
 ```ts
-const permission = client.Permission()
-await permission.load({ group_id: "example", id: "example_id", username: "example" })
+const template = client.Template()
+await template.list()
 
-// permission.data() now returns the permission data from the last `load`
-// permission.match() returns { id: "example_id" }
+// template.data() now returns the template data from the last `list`
+// template.match() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

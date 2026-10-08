@@ -27,6 +27,15 @@ let substr_contains (hay : string) (needle : string) : bool =
     in
     go 0
 
+(* Whether a comma-separated allow option names the item: whole names, any case. *)
+let allow_list_has (names : value) (item : string) : bool =
+  match names with
+  | Str list when item <> "" ->
+    let want = String.uppercase_ascii item in
+    List.exists (fun name -> String.uppercase_ascii (String.trim name) = want)
+      (String.split_on_char ',' list)
+  | _ -> false
+
 let str_replace_all (s : string) (find : string) (repl : string) : string =
   if find = "" then s
   else begin
@@ -92,7 +101,8 @@ let new_spec (m : value) : spec =
     sp_query = gv "query" (empty_map ());
     sp_step = gs "step" ""; sp_method = gs "method" "GET";
     sp_body = getp m "body";
-    sp_url = gs "url" ""; sp_path = gs "path" "" }
+    sp_url = gs "url" ""; sp_path = gs "path" "";
+    sp_authquery = [] }
 
 let new_response (m : value) : response =
   { rs_status = (match getp m "status" with Num n -> int_of_float n | _ -> -1);
@@ -100,7 +110,8 @@ let new_response (m : value) : response =
     rs_headers = getp m "headers";
     rs_json = (match getp m "json" with Func _ as f -> f | _ -> Noval);
     rs_body = getp m "body";
-    rs_err = None }
+    rs_err = None;
+    rs_unreadable = (getp m "unreadable" = Bool true) }
 
 let new_result (m : value) : result =
   { rt_ok = (getp m "ok" = Bool true);
@@ -148,16 +159,25 @@ let default_ctxspec () : ctxspec =
     cs_reqdata = None; cs_match = None; cs_reqmatch = None; cs_point = None;
     cs_spec = None; cs_result = None; cs_response = None }
 
+(* Every request racing to build this Operation gets the one stored first. *)
+let rec store_op (opmap : operation OpMap.t Atomic.t) (key : string) (op : operation) : operation =
+  let seen = Atomic.get opmap in
+  match OpMap.find_opt key seen with
+  | Some stored -> stored
+  | None ->
+    if Atomic.compare_and_set opmap seen (OpMap.add key op seen) then op
+    else store_op opmap key op
+
 let resolve_op (ctx : ctx) (opname : string) : operation =
   let entname = match ctx.c_entity with Some e -> e.e_name | None -> "_" in
   let cache_key = entname ^ ":" ^ opname in
-  match Hashtbl.find_opt ctx.c_opmap cache_key with
+  match OpMap.find_opt cache_key (Atomic.get ctx.c_opmap) with
   | Some op -> op
   | None ->
     if opname = "" then new_operation (empty_map ())
     else begin
       let opcfg = getpath_s ctx.c_config ("entity." ^ entname ^ ".op." ^ opname) in
-      let inpt = if opname = "update" || opname = "create" then "data" else "match" in
+      let inpt = if opname = "update" || opname = "create" || opname = "patch" then "data" else "match" in
       let points =
         match to_map opcfg with
         | Map _ -> (match getp opcfg "points" with List _ as l -> l | _ -> empty_list ())
@@ -166,8 +186,7 @@ let resolve_op (ctx : ctx) (opname : string) : operation =
       let op = new_operation
           (jo [("entity", Str entname); ("name", Str opname);
                ("input", Str inpt); ("points", points)]) in
-      Hashtbl.replace ctx.c_opmap cache_key op;
-      op
+      store_op ctx.c_opmap cache_key op
     end
 
 let make_context_impl (cs : ctxspec) (basectx : ctx option) : ctx =
@@ -215,7 +234,7 @@ let make_context_impl (cs : ctxspec) (basectx : ctx option) : ctx =
     | _ -> (match basectx with Some b -> b.c_shared | None -> Noval) in
   let opmap =
     match cs.cs_opmap with Some h -> h
-    | None -> (match basectx with Some b -> b.c_opmap | None -> Hashtbl.create 16) in
+    | None -> (match basectx with Some b -> b.c_opmap | None -> Atomic.make OpMap.empty) in
   let mapof = function Some d -> (match to_map d with Map _ as m -> m | _ -> empty_map ()) | None -> empty_map () in
   let data = mapof cs.cs_data and reqdata = mapof cs.cs_reqdata
   and mtch = mapof cs.cs_match and reqmatch = mapof cs.cs_reqmatch in
@@ -310,18 +329,25 @@ let clean_forms (value : string) : string list =
    if String.length j >= 2 then add (String.sub j 1 (String.length j - 2)));
   !out
 
+(* A registration reads the registry list and writes a new one, so requests
+ * on other domains registering at once take turns, or one would be dropped.
+ * Cleaning reads the list whole and needs no turn. *)
+let clean_registering = Atomic.make false
+
 let clean_add_util (ctx : ctx) (value : string) : unit =
   let cfg = clean_config ctx in
   let minlen = match getp cfg "min" with Num n -> int_of_float n | _ -> 4 in
   match getp cfg "values" with
   | List r when String.length value >= minlen ->
-    let have = str_values (List r) in
-    let add = List.filter (fun f -> String.length f >= minlen && not (List.mem f have))
-        (clean_forms value) in
-    (* Longest first, so a value is never masked by a substring of itself. *)
-    if add <> [] then
-      r := List.map (fun s -> Str s)
-          (List.stable_sort (fun a b -> compare (String.length b) (String.length a)) (have @ add))
+    while not (Atomic.compare_and_set clean_registering false true) do () done;
+    Fun.protect ~finally:(fun () -> Atomic.set clean_registering false) (fun () ->
+        let have = str_values (List r) in
+        let add = List.filter (fun f -> String.length f >= minlen && not (List.mem f have))
+            (clean_forms value) in
+        (* Longest first, so a value is never masked by a substring of itself. *)
+        if add <> [] then
+          r := List.map (fun s -> Str s)
+              (List.stable_sort (fun a b -> compare (String.length b) (String.length a)) (have @ add)))
   | _ -> ()
 
 let mask_value (cfg : value) (value : string) : string =
@@ -588,6 +614,101 @@ let prepare_method_util (ctx : ctx) : string =
      * two behaviours: a mistyped or unsupported op quietly fetched. *)
     | _ -> ""
 
+(* The arguments a point declares in one location, query or header, each as
+ * (name, wire, value): the name it travels under and the value this call
+ * passes in its match or else its data. Unlike a path parameter, the
+ * entity's stored match and data never supply one. *)
+let call_args (ctx : ctx) (kind : string) : (string * string * value) list =
+  match getp (getp ctx.c_point "args") kind with
+  | List r ->
+    List.filter_map (fun ad ->
+        match getp ad "name" with
+        | Str name when name <> "" ->
+          let wire = match getp ad "orig" with Str o when o <> "" -> o | _ -> name in
+          let v = match getp ctx.c_reqmatch name with
+            | Noval | Null -> getp ctx.c_reqdata name
+            | v -> v
+          in
+          Some (name, wire, v)
+        | _ -> None) !r
+  | _ -> []
+
+(* ---- media ----
+ * The media types a point declares: `response` (the model's `rs`) for the
+ * Accept header, and `body` (the model's `rb`) for the request body. *)
+
+(* The data key holding a raw request body. Like `$action`, it can never be a
+ * declared argument name. *)
+let raw_body_key = "$body"
+
+let is_json_media (media : string) : bool =
+  let base = match String.index_opt media ';' with
+    | Some i -> String.sub media 0 i
+    | None -> media in
+  let m = String.lowercase_ascii (String.trim base) in
+  let n = String.length m in
+  m = "application/json" || m = "text/json"
+  || (n >= 5 && String.sub m (n - 5) 5 = "+json")
+
+(* The declared JSON type alone, else every declared type in the model's
+ * order; nothing when no success response declares a body. *)
+let accept_of (point : value) : string option =
+  let res = getp point "response" in
+  match getp res "media" with
+  | Str media when media <> "" ->
+    (match getp res "kind" with
+     | Str "json" -> Some media
+     | _ ->
+       let others = match getp res "alternatives" with
+         | List r ->
+           List.filter_map (fun alt -> match getp alt "media" with
+               | Str m when m <> "" -> Some m
+               | _ -> None) !r
+         | _ -> [] in
+       Some (String.concat ", " (media :: others)))
+  | _ -> None
+
+let is_raw_request (point : value) : bool =
+  match getp (getp point "body") "kind" with Str "raw" -> true | _ -> false
+
+let is_json_request (point : value) : bool =
+  match getp (getp point "body") "kind" with Str "json" -> true | _ -> false
+
+let has_media_header (headers : value) (name : string) : bool =
+  List.exists (fun k -> String.lowercase_ascii k = name) (keysof headers)
+
+(* A caller's accept wins. A declared request type replaces each JSON
+ * content-type, the SDK default, and leaves any other the caller set. *)
+let media_headers (point : value) (headers : value) : unit =
+  (match accept_of point with
+   | Some accept when not (has_media_header headers "accept") ->
+     setp headers "accept" (Str accept)
+   | _ -> ());
+  let body = getp point "body" in
+  match getp body "kind", getp body "media" with
+  | Str ("raw" | "json"), Str media when media <> "" ->
+    List.iter (fun k ->
+        match getp headers k with
+        | Str v when String.lowercase_ascii k = "content-type" && is_json_media v ->
+          ignore (delprop headers (Str k))
+        | _ -> ())
+      (keysof headers);
+    if not (has_media_header headers "content-type") then
+      setp headers "content-type" (Str media)
+  | _ -> ()
+
+let raw_body (reqdata : value) : value = getp reqdata raw_body_key
+
+(* The form style of a cookie parameter: a list repeats the name, a map sends
+ * its own keys, and every value is percent-encoded. *)
+let cookie_pair (wire : string) (v : value) : string =
+  let esc x = escurl_s (stringify x) in
+  let pairs = match v with
+    | List items -> List.map (fun item -> wire ^ "=" ^ esc item) !items
+    | Map _ -> List.map (fun k -> escurl_s k ^ "=" ^ esc (getp v k)) (keysof v)
+    | _ -> [wire ^ "=" ^ esc v] in
+  String.concat "; " pairs
+
 let prepare_headers_util (ctx : ctx) : value =
   let options = client_options_map (cc ctx) in
   let out =
@@ -595,58 +716,70 @@ let prepare_headers_util (ctx : ctx) : value =
     | Noval -> empty_map ()
     | h -> (match clone h with Map _ as m -> m | _ -> empty_map ())
   in
-  (* A header parameter travels as a header, under the name the definition
-   * gives it, and only from this call's own arguments. It replaces a default
-   * of the same name, whatever its case. *)
-  (match getp (getp ctx.c_point "args") "header" with
-   | List r ->
-     List.iter (fun hd ->
-         match getp hd "name" with
-         | Str name when name <> "" ->
-           let wire = match getp hd "orig" with Str o when o <> "" -> o | _ -> name in
-           let v = match getp ctx.c_reqmatch name with
-             | Noval | Null -> getp ctx.c_reqdata name
-             | v -> v
-           in
-           (match v with
-            | Noval | Null -> ()
-            | v ->
-              let key = String.lowercase_ascii wire in
-              List.iter (fun k ->
-                  if String.lowercase_ascii k = key then ignore (delprop out (Str k)))
-                (keysof out);
-              setp out key (Str (stringify v)))
-         | _ -> ()) !r
-   | _ -> ());
+  media_headers ctx.c_point out;
+  (* A header argument replaces a default of the same name, whatever its
+   * case. *)
+  List.iter (fun (_, wire, v) ->
+      match v with
+      | Noval | Null -> ()
+      | v ->
+        let key = String.lowercase_ascii wire in
+        List.iter (fun k ->
+            if String.lowercase_ascii k = key then ignore (delprop out (Str k)))
+          (keysof out);
+        setp out key (Str (stringify v)))
+    (call_args ctx "header");
+  (* A cookie argument travels in the cookie header, form serialized and
+   * percent-encoded, replacing a cookie of the same name among those the
+   * caller's headers already send. *)
+  let sent = List.filter (fun (_, _, v) -> match v with Noval | Null -> false | _ -> true)
+      (call_args ctx "cookie") in
+  if sent <> [] then begin
+    let names = List.concat (List.map (fun (_, wire, v) ->
+        match v with Map _ -> List.map escurl_s (keysof v) | _ -> [wire]) sent) in
+    let given = List.filter (fun k -> String.lowercase_ascii k = "cookie") (keysof out) in
+    let kept = List.concat (List.map (fun k ->
+        match getp out k with
+        | Str s -> cookie_keep s names
+        | _ -> []) given) in
+    List.iter (fun k -> ignore (delprop out (Str k))) given;
+    let pairs = List.filter_map (fun (_, wire, v) ->
+        match cookie_pair wire v with "" -> None | pair -> Some pair) sent in
+    if kept @ pairs <> [] then setp out "cookie" (Str (String.concat "; " (kept @ pairs)))
+  end;
   out
 
+(* The name a point gives a parameter in the call, if it renames it. *)
+let param_alias (point : value) (key : string) : string =
+  match to_map (getp point "alias") with
+  | Map _ as alias -> (match getp alias key with Str s -> s | _ -> "")
+  | _ -> ""
+
+(* The value the call or its entity gives a point's parameter, under its name
+   or the point's alias for it. *)
+let param_value (ctx : ctx) (point : value) (key : string) : value =
+  let akey = param_alias point key in
+  let v = ref (getp ctx.c_reqmatch key) in
+  if is_noval !v then v := getp ctx.c_match key;
+  if is_noval !v && akey <> "" then v := getp ctx.c_reqmatch akey;
+  if is_noval !v then v := getp ctx.c_reqdata key;
+  if is_noval !v then v := getp ctx.c_data key;
+  if is_noval !v && akey <> "" then begin
+    v := getp ctx.c_reqdata akey;
+    if is_noval !v then v := getp ctx.c_data akey
+  end;
+  !v
+
 let param_util (ctx : ctx) (paramdef : value) : value =
-  let point = ctx.c_point and spec = ctx.c_spec in
-  let mtch = ctx.c_match and reqmatch = ctx.c_reqmatch
-  and data = ctx.c_data and reqdata = ctx.c_reqdata in
   let pt = typify paramdef in
   let key =
     if (t_string land pt) > 0 then (match paramdef with Str s -> s | _ -> "")
     else (match getp paramdef "name" with Str s -> s | _ -> "")
   in
-  let akey =
-    match to_map (getp point "alias") with
-    | Map _ as alias -> (match getp alias key with Str s -> s | _ -> "")
-    | _ -> ""
-  in
-  let v = ref (getp reqmatch key) in
-  if is_noval !v then v := getp mtch key;
-  if is_noval !v && akey <> "" then begin
-    (match spec with Some sp -> setp sp.sp_alias akey (Str key) | None -> ());
-    v := getp reqmatch akey
-  end;
-  if is_noval !v then v := getp reqdata key;
-  if is_noval !v then v := getp data key;
-  if is_noval !v && akey <> "" then begin
-    v := getp reqdata akey;
-    if is_noval !v then v := getp data akey
-  end;
-  !v
+  let akey = param_alias ctx.c_point key in
+  if akey <> "" && is_noval (getp ctx.c_reqmatch key) && is_noval (getp ctx.c_match key) then
+    (match ctx.c_spec with Some sp -> setp sp.sp_alias akey (Str key) | None -> ());
+  param_value ctx ctx.c_point key
 
 let prepare_params_util (ctx : ctx) : value =
   let params =
@@ -679,13 +812,26 @@ let prepare_query_util (ctx : ctx) : value =
     | List r -> List.map (fun pd -> getp pd "name") !r
     | _ -> []
   in
-  (* A header parameter travels in the headers, which prepare_headers fills. *)
+  (* A header or cookie parameter travels in the headers, which
+   * prepare_headers fills, unless a query parameter shares its name: then
+   * both are sent. *)
+  let declared =
+    match getp (getp ctx.c_point "args") "query" with
+    | List r -> List.map (fun qd -> getp qd "name") !r
+    | _ -> []
+  in
   let header_names =
     match getp (getp ctx.c_point "args") "header" with
     | List r -> List.map (fun hd -> getp hd "name") !r
     | _ -> []
   in
-  let params = params @ arg_names @ header_names in
+  let cookie_names =
+    match getp (getp ctx.c_point "args") "cookie" with
+    | List r -> List.map (fun cd -> getp cd "name") !r
+    | _ -> []
+  in
+  let elsewhere = List.filter (fun n -> not (List.mem n declared)) (header_names @ cookie_names) in
+  let params = params @ arg_names @ elsewhere in
   let contains_param s = List.exists (fun v -> match v with Str x -> x = s | _ -> false) params in
   (* A query parameter travels under the name the definition gives it, its
    * orig, which the model may have renamed for the caller. *)
@@ -705,10 +851,18 @@ let prepare_query_util (ctx : ctx) : value =
       if not (is_noval v) && k <> "$action" && not (contains_param k) then
         setp out (wire_name k) v)
     (keysof reqmatch);
+  (* A create or update passes its query arguments in its data. *)
+  List.iter (fun (name, orig, v) ->
+      match v with
+      | Noval | Null -> ()
+      | v -> if not (contains_param name) then setp out orig v)
+    (call_args ctx "query");
   out
 
 let prepare_body_util (ctx : ctx) : value =
-  if ctx.c_op.op_input = "data" then (cu ctx).u_transform_request ctx else Noval
+  if ctx.c_op.op_input <> "data" then Noval
+  else if is_raw_request ctx.c_point then raw_body ctx.c_reqdata
+  else (cu ctx).u_transform_request ctx
 
 (* ---- graphql (transport) -------------------------------------------------
  *
@@ -859,18 +1013,28 @@ let omit_keys (reqdata : value) (names : string list) : value =
    untouched. *)
 let strip_action (reqdata : value) : value = omit_keys reqdata ["$action"]
 
-(* A header argument travels as a header, which prepare_headers_util sends,
-   so the body is built from the request data without it. *)
-let header_arg_names (point : value) : string list =
-  match getp (getp point "args") "header" with
-  | List r ->
-    List.filter_map (fun hd ->
-        match getp hd "name" with Str n when n <> "" -> Some n | _ -> None) !r
-  | _ -> []
+let field_arg (ctx : ctx) (name : string) : bool =
+  List.exists (fun kind ->
+      match getp (getp ctx.c_point "args") kind with
+      | List r ->
+        List.exists (fun ad ->
+            match getp ad "name", getp ad "field" with
+            | Str n, Bool true -> n = name
+            | _ -> false) !r
+      | _ -> false)
+    ["header"; "cookie"; "query"]
+
+(* A header, cookie or query argument travels where prepare_headers_util or
+   prepare_query_util sends it, so the body is built from the request data
+   without it, unless the point marks it as a field the body keeps. *)
+let routed_arg_names (ctx : ctx) : string list =
+  List.filter (fun name -> not (field_arg ctx name))
+    (List.map (fun (name, _, _) -> name)
+       (call_args ctx "header" @ call_args ctx "cookie" @ call_args ctx "query"))
 
 let transform_request_util (ctx : ctx) : value =
   (match ctx.c_spec with Some s -> s.sp_step <- "reqform" | None -> ());
-  let data = omit_keys ctx.c_reqdata (header_arg_names ctx.c_point) in
+  let data = omit_keys ctx.c_reqdata (routed_arg_names ctx) in
   strip_action
     (match to_map (getp ctx.c_point "transform") with
      | Map _ as tr ->
@@ -914,11 +1078,64 @@ let result_basic_util (ctx : ctx) : unit =
     end else (match response.rs_err with Some e -> result.rt_err <- Some e | None -> ())
   | _ -> ()
 
+let preview_length = 160
+
+(* Whitespace runs as one space, trimmed. *)
+let flatten_space (s : string) : string =
+  let b = Buffer.create (String.length s) in
+  let space = ref false in
+  String.iter (fun c ->
+      match c with
+      | ' ' | '\t' | '\n' | '\r' | '\011' | '\012' -> space := Buffer.length b > 0
+      | _ ->
+        if !space then (Buffer.add_char b ' '; space := false);
+        Buffer.add_char b c) s;
+  Buffer.contents b
+
+(* Cleaned whole: a secret the bound would split could leave its prefix. *)
+let body_preview (ctx : ctx) (text : value) : string =
+  let flat = vstring (clean_util ctx (Str (flatten_space (vstring text)))) in
+  let n = String.length flat in
+  let rec cut i points =
+    if i >= n then flat
+    else if Char.code flat.[i] land 0xC0 = 0x80 then cut (i + 1) points
+    else if points = preview_length then String.sub flat 0 i ^ "..."
+    else cut (i + 1) (points + 1) in
+  cut 0 0
+
+(* A body that is not JSON. An HTTP failure keeps its own error, with the
+ * response described; otherwise the code tells a wrong content type from
+ * malformed JSON. *)
+let unreadable_body (ctx : ctx) (status : int) (headers : value) (text : value) (sent : value)
+    (failed : sdk_error option) : sdk_error =
+  let ctype = vstring (header_ci headers "content-type") in
+  let agent = vstring (clean_util ctx (Str (vstring (header_ci sent "user-agent")))) in
+  let detail = "HTTP " ^ string_of_int status ^ ", content-type " ^
+               (if ctype = "" then "none" else ctype) ^ ", user-agent " ^
+               (if agent = "" then "transport default" else agent) ^
+               (match text with Noval | Null -> "" | _ -> ", body: " ^ body_preview ctx text) in
+  match failed with
+  | Some e -> e.err_msg <- e.err_msg ^ " (" ^ detail ^ ")"; e
+  | None ->
+    let lower = String.lowercase_ascii ctype in
+    let rec has_json i =
+      i + 4 <= String.length lower && (String.sub lower i 4 = "json" || has_json (i + 1)) in
+    if ctype = "" || has_json 0 then
+      ctx_make_error ctx "response_json_invalid" ("response: body is not valid JSON (" ^ detail ^ ")")
+    else
+      ctx_make_error ctx "response_content_type"
+        ("response: expected JSON, got " ^ ctype ^ " (" ^ detail ^ ")")
+
 let result_body_util (ctx : ctx) : unit =
   match ctx.c_response, ctx.c_result with
   | Some response, Some result ->
     if is_callable response.rs_json && not (is_noval response.rs_body) then
-      result.rt_body <- call_json response.rs_json
+      result.rt_body <- call_json response.rs_json;
+    if response.rs_unreadable then begin
+      let sent = match ctx.c_spec with Some sp -> sp.sp_headers | None -> Noval in
+      result.rt_err <- Some (unreadable_body ctx result.rt_status result.rt_headers
+                               response.rs_body sent result.rt_err)
+    end
   | _ -> ()
 
 let result_headers_util (ctx : ctx) : unit =
@@ -931,6 +1148,33 @@ let result_headers_util (ctx : ctx) : unit =
 
 (* ----- make_* pipeline stages ----- *)
 
+(* The {name} placeholders in a text, in order. *)
+let placeholders (s : string) : string list =
+  let n = String.length s in
+  let rec close j = if j < n && not (String.contains "{}/" s.[j]) then close (j + 1) else j in
+  let rec scan i acc =
+    if i >= n then List.rev acc
+    else if s.[i] <> '{' then scan (i + 1) acc
+    else
+      let j = close (i + 1) in
+      if j < n && s.[j] = '}' && j > i + 1 then scan (j + 1) (String.sub s i (j - i + 1) :: acc)
+      else scan (i + 1) acc
+  in
+  scan 0 []
+
+(* The path parameters of a point that neither the call nor the entity gives
+   a value for, looked up as param_util looks them up. *)
+let unfilled_params (ctx : ctx) (point : value) : string list =
+  match getp point "parts" with
+  | List r ->
+    List.filter_map (fun part ->
+        match part with
+        | Str s when placeholders s = [s] ->
+          let name = String.sub s 1 (String.length s - 2) in
+          (match param_value ctx point name with Noval | Null -> Some name | _ -> None)
+        | _ -> None) !r
+  | _ -> []
+
 let make_point_util (ctx : ctx) : (value * sdk_error option) =
   match Hashtbl.find_opt ctx.c_out "point" with
   | Some (OErr e) -> (Noval, Some e)
@@ -939,7 +1183,7 @@ let make_point_util (ctx : ctx) : (value * sdk_error option) =
     let op = ctx.c_op in
     let options = ctx.c_options in
     let allow_op = match getpath_s options "allow.op" with Str s -> s | _ -> "" in
-    if not (substr_contains allow_op op.op_name) then
+    if not (allow_list_has (getpath_s options "allow.op") op.op_name) then
       (Noval, Some (ctx_make_error ctx "point_op_allow"
         ("Operation \"" ^ op.op_name ^ "\" not allowed by SDK option allow.op value: \"" ^ allow_op ^ "\"")))
     else begin
@@ -1012,11 +1256,25 @@ let make_point_util (ctx : ctx) : (value * sdk_error option) =
                  String.length s > 0 && s.[0] = '{'
                | [] -> false)
             | _ -> false in
-          chosen := arr.(0);
-          Array.iter (fun cand ->
-              let ct = terminal_param cand and bt = terminal_param !chosen in
-              if ct <> bt then (if ct then chosen := cand)
-              else if parts_len cand < parts_len !chosen then chosen := cand) arr
+          let own_point pts =
+            List.fold_left (fun best cand ->
+                let ct = terminal_param cand and bt = terminal_param best in
+                if ct <> bt then (if ct then cand else best)
+                else if parts_len cand < parts_len best then cand else best)
+              (List.hd pts) pts in
+          (* A call without an action falls back to a point without one, as
+             generation does, and only to a route the call can fill. *)
+          let plain = List.filter (fun p ->
+              is_noval (getp (to_map (getp p "select")) "$action")) points in
+          if plain = [] then
+            raise (Sdk_error_exc (ctx_make_error ctx "point_action_required"
+              ("Operation \"" ^ op.op_name ^ "\" has only action endpoints; pass $action to choose one.")));
+          match List.filter (fun p -> unfilled_params ctx p = []) plain with
+          | [] ->
+            raise (Sdk_error_exc (ctx_make_error ctx "point_no_match"
+              ("Operation \"" ^ op.op_name ^ "\" has no endpoint whose path parameters are all given (missing: " ^
+               String.concat ", " (unfilled_params ctx (own_point plain)) ^ ").")))
+          | fillable -> chosen := own_point fillable
         end;
         let req_action = getp reqselector "$action" in
         if not (is_noval req_action) && not (is_noval !chosen) then begin
@@ -1046,7 +1304,7 @@ let make_spec_util (ctx : ctx) : (spec option * sdk_error option) =
     ctx.c_spec <- Some sp;
     sp.sp_method <- u.u_prepare_method ctx;
     let allow_method = match getpath_s options "allow.method" with Str s -> s | _ -> "" in
-    if not (substr_contains allow_method sp.sp_method) then
+    if not (allow_list_has (getpath_s options "allow.method") sp.sp_method) then
       (None, Some (ctx_make_error ctx "spec_method_allow"
         ("Method \"" ^ sp.sp_method ^ "\" not allowed by SDK option allow.method value: \"" ^ allow_method ^ "\"")))
     else begin
@@ -1071,10 +1329,18 @@ let make_spec_util (ctx : ctx) : (spec option * sdk_error option) =
         sp.sp_path <- u.u_prepare_path ctx
       end;
       (match ctx.c_ctrl.ctrl_explain with Map _ -> setp ctx.c_ctrl.ctrl_explain "spec" (spec_to_value sp) | _ -> ());
+      (* Whatever prepare_auth sets in the query, under whichever name, is the
+       * credential; a key it leaves as it was is the caller's. *)
+      let query = List.map (fun k -> (k, getp sp.sp_query k)) (keysof sp.sp_query) in
+      let note (s : spec) =
+        s.sp_authquery <- List.filter (fun k ->
+            match List.assoc_opt k query with
+            | Some was -> not (veq was (getp s.sp_query k))
+            | None -> true) (keysof s.sp_query) in
       match u.u_prepare_auth ctx with
       | (_, Some err) -> (None, Some err)
-      | (Some spec2, None) -> ctx.c_spec <- Some spec2; (Some spec2, None)
-      | (None, None) -> (Some sp, None)
+      | (Some spec2, None) -> note spec2; ctx.c_spec <- Some spec2; (Some spec2, None)
+      | (None, None) -> note sp; (Some sp, None)
     end
 
 let make_url_util (ctx : ctx) : (string * sdk_error option) =
@@ -1097,16 +1363,31 @@ let make_url_util (ctx : ctx) : (string * sdk_error option) =
           url := str_replace_all !url ("{" ^ key ^ "}") encoded;
           setp resmatch key v
         end) (keysof spec.sp_params);
-    let qsep = ref "?" in
-    List.iter (fun key ->
-        let v = getp spec.sp_query key in
-        if not (is_noval v) then begin
-          url := !url ^ !qsep ^ escurl_s key ^ "=" ^ escurl_s (vstring v);
-          qsep := "&";
-          setp resmatch key v
-        end) (keysof spec.sp_query);
-    result.rt_resmatch <- resmatch;
-    (!url, None)
+    (* A placeholder left in the route would send the request to the wrong
+     * route. The base's own placeholders are server variables, resolved with
+     * the options. *)
+    let rec root s = if ends_slash s then root (String.sub s 0 (String.length s - 1)) else s in
+    let base = root spec.sp_base in
+    let blen = String.length base in
+    let route =
+      if String.length !url >= blen && String.sub !url 0 blen = base
+      then String.sub !url blen (String.length !url - blen) else !url in
+    match placeholders route with
+    | _ :: _ as unfilled ->
+      ("", Some (ctx_make_error ctx "url_param_missing"
+         ("URL path has no value for " ^ String.concat ", " unfilled ^ ".")))
+    | [] ->
+      let qsep = ref "?" in
+      List.iter (fun key ->
+          let v = getp spec.sp_query key in
+          if not (is_noval v) then begin
+            url := !url ^ !qsep ^ escurl_s key ^ "=" ^ escurl_s (vstring v);
+            qsep := "&";
+            (* Sent with the request, never recorded as the entity's match. *)
+            if not (List.mem key spec.sp_authquery) then setp resmatch key v
+          end) (keysof spec.sp_query);
+      result.rt_resmatch <- resmatch;
+      (!url, None)
 
 let make_fetch_def_util (ctx : ctx) : (value * sdk_error option) =
   match ctx.c_spec with
@@ -1119,9 +1400,13 @@ let make_fetch_def_util (ctx : ctx) : (value * sdk_error option) =
      | (url, None) ->
        spec.sp_url <- url;
        let fetchdef = jo [("url", Str url); ("method", Str spec.sp_method); ("headers", spec.sp_headers)] in
+       (* A map or a list is JSON, and so is a scalar on a point that declares
+          a JSON body. Anything else goes as given. *)
        (match spec.sp_body with
         | Noval -> ()
-        | Map _ -> setp fetchdef "body" (Str (jsonify spec.sp_body))
+        | (Map _ | List _) as b -> setp fetchdef "body" (Str (jsonify b))
+        | (Str _ | Num _ | Bool _) as b when is_json_request ctx.c_point ->
+          setp fetchdef "body" (Str (jsonify b))
         | b -> setp fetchdef "body" b);
        (fetchdef, None))
 
@@ -1257,25 +1542,29 @@ let fetcher_util (ctx : ctx) (fullurl : string) (fetchdef : value) : (value * sd
 (* ------------------------------------------------------------------ *)
 
 
-let noentity (settings : value) : value =
+let plain_settings (settings : value) (name : string) : value =
   match settings with
   | Map _ ->
     let out = empty_map () in
-    List.iter (fun k -> if k <> "entity" then setp out k (getp settings k)) (keysof settings);
+    List.iter (fun k ->
+        if k <> "entity" && not (name = "rbac" && k = "rules") then
+          setp out k (getp settings k)) (keysof settings);
     out
   | v -> v
 
 (* The options to scan for secrets. The feature map is keyed by feature
  * names, not field names, so it is scanned as a list: `secrets` must not
  * make every setting of that feature a secret. Entity blocks hold entity
- * settings and seeded records, never a credential, so none is scanned. *)
+ * settings and seeded records, never a credential, so none is scanned, and
+ * nor are rbac's rules, keyed by entity and operation names. *)
 let secret_scan (opts : value) (names : string list) : value =
   let out = empty_map () in
   List.iter (fun k ->
       if k <> "entity" && not (List.mem k names) then
         match k, getp opts k with
-        | "feature", (Map _ as fm) -> setp out k (ja (List.map (fun f -> noentity (getp fm f)) (keysof fm)))
-        | "test", v -> setp out k (noentity v)
+        | "feature", (Map _ as fm) ->
+          setp out k (ja (List.map (fun f -> plain_settings (getp fm f) f) (keysof fm)))
+        | "test", v -> setp out k (plain_settings v "")
         | _, v -> setp out k v) (keysof opts);
   out
 

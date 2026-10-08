@@ -21,6 +21,18 @@ import voxgig.smsapisdk.utility.Json;
 @SuppressWarnings({"unchecked", "unused"})
 public class ContactsFieldOptionDirectTest {
 
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  static final boolean LIVE_STRICT = true;
+
+  static boolean liveOk(Map<String, Object> result) {
+    int status = Helpers.toInt(result.get("status"));
+    return result.get("err") == null && Boolean.TRUE.equals(result.get("ok"))
+        && status >= 200 && status < 300;
+  }
+
   static Map<String, Object> jm(Object... kv) {
     Map<String, Object> out = new LinkedHashMap<>();
     for (int i = 0; i < kv.length - 1; i += 2) {
@@ -42,8 +54,9 @@ public class ContactsFieldOptionDirectTest {
             ? "skipped via sdk-test-control.json" : reason);
     if (setup.live) {
       for (String liveKey : new String[] { "field01" }) {
-        Assumptions.assumeTrue(setup.idmap.get(liveKey) != null,
-            "live test needs " + liveKey + " via *_ENTID env var (synthetic IDs only)");
+        if (setup.idmap.get(liveKey) == null) {
+          RunnerSupport.liveMiss(LIVE_STRICT, "Live test blocked: needs " + liveKey + " via SMSAPI_TEST_CONTACTS_FIELD_OPTION_ENTID");
+        }
       }
     }
     SmsapiSDK client = setup.client;
@@ -61,14 +74,12 @@ public class ContactsFieldOptionDirectTest {
         "method", "GET",
         "params", params));
     if (setup.live) {
-      // Live mode is lenient: synthetic IDs frequently 4xx and the
-      // list-response shape varies wildly across public APIs. Skip
-      // rather than fail when the call doesn't return a usable list.
-      Assumptions.assumeTrue(Boolean.TRUE.equals(result.get("ok")),
-          "list call not ok (likely synthetic IDs against live API): " + result);
-      int status = Helpers.toInt(result.get("status"));
-      Assumptions.assumeTrue(status >= 200 && status < 300,
-          "expected 2xx status, got " + result.get("status"));
+      if (!liveOk(result)) {
+        RunnerSupport.liveMiss(LIVE_STRICT, "Live list failed: " + RunnerSupport.liveDescribe(result));
+      }
+      if (RunnerSupport.liveList(result.get("data")) == null) {
+        RunnerSupport.liveMiss(LIVE_STRICT, "Live list returned no list: " + RunnerSupport.liveDescribe(result));
+      }
     }
     else {
       assertEquals(true, result.get("ok"), "expected ok to be true");

@@ -114,6 +114,10 @@ main: kit: entity: group: {
               groupId: "id"
             }
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -164,6 +168,28 @@ main: kit: entity: group: {
             param: {
               groupId: "id"
             }
+          }
+          rb: {
+            fields: [
+              {
+                name: "contact_expire_after"
+              }
+              {
+                name: "description"
+              }
+              {
+                name: "idx"
+              }
+              {
+                name: "name"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

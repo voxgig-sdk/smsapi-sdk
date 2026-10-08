@@ -40,39 +40,39 @@ object SmsapiTypes {
 
   data class CallbackRemoveMatch(val id: String?)
 
-  data class Contact(val birthday_date: String?, val city: String?, val collection: List<Any?>?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val size: Long?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class Contact(val birthday_date: String?, val city: String?, val collection: List<Any?>?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val size: Long?, val source: String?)
 
   data class ContactLoadMatch(val id: String?)
 
   data class ContactListMatch(val birthday_date: List<Any?>?, val email: List<Any?>?, val first_name: List<Any?>?, val gender: String?, val group_id: List<Any?>?, val last_name: List<Any?>?, val limit: Long?, val offset: Long?, val order_by: String?, val phone_number: List<Any?>?, val q: String?)
 
-  data class ContactCreateData(val birthday_date: String?, val city: String?, val collection: List<Any?>?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val size: Long?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class ContactCreateData(val birthday_date: String?, val city: String?, val collection: List<Any?>?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val size: Long?, val source: String?)
 
-  data class ContactUpdateData(val id: String?, val birthday_date: String?, val city: String?, val collection: List<Any?>?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val size: Long?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class ContactUpdateData(val id: String?, val birthday_date: String?, val city: String?, val collection: List<Any?>?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val groups: List<Any?>?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val size: Long?, val source: String?)
 
   data class ContactRemoveMatch(val id: String?)
 
-  data class ContactsField(val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class ContactsField(val id: String?, val name: String?, val type: String?)
 
-  data class ContactsFieldListMatch(val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class ContactsFieldListMatch(val id: String?, val name: String?, val type: String?)
 
-  data class ContactsFieldCreateData(val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class ContactsFieldCreateData(val id: String?, val name: String?, val type: String?)
 
-  data class ContactsFieldUpdateData(val id: String?, val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class ContactsFieldUpdateData(val id: String?, val name: String?, val type: String?)
 
   data class ContactsFieldRemoveMatch(val id: String?)
 
-  data class ContactsFieldOption(val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  class ContactsFieldOption
 
   data class ContactsFieldOptionListMatch(val field_id: String?)
 
-  data class Contactsgroup(val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class Contactsgroup(val group_id: String?, val read: Boolean?, val send: Boolean?, val username: String?, val write: Boolean?)
 
   data class ContactsgroupListMatch(val name: Map<String, Any?>?, val with: List<Any?>?)
 
-  data class ContactsgroupCreateData(val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val group_id: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val username: String?, val value: String?, val write: Boolean?)
+  data class ContactsgroupCreateData(val group_id: String?, val read: Boolean?, val send: Boolean?, val username: String?, val write: Boolean?)
 
-  data class ContactsgroupUpdateData(val group_id: String?, val username: String?, val birthday_date: String?, val city: String?, val contact_expire_after: Long?, val contacts_count: Long?, val country: String?, val created_by: String?, val date_created: String?, val date_updated: String?, val description: String?, val email: String?, val first_name: String?, val gender: String?, val groups: List<Any?>?, val id: String?, val idx: String?, val last_name: String?, val name: String?, val permissions: List<Any?>?, val phone_number: String?, val read: Boolean?, val send: Boolean?, val source: String?, val type: String?, val value: String?, val write: Boolean?)
+  data class ContactsgroupUpdateData(val group_id: String?, val username: String?, val read: Boolean?, val send: Boolean?, val write: Boolean?)
 
   data class ContactsgroupRemoveMatch(val group_id: String?)
 
@@ -110,7 +110,7 @@ object SmsapiTypes {
 
   data class Permission(val group_id: String?, val id: String?, val read: Boolean?, val send: Boolean?, val username: String?, val write: Boolean?)
 
-  data class PermissionLoadMatch(val group_id: String?, val id: String?, val username: String?)
+  data class PermissionLoadMatch(val group_id: String?, val id: String?)
 
   data class PermissionCreateData(val group_id: String?, val id: String?, val read: Boolean?, val send: Boolean?, val username: String?, val write: Boolean?)
 
@@ -140,9 +140,9 @@ object SmsapiTypes {
 
   data class SendernameStatementListMatch(val content: String?, val statements: List<Any?>?, val title: String?)
 
-  data class SentRcsMessage(val content: Map<String, Any?>?, val phone_number: String?, val sender: Any?, val text: String?)
+  data class SentRcsMessage(val content: Map<String, Any?>?, val phone_number: String?, val sender: String?, val text: String?)
 
-  data class SentRcsMessageCreateData(val content: Map<String, Any?>?, val phone_number: String?, val sender: Any?, val text: String?)
+  data class SentRcsMessageCreateData(val content: Map<String, Any?>?, val phone_number: String?, val sender: String?, val text: String?)
 
   data class ShipmentCountryVolume(val country_code: String?, val country_limit: Long?, val country_name: String?, val usage: Long?)
 
@@ -166,7 +166,7 @@ object SmsapiTypes {
 
   class Smssendername
 
-  data class SmssendernameCreateData(val sendername_id: String?)
+  data class SmssendernameCreateData(val sender: String?)
 
   data class SmssendernameRemoveMatch(val sender: String?)
 
@@ -196,8 +196,8 @@ object SmsapiTypes {
 
   data class TemplateUpdateData(val id: String?, val name: String?, val normalize: Boolean?, val template: String?)
 
-  data class UserRcsSenderCollection(val deliveredAt: String?, val expiredAt: String?, val id: String?, val messageType: String?, val readAt: String?, val recipient: String?, val sender: String?, val senderId: String?, val sentAt: String?)
+  class UserRcsSenderCollection
 
-  data class UserRcsSenderCollectionListMatch(val deliveredAt: String?, val expiredAt: String?, val id: String?, val messageType: String?, val readAt: String?, val recipient: String?, val sender: String?, val senderId: String?, val sentAt: String?)
+  class UserRcsSenderCollectionListMatch
 
 }

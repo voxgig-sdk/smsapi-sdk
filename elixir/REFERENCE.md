@@ -203,10 +203,10 @@ available = Smsapi.available(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Available.list(available)
+availables = Smsapi.Entity.Available.list(available)
 ```
 
 ### Common Functions
@@ -252,29 +252,31 @@ blacklist = Smsapi.blacklist(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Blacklist.create(blacklist, Smsapi.Helpers.deep(%{
+blacklist = Smsapi.Entity.Blacklist.create(blacklist, Smsapi.Helpers.deep(%{
 }))
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Blacklist.load(blacklist, Smsapi.Helpers.deep(%{}))
+blacklist = Smsapi.Entity.Blacklist.load(blacklist, Smsapi.Helpers.deep(%{}))
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Blacklist.remove(blacklist, Smsapi.Helpers.deep(%{"id" => "id"}))
+blacklist = Smsapi.Entity.Blacklist.remove(blacklist, Smsapi.Helpers.deep(%{"id" => "id"}))
 ```
 
 ### Common Functions
@@ -327,45 +329,45 @@ callback = Smsapi.callback(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Callback.create(callback, Smsapi.Helpers.deep(%{
+callback = Smsapi.Entity.Callback.create(callback, Smsapi.Helpers.deep(%{
 }))
 ```
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Callback.list(callback)
+callbacks = Smsapi.Entity.Callback.list(callback)
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Callback.load(callback, Smsapi.Helpers.deep(%{"id" => "callback_id"}))
+callback = Smsapi.Entity.Callback.load(callback, Smsapi.Helpers.deep(%{"id" => "callback_id"}))
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Callback.remove(callback, Smsapi.Helpers.deep(%{"id" => "callback_id"}))
+callback = Smsapi.Entity.Callback.remove(callback, Smsapi.Helpers.deep(%{"id" => "callback_id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Callback.update(callback, Smsapi.Helpers.deep(%{
+callback = Smsapi.Entity.Callback.update(callback, Smsapi.Helpers.deep(%{
   "id" => "callback_id",
   # Fields to update
 }))
@@ -423,7 +425,6 @@ contact = Smsapi.contact(sdk)
 | `email` | `String.t()` | No |  |
 | `first_name` | `String.t()` | No |  |
 | `gender` | `String.t()` | Yes |  |
-| `group_id` | `String.t()` | No | Object ID |
 | `groups` | `list()` | Yes |  |
 | `id` | `String.t()` | Yes | Object ID |
 | `idx` | `String.t()` | No | User provided resource id |
@@ -431,23 +432,17 @@ contact = Smsapi.contact(sdk)
 | `name` | `String.t()` | Yes | Group name |
 | `permissions` | `list()` | No |  |
 | `phone_number` | `String.t()` | No |  |
-| `read` | `boolean()` | No | Has read permission |
-| `send` | `boolean()` | No | Has send permission |
 | `size` | `integer()` | Yes |  |
 | `source` | `String.t()` | No |  |
-| `type` | `String.t()` | No |  |
-| `username` | `String.t()` | No |  |
-| `value` | `String.t()` | No |  |
-| `write` | `boolean()` | No | Has write permission |
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contact.create(contact, Smsapi.Helpers.deep(%{
+contact = Smsapi.Entity.Contact.create(contact, Smsapi.Helpers.deep(%{
   "collection" => [],  # list()
   "contact_expire_after" => 1,  # integer()
   "contacts_count" => 1,  # integer()
@@ -462,40 +457,44 @@ record = Smsapi.Entity.Contact.create(contact, Smsapi.Helpers.deep(%{
 }))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Contact.list(contact)
+contacts = Smsapi.Entity.Contact.list(contact)
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contact.load(contact, Smsapi.Helpers.deep(%{"id" => "contact_id"}))
+contact = Smsapi.Entity.Contact.load(contact, Smsapi.Helpers.deep(%{"id" => "contact_id"}))
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contact.remove(contact, Smsapi.Helpers.deep(%{"id" => "contact_id"}))
+contact = Smsapi.Entity.Contact.remove(contact, Smsapi.Helpers.deep(%{"id" => "contact_id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contact.update(contact, Smsapi.Helpers.deep(%{
+contact = Smsapi.Entity.Contact.update(contact, Smsapi.Helpers.deep(%{
   "id" => "contact_id",
   # Fields to update
 }))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Functions
 
@@ -536,77 +535,51 @@ contacts_field = Smsapi.contacts_field(sdk)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String.t()` | No |  |
-| `city` | `String.t()` | No |  |
-| `contact_expire_after` | `integer()` | Yes | Contact expire after days |
-| `contacts_count` | `integer()` | No |  |
-| `country` | `String.t()` | No |  |
-| `created_by` | `String.t()` | Yes |  |
-| `date_created` | `String.t()` | Yes |  |
-| `date_updated` | `String.t()` | Yes |  |
-| `description` | `String.t()` | No |  |
-| `email` | `String.t()` | No |  |
-| `first_name` | `String.t()` | No |  |
-| `gender` | `String.t()` | Yes |  |
-| `group_id` | `String.t()` | No | Object ID |
-| `groups` | `list()` | Yes |  |
 | `id` | `String.t()` | No | Object ID |
-| `idx` | `String.t()` | No | User provided resource id |
-| `last_name` | `String.t()` | No |  |
-| `name` | `String.t()` | No | Group name |
-| `permissions` | `list()` | No |  |
-| `phone_number` | `String.t()` | No |  |
-| `read` | `boolean()` | No | Has read permission |
-| `send` | `boolean()` | No | Has send permission |
-| `source` | `String.t()` | No |  |
+| `name` | `String.t()` | No |  |
 | `type` | `String.t()` | No |  |
-| `username` | `String.t()` | No |  |
-| `value` | `String.t()` | No |  |
-| `write` | `boolean()` | No | Has write permission |
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.ContactsField.create(contacts_field, Smsapi.Helpers.deep(%{
-  "contact_expire_after" => 1,  # integer()
-  "created_by" => "example_created_by",  # String.t()
-  "date_created" => "example_date_created",  # String.t()
-  "date_updated" => "example_date_updated",  # String.t()
-  "gender" => "example_gender",  # String.t()
-  "groups" => [],  # list()
+contacts_field = Smsapi.Entity.ContactsField.create(contacts_field, Smsapi.Helpers.deep(%{
 }))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.ContactsField.list(contacts_field)
+contacts_fields = Smsapi.Entity.ContactsField.list(contacts_field)
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.ContactsField.remove(contacts_field, Smsapi.Helpers.deep(%{"id" => "id"}))
+contacts_field = Smsapi.Entity.ContactsField.remove(contacts_field, Smsapi.Helpers.deep(%{"id" => "id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.ContactsField.update(contacts_field, Smsapi.Helpers.deep(%{
+contacts_field = Smsapi.Entity.ContactsField.update(contacts_field, Smsapi.Helpers.deep(%{
   "id" => "id",
   # Fields to update
 }))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Functions
 
@@ -643,46 +616,14 @@ Return the entity name.
 contacts_field_option = Smsapi.contacts_field_option(sdk)
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `String.t()` | No |  |
-| `city` | `String.t()` | No |  |
-| `contact_expire_after` | `integer()` | Yes | Contact expire after days |
-| `contacts_count` | `integer()` | No |  |
-| `country` | `String.t()` | No |  |
-| `created_by` | `String.t()` | Yes |  |
-| `date_created` | `String.t()` | Yes |  |
-| `date_updated` | `String.t()` | Yes |  |
-| `description` | `String.t()` | No |  |
-| `email` | `String.t()` | No |  |
-| `first_name` | `String.t()` | No |  |
-| `gender` | `String.t()` | Yes |  |
-| `group_id` | `String.t()` | No | Object ID |
-| `groups` | `list()` | Yes |  |
-| `id` | `String.t()` | Yes | Object ID |
-| `idx` | `String.t()` | No | User provided resource id |
-| `last_name` | `String.t()` | No |  |
-| `name` | `String.t()` | No | Group name |
-| `permissions` | `list()` | No |  |
-| `phone_number` | `String.t()` | No |  |
-| `read` | `boolean()` | No | Has read permission |
-| `send` | `boolean()` | No | Has send permission |
-| `source` | `String.t()` | No |  |
-| `type` | `String.t()` | No |  |
-| `username` | `String.t()` | No |  |
-| `value` | `String.t()` | No |  |
-| `write` | `boolean()` | No | Has write permission |
-
 ### Operations
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.ContactsFieldOption.list(contacts_field_option)
+contacts_field_options = Smsapi.Entity.ContactsFieldOption.list(contacts_field_option, Smsapi.Helpers.deep(%{"field_id" => "example"}))
 ```
 
 ### Common Functions
@@ -724,50 +665,21 @@ contactsgroup = Smsapi.contactsgroup(sdk)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String.t()` | No |  |
-| `city` | `String.t()` | No |  |
-| `contact_expire_after` | `integer()` | Yes | Contact expire after days |
-| `contacts_count` | `integer()` | No |  |
-| `country` | `String.t()` | No |  |
-| `created_by` | `String.t()` | Yes |  |
-| `date_created` | `String.t()` | Yes |  |
-| `date_updated` | `String.t()` | Yes |  |
-| `description` | `String.t()` | No |  |
-| `email` | `String.t()` | No |  |
-| `first_name` | `String.t()` | No |  |
-| `gender` | `String.t()` | Yes |  |
 | `group_id` | `String.t()` | Yes | Object ID |
-| `groups` | `list()` | Yes |  |
-| `id` | `String.t()` | Yes | Object ID |
-| `idx` | `String.t()` | No | User provided resource id |
-| `last_name` | `String.t()` | No |  |
-| `name` | `String.t()` | No | Group name |
-| `permissions` | `list()` | No |  |
-| `phone_number` | `String.t()` | No |  |
 | `read` | `boolean()` | Yes | Has read permission |
 | `send` | `boolean()` | Yes | Has send permission |
-| `source` | `String.t()` | No |  |
-| `type` | `String.t()` | No |  |
 | `username` | `String.t()` | Yes |  |
-| `value` | `String.t()` | No |  |
 | `write` | `boolean()` | Yes | Has write permission |
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contactsgroup.create(contactsgroup, Smsapi.Helpers.deep(%{
-  "contact_expire_after" => 1,  # integer()
-  "created_by" => "example_created_by",  # String.t()
-  "date_created" => "example_date_created",  # String.t()
-  "date_updated" => "example_date_updated",  # String.t()
-  "gender" => "example_gender",  # String.t()
+contactsgroup = Smsapi.Entity.Contactsgroup.create(contactsgroup, Smsapi.Helpers.deep(%{
   "group_id" => "example_group_id",  # String.t()
-  "groups" => [],  # list()
-  "id" => "example_id",  # String.t()
   "read" => true,  # boolean()
   "send" => true,  # boolean()
   "username" => "example_username",  # String.t()
@@ -775,32 +687,36 @@ record = Smsapi.Entity.Contactsgroup.create(contactsgroup, Smsapi.Helpers.deep(%
 }))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Contactsgroup.list(contactsgroup)
+contactsgroups = Smsapi.Entity.Contactsgroup.list(contactsgroup)
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contactsgroup.remove(contactsgroup, Smsapi.Helpers.deep(%{"group_id" => "group_id"}))
+contactsgroup = Smsapi.Entity.Contactsgroup.remove(contactsgroup, Smsapi.Helpers.deep(%{"group_id" => "group_id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contactsgroup.update(contactsgroup, Smsapi.Helpers.deep(%{
+contactsgroup = Smsapi.Entity.Contactsgroup.update(contactsgroup, Smsapi.Helpers.deep(%{
   "group_id" => "group_id",
   # Fields to update
 }))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Functions
 
@@ -839,20 +755,20 @@ contactstrash = Smsapi.contactstrash(sdk)
 
 ### Operations
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contactstrash.remove(contactstrash, Smsapi.Helpers.deep(%{}))
+contactstrash = Smsapi.Entity.Contactstrash.remove(contactstrash, Smsapi.Helpers.deep(%{}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Contactstrash.update(contactstrash, Smsapi.Helpers.deep(%{
+contactstrash = Smsapi.Entity.Contactstrash.update(contactstrash, Smsapi.Helpers.deep(%{
   # Fields to update
 }))
 ```
@@ -906,10 +822,10 @@ field_available = Smsapi.field_available(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.FieldAvailable.list(field_available)
+field_availables = Smsapi.Entity.FieldAvailable.list(field_available)
 ```
 
 ### Common Functions
@@ -964,24 +880,26 @@ group = Smsapi.group(sdk)
 
 ### Operations
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Group.load(group, Smsapi.Helpers.deep(%{"id" => "group_id"}))
+group = Smsapi.Entity.Group.load(group, Smsapi.Helpers.deep(%{"id" => "group_id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Group.update(group, Smsapi.Helpers.deep(%{
+group = Smsapi.Entity.Group.update(group, Smsapi.Helpers.deep(%{
   "id" => "group_id",
   # Fields to update
 }))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Functions
 
@@ -1029,15 +947,17 @@ mfa_code = Smsapi.mfa_code(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.MfaCode.create(mfa_code, Smsapi.Helpers.deep(%{
+mfa_code = Smsapi.Entity.MfaCode.create(mfa_code, Smsapi.Helpers.deep(%{
   "phone_number" => "example_phone_number",  # String.t()
 }))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Functions
 
@@ -1087,18 +1007,18 @@ opt_out = Smsapi.opt_out(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.OptOut.list(opt_out)
+opt_outs = Smsapi.Entity.OptOut.list(opt_out)
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.OptOut.remove(opt_out, Smsapi.Helpers.deep(%{"id" => "id"}))
+opt_out = Smsapi.Entity.OptOut.remove(opt_out, Smsapi.Helpers.deep(%{"id" => "id"}))
 ```
 
 ### Common Functions
@@ -1144,20 +1064,20 @@ opt_out_setting = Smsapi.opt_out_setting(sdk)
 
 ### Operations
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.OptOutSetting.load(opt_out_setting, Smsapi.Helpers.deep(%{}))
+opt_out_setting = Smsapi.Entity.OptOutSetting.load(opt_out_setting, Smsapi.Helpers.deep(%{}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.OptOutSetting.update(opt_out_setting, Smsapi.Helpers.deep(%{
+opt_out_setting = Smsapi.Entity.OptOutSetting.update(opt_out_setting, Smsapi.Helpers.deep(%{
   # Fields to update
 }))
 ```
@@ -1210,12 +1130,12 @@ permission = Smsapi.permission(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Permission.create(permission, Smsapi.Helpers.deep(%{
+permission = Smsapi.Entity.Permission.create(permission, Smsapi.Helpers.deep(%{
   "group_id" => "example_group_id",  # String.t()
   "read" => true,  # boolean()
   "send" => true,  # boolean()
@@ -1224,12 +1144,14 @@ record = Smsapi.Entity.Permission.create(permission, Smsapi.Helpers.deep(%{
 }))
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Permission.load(permission, Smsapi.Helpers.deep(%{"id" => "permission_id", "group_id" => "group_id", "username" => "username"}))
+permission = Smsapi.Entity.Permission.load(permission, Smsapi.Helpers.deep(%{"id" => "permission_id", "group_id" => "group_id"}))
 ```
 
 ### Common Functions
@@ -1278,10 +1200,10 @@ ping = Smsapi.ping(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Ping.list(ping)
+pings = Smsapi.Entity.Ping.list(ping)
 ```
 
 ### Common Functions
@@ -1335,18 +1257,18 @@ profile = Smsapi.profile(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Profile.list(profile)
+profiles = Smsapi.Entity.Profile.list(profile)
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Profile.load(profile, Smsapi.Helpers.deep(%{}))
+profile = Smsapi.Entity.Profile.load(profile, Smsapi.Helpers.deep(%{}))
 ```
 
 ### Common Functions
@@ -1388,10 +1310,10 @@ rcs = Smsapi.rcs(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Rcs.list(rcs)
+rcss = Smsapi.Entity.Rcs.list(rcs)
 ```
 
 ### Common Functions
@@ -1441,29 +1363,31 @@ sendername = Smsapi.sendername(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Sendername.create(sendername, Smsapi.Helpers.deep(%{
+sendername = Smsapi.Entity.Sendername.create(sendername, Smsapi.Helpers.deep(%{
 }))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Sendername.list(sendername)
+sendernames = Smsapi.Entity.Sendername.list(sendername)
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Sendername.load(sendername, Smsapi.Helpers.deep(%{"id" => "sendername_id"}))
+sendername = Smsapi.Entity.Sendername.load(sendername, Smsapi.Helpers.deep(%{"id" => "sendername_id"}))
 ```
 
 ### Common Functions
@@ -1513,10 +1437,10 @@ sendername_statement = Smsapi.sendername_statement(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.SendernameStatement.list(sendername_statement)
+sendername_statements = Smsapi.Entity.SendernameStatement.list(sendername_statement)
 ```
 
 ### Common Functions
@@ -1560,19 +1484,19 @@ sent_rcs_message = Smsapi.sent_rcs_message(sdk)
 | --- | --- | --- | --- |
 | `content` | `map()` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `String.t()` | Yes | Recipient phone number (e.g. |
-| `sender` | `any()` | Yes |  |
+| `sender` | `String.t()` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String.t()` | No | Plain text message content. |
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.SentRcsMessage.create(sent_rcs_message, Smsapi.Helpers.deep(%{
+sent_rcs_message = Smsapi.Entity.SentRcsMessage.create(sent_rcs_message, Smsapi.Helpers.deep(%{
   "phone_number" => "example_phone_number",  # String.t()
-  "sender" => "example_sender",  # any()
+  "sender" => "example_sender",  # String.t()
 }))
 ```
 
@@ -1624,10 +1548,10 @@ shipment_country_volume = Smsapi.shipment_country_volume(sdk)
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.ShipmentCountryVolume.list(shipment_country_volume)
+shipment_country_volumes = Smsapi.Entity.ShipmentCountryVolume.list(shipment_country_volume)
 ```
 
 ### Common Functions
@@ -1682,49 +1606,51 @@ short_url = Smsapi.short_url(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.ShortUrl.create(short_url, Smsapi.Helpers.deep(%{
+short_url = Smsapi.Entity.ShortUrl.create(short_url, Smsapi.Helpers.deep(%{
 }))
 ```
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.ShortUrl.list(short_url)
+short_urls = Smsapi.Entity.ShortUrl.list(short_url)
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.ShortUrl.load(short_url, Smsapi.Helpers.deep(%{"id" => "short_url_id"}))
+short_url = Smsapi.Entity.ShortUrl.load(short_url, Smsapi.Helpers.deep(%{"id" => "short_url_id"}))
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.ShortUrl.remove(short_url, Smsapi.Helpers.deep(%{"id" => "short_url_id"}))
+short_url = Smsapi.Entity.ShortUrl.remove(short_url, Smsapi.Helpers.deep(%{"id" => "short_url_id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.ShortUrl.update(short_url, Smsapi.Helpers.deep(%{
+short_url = Smsapi.Entity.ShortUrl.update(short_url, Smsapi.Helpers.deep(%{
   "id" => "short_url_id",
   # Fields to update
 }))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Functions
 
@@ -1789,12 +1715,12 @@ smsdo = Smsapi.smsdo(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Smsdo.create(smsdo, Smsapi.Helpers.deep(%{
+smsdo = Smsapi.Entity.Smsdo.create(smsdo, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -1835,22 +1761,22 @@ smssendername = Smsapi.smssendername(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Smssendername.create(smssendername, Smsapi.Helpers.deep(%{
-  "sendername_id" => "example_sendername_id",  # String.t()
+smssendername = Smsapi.Entity.Smssendername.create(smssendername, Smsapi.Helpers.deep(%{
+  "sender" => "example_sender",  # String.t()
 }))
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Smssendername.remove(smssendername, Smsapi.Helpers.deep(%{"sender" => "sender"}))
+smssendername = Smsapi.Entity.Smssendername.remove(smssendername, Smsapi.Helpers.deep(%{"sender" => "sender"}))
 ```
 
 ### Common Functions
@@ -1896,12 +1822,12 @@ smstemplate = Smsapi.smstemplate(sdk)
 
 ### Operations
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Smstemplate.remove(smstemplate, Smsapi.Helpers.deep(%{"id" => "id"}))
+smstemplate = Smsapi.Entity.Smstemplate.remove(smstemplate, Smsapi.Helpers.deep(%{"id" => "id"}))
 ```
 
 ### Common Functions
@@ -1952,46 +1878,46 @@ subuser = Smsapi.subuser(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Subuser.create(subuser, Smsapi.Helpers.deep(%{
+subuser = Smsapi.Entity.Subuser.create(subuser, Smsapi.Helpers.deep(%{
   "credentials" => %{},  # map()
 }))
 ```
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Subuser.list(subuser)
+subusers = Smsapi.Entity.Subuser.list(subuser)
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Subuser.load(subuser, Smsapi.Helpers.deep(%{"id" => "subuser_id"}))
+subuser = Smsapi.Entity.Subuser.load(subuser, Smsapi.Helpers.deep(%{"id" => "subuser_id"}))
 ```
 
-#### `remove(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `remove(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Subuser.remove(subuser, Smsapi.Helpers.deep(%{"id" => "subuser_id"}))
+subuser = Smsapi.Entity.Subuser.remove(subuser, Smsapi.Helpers.deep(%{"id" => "subuser_id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Subuser.update(subuser, Smsapi.Helpers.deep(%{
+subuser = Smsapi.Entity.Subuser.update(subuser, Smsapi.Helpers.deep(%{
   "id" => "subuser_id",
   # Fields to update
 }))
@@ -2043,41 +1969,45 @@ template = Smsapi.template(sdk)
 
 ### Operations
 
-#### `create(entity, reqdata, ctrl \\ nil) :: map()`
+#### `create(entity, reqdata, ctrl \\ nil) :: entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Template.create(template, Smsapi.Helpers.deep(%{
+template = Smsapi.Entity.Template.create(template, Smsapi.Helpers.deep(%{
 }))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.Template.list(template)
+templates = Smsapi.Entity.Template.list(template)
 ```
 
-#### `load(entity, reqmatch, ctrl \\ nil) :: map()`
+#### `load(entity, reqmatch, ctrl \\ nil) :: entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get/1` reads, and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Template.load(template, Smsapi.Helpers.deep(%{"id" => "template_id"}))
+template = Smsapi.Entity.Template.load(template, Smsapi.Helpers.deep(%{"id" => "template_id"}))
 ```
 
-#### `update(entity, reqdata, ctrl \\ nil) :: map()`
+#### `update(entity, reqdata, ctrl \\ nil) :: entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```elixir
-record = Smsapi.Entity.Template.update(template, Smsapi.Helpers.deep(%{
+template = Smsapi.Entity.Template.update(template, Smsapi.Helpers.deep(%{
   "id" => "template_id",
   # Fields to update
 }))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Functions
 
@@ -2114,29 +2044,14 @@ Return the entity name.
 user_rcs_sender_collection = Smsapi.user_rcs_sender_collection(sdk)
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `String.t()` | No |  |
-| `expiredAt` | `String.t()` | No |  |
-| `id` | `String.t()` | No | Object ID |
-| `interface` | `String.t()` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String.t()` | No | RCS message type (basic, single, ...). |
-| `readAt` | `String.t()` | No |  |
-| `recipient` | `String.t()` | No | Recipient phone number (without +). |
-| `sender` | `String.t()` | No | Sender name |
-| `senderId` | `String.t()` | No | Sender id |
-| `sentAt` | `String.t()` | No |  |
-
 ### Operations
 
 #### `list(entity, reqmatch \\ nil, ctrl \\ nil) :: list()`
 
-List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(entity)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```elixir
-records = Smsapi.Entity.UserRcsSenderCollection.list(user_rcs_sender_collection)
+user_rcs_sender_collections = Smsapi.Entity.UserRcsSenderCollection.list(user_rcs_sender_collection)
 ```
 
 ### Common Functions
@@ -2823,6 +2738,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

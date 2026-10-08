@@ -4,23 +4,6 @@ defmodule Smsapi.SentRcsMessageEntityTest do
   use ExUnit.Case
 
   alias Voxgig.Struct, as: S
-  alias Smsapi.Helpers, as: H
-  alias Smsapi.Json
-
-  defp fixture do
-    Json.parse(File.read!("../.sdk/test/entity/sent_rcs_message/SentRcsMessageTestData.json"))
-  end
-
-  defp mk_sdk do
-    existing = H.or_(S.getpath(fixture(), "existing"), S.jm([]))
-    Smsapi.test(S.jm(["entity", existing]))
-  end
-
-  defp first_id do
-    existing = H.or_(S.getpath(fixture(), "existing.sent_rcs_message"), S.jm([]))
-    keys = S.keysof(existing)
-    if keys == [], do: nil, else: hd(keys)
-  end
 
   test "should create instance" do
     sdk = Smsapi.test()
@@ -35,5 +18,18 @@ defmodule Smsapi.SentRcsMessageEntityTest do
     made = Smsapi.EntityBase.data_get(created)
     assert S.ismap(made)
     assert S.getprop(made, "id") != nil
+  end
+
+  test "should refuse an invalid request" do
+    if Smsapi.FeatureHarness.has_feature("validate") do
+      client = Smsapi.test(nil, S.jm(["feature", S.jm(["validate", S.jm(["active", true])])]))
+
+      err =
+        assert_raise Smsapi.Error, fn ->
+          Smsapi.Entity.SentRcsMessage.create(Smsapi.sent_rcs_message(client), S.jm(["phone_number", 1, "sender", "x"]))
+        end
+
+      assert err.code == "validate_failed"
+    end
   end
 end

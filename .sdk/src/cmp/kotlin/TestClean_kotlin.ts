@@ -263,8 +263,26 @@ class CleanTest {
     },
   )
 
+  // Offline, as every generated suite is: the test OPTION resolves a required
+  // server variable to test-<name>, and installs no transport.
+  private fun offline(opts: Map<String, Any?>): MutableMap<String, Any?> {
+    val out = LinkedHashMap<String, Any?>(opts)
+    out["test"] = linkedMapOf<String, Any?>("active" to true)
+    return out
+  }
+
+  // A client the sweep cannot build leaves nothing swept: a harness error, not
+  // a leak.
+  private fun construct(opts: Map<String, Any?>): ${SDK} =
+    try {
+      ${SDK}(offline(opts))
+    } catch (e: RuntimeException) {
+      throw IllegalStateException(
+        "clean harness: the client could not be constructed, so nothing was swept: " + e.message, e)
+    }
+
   private fun makeSdk(scenario: Scenario, sinks: MutableList<Sink>, cleanopts: Map<String, Any?>?,
-    vararg extra: BaseFeature): ${SDK} {
+    vararg extra: BaseFeature, auth: MutableMap<String, Any?>? = null): ${SDK} {
     val capture = { name: String -> Consumer<Any?> { rec -> sinks.addAll(surfaces(name, rec)) } }
 
     val feature = linkedMapOf<String, Any?>()
@@ -312,7 +330,10 @@ class CleanTest {
     opts["feature"] = feature
     opts["extend"] = mutableListOf<Any?>(CaptureFeature(sinks), *extra)
     opts["utility"] = linkedMapOf<String, Any?>("fetcher" to fetcher)
-    return ${SDK}(opts)
+    if (auth != null) {
+      opts["auth"] = auth
+    }
+    return construct(opts)
   }
 
   class Target(val accessor: Method, val op: String, val match: Map<String, Any?>)
@@ -340,6 +361,7 @@ class CleanTest {
       "load" -> ent.load(arg, ctrl)
       "create" -> ent.create(arg, ctrl)
       "update" -> ent.update(arg, ctrl)
+      "patch" -> ent.patch(arg, ctrl)
       "remove" -> ent.remove(arg, ctrl)
       else -> throw IllegalArgumentException("no such op: " + op)
     }
@@ -371,7 +393,7 @@ class CleanTest {
   private fun usableOp(): Target? {
     val plainFetch: (Context, String, MutableMap<String, Any?>) -> Any? =
       { _, _, _ -> response(200, linkedMapOf<String, Any?>("id" to "i1"), null) }
-    val plain = ${SDK}(linkedMapOf<String, Any?>(
+    val plain = construct(linkedMapOf<String, Any?>(
       "apikey" to canaryApikey,
       "utility" to linkedMapOf<String, Any?>("fetcher" to plainFetch)))
     val entities = Helpers.toMapAny(Config.sharedConfig()["entity"]) ?: linkedMapOf()
@@ -407,10 +429,11 @@ class CleanTest {
   private fun drive(sdk: ${SDK}, target: Target, ctrl: MutableMap<String, Any?>?, sinks: MutableList<Sink>): Throwable? {
     // A caller may keep the record it passed rather than read ctrl's entry.
     val held = ctrl?.get("explain")
+    val entity = entityOf(sdk, target.accessor)!!
     var out: Any? = null
     var err: Throwable? = null
     try {
-      out = call(entityOf(sdk, target.accessor)!!, target.op, target.match, ctrl)
+      out = call(entity, target.op, target.match, ctrl)
     } catch (e: Throwable) {
       err = e
     }
@@ -420,6 +443,8 @@ class CleanTest {
     if (out != null) {
       sinks.addAll(surfaces("result", out))
     }
+    // Raw, as a caller copying the match into another query reads it.
+    sinks.addAll(surfaces("match", entity.match()))
     val explain = ctrl?.get("explain")
     if (explain != null) {
       sinks.addAll(surfaces("explain", explain))
@@ -459,10 +484,15 @@ class CleanTest {
       }
     }
 
+    // A name given at run time replaces the declared one: the match leaves
+    // out whichever name prepareAuth placed.
+    drive(makeSdk(scenarios[0], sinks, null, auth = linkedMapOf<String, Any?>("name" to "zzcred")),
+      target, null, sinks)
+
     // No clean option at all: the schema defaults still apply.
     val bareFetch: (Context, String, MutableMap<String, Any?>) -> Any? =
       { _, url, fetchdef -> scenarios[1].respond(url, fetchdef) }
-    val bare = ${SDK}(linkedMapOf<String, Any?>(
+    val bare = construct(linkedMapOf<String, Any?>(
       "apikey" to canaryApikey,
       "secret" to canarySecret,
       "headers" to linkedMapOf<String, Any?>("X-Custom-Token" to canaryHeader),
@@ -474,9 +504,9 @@ class CleanTest {
     // no rejection to sweep: sweep the client, and what clean makes of the
     // value should anything quote it.
     try {
-      val mistyped = ${SDK}(linkedMapOf<String, Any?>(
+      val mistyped = ${SDK}(offline(linkedMapOf<String, Any?>(
         "apikey" to linkedMapOf<String, Any?>("value" to canaryApikey),
-        "clean" to linkedMapOf<String, Any?>("values" to canaryValue)))
+        "clean" to linkedMapOf<String, Any?>("values" to canaryValue))))
       sinks.addAll(surfaces("mistyped", mistyped))
       sinks.addAll(surfaces("mistyped:quoted",
         mistyped.getUtility().clean(mistyped.getRootCtx(), "found map: " + canaryApikey)))
@@ -485,7 +515,7 @@ class CleanTest {
     }
 
     // A number is registered as the text a message quotes it in.
-    val numeric = ${SDK}(linkedMapOf<String, Any?>("apikey" to 918273645))
+    val numeric = construct(linkedMapOf<String, Any?>("apikey" to 918273645))
     val numbered = numeric.getUtility().clean(numeric.getRootCtx(), "found 918273645")
 
     for (unexpected in listOf(false, true)) {
@@ -595,14 +625,17 @@ class CleanTest {
   }
 
   // An entity block, of per-entity settings or seeded records keyed by
-  // entity name and id, is not read at all.
+  // entity name and id, is not read at all, and nor are rbac's rules, keyed by
+  // entity and operation names.
   @Test
   fun aFeatureNameDoesNotMakeItsSettingsSecret() {
-    val sdk = ${SDK}(linkedMapOf<String, Any?>(
+    val sdk = construct(linkedMapOf<String, Any?>(
       "apikey" to canaryApikey,
       "feature" to linkedMapOf<String, Any?>(
         "secrets" to linkedMapOf<String, Any?>(
           "active" to false, "kind" to "SETTING-KIND-4829", "token" to canarySecret),
+        "rbac" to linkedMapOf<String, Any?>(
+          "active" to false, "rules" to linkedMapOf<String, Any?>("zztoken.load" to "PLAINRULE-k7j5h3g1")),
         "test" to linkedMapOf<String, Any?>("active" to false, "entity" to linkedMapOf<String, Any?>(
           "zztoken" to linkedMapOf<String, Any?>(
             "ZZTOKEN01" to linkedMapOf<String, Any?>("note" to "PLAINRECORD-t5r3e1w9"))))),
@@ -615,6 +648,8 @@ class CleanTest {
       sdk.getUtility().clean(root, "record PLAINRECORD-t5r3e1w9"))
     assertEquals("alias PLAINALIAS-m2n4b6v8",
       sdk.getUtility().clean(root, "alias PLAINALIAS-m2n4b6v8"))
+    assertEquals("rule PLAINRULE-k7j5h3g1",
+      sdk.getUtility().clean(root, "rule PLAINRULE-k7j5h3g1"))
   }
 
   @Test

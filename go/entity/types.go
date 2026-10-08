@@ -133,7 +133,6 @@ type ContactCreateData struct {
 	Email *string `json:"email,omitempty"`
 	FirstName *string `json:"first_name,omitempty"`
 	Gender string `json:"gender"`
-	GroupId *string `json:"group_id,omitempty"`
 	Groups []any `json:"groups"`
 	Id string `json:"id"`
 	Idx *string `json:"idx,omitempty"`
@@ -141,14 +140,8 @@ type ContactCreateData struct {
 	Name string `json:"name"`
 	Permissions *[]any `json:"permissions,omitempty"`
 	PhoneNumber *string `json:"phone_number,omitempty"`
-	Read *bool `json:"read,omitempty"`
-	Send *bool `json:"send,omitempty"`
 	Size int `json:"size"`
 	Source *string `json:"source,omitempty"`
-	Type *string `json:"type,omitempty"`
-	Username *string `json:"username,omitempty"`
-	Value *string `json:"value,omitempty"`
-	Write *bool `json:"write,omitempty"`
 }
 
 // ContactUpdateData is the typed request payload for Contact.UpdateTyped.
@@ -167,21 +160,14 @@ type ContactUpdateData struct {
 	Email *string `json:"email,omitempty"`
 	FirstName *string `json:"first_name,omitempty"`
 	Gender *string `json:"gender,omitempty"`
-	GroupId *string `json:"group_id,omitempty"`
 	Groups *[]any `json:"groups,omitempty"`
 	Idx *string `json:"idx,omitempty"`
 	LastName *string `json:"last_name,omitempty"`
 	Name *string `json:"name,omitempty"`
 	Permissions *[]any `json:"permissions,omitempty"`
 	PhoneNumber *string `json:"phone_number,omitempty"`
-	Read *bool `json:"read,omitempty"`
-	Send *bool `json:"send,omitempty"`
 	Size *int `json:"size,omitempty"`
 	Source *string `json:"source,omitempty"`
-	Type *string `json:"type,omitempty"`
-	Username *string `json:"username,omitempty"`
-	Value *string `json:"value,omitempty"`
-	Write *bool `json:"write,omitempty"`
 }
 
 // ContactRemoveMatch is the typed request payload for Contact.RemoveTyped.
@@ -195,95 +181,23 @@ type ContactsField struct {
 
 // ContactsFieldListMatch is the typed request payload for ContactsField.ListTyped.
 type ContactsFieldListMatch struct {
-	BirthdayDate *string `json:"birthday_date,omitempty"`
-	City *string `json:"city,omitempty"`
-	ContactExpireAfter *int `json:"contact_expire_after,omitempty"`
-	ContactsCount *int `json:"contacts_count,omitempty"`
-	Country *string `json:"country,omitempty"`
-	CreatedBy *string `json:"created_by,omitempty"`
-	DateCreated *string `json:"date_created,omitempty"`
-	DateUpdated *string `json:"date_updated,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Email *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	Gender *string `json:"gender,omitempty"`
-	GroupId *string `json:"group_id,omitempty"`
-	Groups *[]any `json:"groups,omitempty"`
 	Id *string `json:"id,omitempty"`
-	Idx *string `json:"idx,omitempty"`
-	LastName *string `json:"last_name,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Permissions *[]any `json:"permissions,omitempty"`
-	PhoneNumber *string `json:"phone_number,omitempty"`
-	Read *bool `json:"read,omitempty"`
-	Send *bool `json:"send,omitempty"`
-	Source *string `json:"source,omitempty"`
 	Type *string `json:"type,omitempty"`
-	Username *string `json:"username,omitempty"`
-	Value *string `json:"value,omitempty"`
-	Write *bool `json:"write,omitempty"`
 }
 
 // ContactsFieldCreateData is the typed request payload for ContactsField.CreateTyped.
 type ContactsFieldCreateData struct {
-	BirthdayDate *string `json:"birthday_date,omitempty"`
-	City *string `json:"city,omitempty"`
-	ContactExpireAfter int `json:"contact_expire_after"`
-	ContactsCount *int `json:"contacts_count,omitempty"`
-	Country *string `json:"country,omitempty"`
-	CreatedBy string `json:"created_by"`
-	DateCreated string `json:"date_created"`
-	DateUpdated string `json:"date_updated"`
-	Description *string `json:"description,omitempty"`
-	Email *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	Gender string `json:"gender"`
-	GroupId *string `json:"group_id,omitempty"`
-	Groups []any `json:"groups"`
 	Id *string `json:"id,omitempty"`
-	Idx *string `json:"idx,omitempty"`
-	LastName *string `json:"last_name,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Permissions *[]any `json:"permissions,omitempty"`
-	PhoneNumber *string `json:"phone_number,omitempty"`
-	Read *bool `json:"read,omitempty"`
-	Send *bool `json:"send,omitempty"`
-	Source *string `json:"source,omitempty"`
 	Type *string `json:"type,omitempty"`
-	Username *string `json:"username,omitempty"`
-	Value *string `json:"value,omitempty"`
-	Write *bool `json:"write,omitempty"`
 }
 
 // ContactsFieldUpdateData is the typed request payload for ContactsField.UpdateTyped.
 type ContactsFieldUpdateData struct {
 	Id string `json:"id"`
-	BirthdayDate *string `json:"birthday_date,omitempty"`
-	City *string `json:"city,omitempty"`
-	ContactExpireAfter *int `json:"contact_expire_after,omitempty"`
-	ContactsCount *int `json:"contacts_count,omitempty"`
-	Country *string `json:"country,omitempty"`
-	CreatedBy *string `json:"created_by,omitempty"`
-	DateCreated *string `json:"date_created,omitempty"`
-	DateUpdated *string `json:"date_updated,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Email *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	Gender *string `json:"gender,omitempty"`
-	GroupId *string `json:"group_id,omitempty"`
-	Groups *[]any `json:"groups,omitempty"`
-	Idx *string `json:"idx,omitempty"`
-	LastName *string `json:"last_name,omitempty"`
 	Name *string `json:"name,omitempty"`
-	Permissions *[]any `json:"permissions,omitempty"`
-	PhoneNumber *string `json:"phone_number,omitempty"`
-	Read *bool `json:"read,omitempty"`
-	Send *bool `json:"send,omitempty"`
-	Source *string `json:"source,omitempty"`
 	Type *string `json:"type,omitempty"`
-	Username *string `json:"username,omitempty"`
-	Value *string `json:"value,omitempty"`
-	Write *bool `json:"write,omitempty"`
 }
 
 // ContactsFieldRemoveMatch is the typed request payload for ContactsField.RemoveTyped.
@@ -312,32 +226,10 @@ type ContactsgroupListMatch struct {
 
 // ContactsgroupCreateData is the typed request payload for Contactsgroup.CreateTyped.
 type ContactsgroupCreateData struct {
-	BirthdayDate *string `json:"birthday_date,omitempty"`
-	City *string `json:"city,omitempty"`
-	ContactExpireAfter int `json:"contact_expire_after"`
-	ContactsCount *int `json:"contacts_count,omitempty"`
-	Country *string `json:"country,omitempty"`
-	CreatedBy string `json:"created_by"`
-	DateCreated string `json:"date_created"`
-	DateUpdated string `json:"date_updated"`
-	Description *string `json:"description,omitempty"`
-	Email *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	Gender string `json:"gender"`
 	GroupId string `json:"group_id"`
-	Groups []any `json:"groups"`
-	Id string `json:"id"`
-	Idx *string `json:"idx,omitempty"`
-	LastName *string `json:"last_name,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Permissions *[]any `json:"permissions,omitempty"`
-	PhoneNumber *string `json:"phone_number,omitempty"`
 	Read bool `json:"read"`
 	Send bool `json:"send"`
-	Source *string `json:"source,omitempty"`
-	Type *string `json:"type,omitempty"`
 	Username string `json:"username"`
-	Value *string `json:"value,omitempty"`
 	Write bool `json:"write"`
 }
 
@@ -345,30 +237,8 @@ type ContactsgroupCreateData struct {
 type ContactsgroupUpdateData struct {
 	GroupId string `json:"group_id"`
 	Username *string `json:"username,omitempty"`
-	BirthdayDate *string `json:"birthday_date,omitempty"`
-	City *string `json:"city,omitempty"`
-	ContactExpireAfter *int `json:"contact_expire_after,omitempty"`
-	ContactsCount *int `json:"contacts_count,omitempty"`
-	Country *string `json:"country,omitempty"`
-	CreatedBy *string `json:"created_by,omitempty"`
-	DateCreated *string `json:"date_created,omitempty"`
-	DateUpdated *string `json:"date_updated,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Email *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	Gender *string `json:"gender,omitempty"`
-	Groups *[]any `json:"groups,omitempty"`
-	Id *string `json:"id,omitempty"`
-	Idx *string `json:"idx,omitempty"`
-	LastName *string `json:"last_name,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Permissions *[]any `json:"permissions,omitempty"`
-	PhoneNumber *string `json:"phone_number,omitempty"`
 	Read *bool `json:"read,omitempty"`
 	Send *bool `json:"send,omitempty"`
-	Source *string `json:"source,omitempty"`
-	Type *string `json:"type,omitempty"`
-	Value *string `json:"value,omitempty"`
 	Write *bool `json:"write,omitempty"`
 }
 
@@ -475,7 +345,6 @@ type Permission struct {
 type PermissionLoadMatch struct {
 	GroupId string `json:"group_id"`
 	Id string `json:"id"`
-	Username string `json:"username"`
 }
 
 // PermissionCreateData is the typed request payload for Permission.CreateTyped.
@@ -572,7 +441,7 @@ type SentRcsMessage struct {
 type SentRcsMessageCreateData struct {
 	Content *map[string]any `json:"content,omitempty"`
 	PhoneNumber string `json:"phone_number"`
-	Sender any `json:"sender"`
+	Sender string `json:"sender"`
 	Text *string `json:"text,omitempty"`
 }
 
@@ -677,7 +546,7 @@ type Smssendername struct {
 
 // SmssendernameCreateData is the typed request payload for Smssendername.CreateTyped.
 type SmssendernameCreateData struct {
-	SendernameId string `json:"sendername_id"`
+	Sender string `json:"sender"`
 }
 
 // SmssendernameRemoveMatch is the typed request payload for Smssendername.RemoveTyped.
@@ -772,16 +641,6 @@ type UserRcsSenderCollection struct {
 
 // UserRcsSenderCollectionListMatch is the typed request payload for UserRcsSenderCollection.ListTyped.
 type UserRcsSenderCollectionListMatch struct {
-	DeliveredAt *string `json:"deliveredAt,omitempty"`
-	ExpiredAt *string `json:"expiredAt,omitempty"`
-	Id *string `json:"id,omitempty"`
-	Interface *string `json:"interface,omitempty"`
-	MessageType *string `json:"messageType,omitempty"`
-	ReadAt *string `json:"readAt,omitempty"`
-	Recipient *string `json:"recipient,omitempty"`
-	Sender *string `json:"sender,omitempty"`
-	SenderId *string `json:"senderId,omitempty"`
-	SentAt *string `json:"sentAt,omitempty"`
 }
 
 // asMap turns a typed request/data struct into the map[string]any the

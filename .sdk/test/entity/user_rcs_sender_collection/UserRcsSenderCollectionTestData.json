@@ -1,57 +1,14 @@
 {
   "existing": {
     "user_rcs_sender_collection": {
-      "USER_RCS_SENDER_COLLECTION00": {
-        "deliveredAt": "s64",
-        "expiredAt": "s65",
-        "id": "USER_RCS_SENDER_COLLECTION00",
-        "interface": "s67",
-        "messageType": "s68",
-        "readAt": "s69",
-        "recipient": "s6a",
-        "sender": "s6b",
-        "senderId": "s6c",
-        "sentAt": "s6d"
-      },
-      "USER_RCS_SENDER_COLLECTION01": {
-        "deliveredAt": "sc8",
-        "expiredAt": "sc9",
-        "id": "USER_RCS_SENDER_COLLECTION01",
-        "interface": "scb",
-        "messageType": "scc",
-        "readAt": "scd",
-        "recipient": "sce",
-        "sender": "scf",
-        "senderId": "sd0",
-        "sentAt": "sd1"
-      },
-      "USER_RCS_SENDER_COLLECTION02": {
-        "deliveredAt": "s12c",
-        "expiredAt": "s12d",
-        "id": "USER_RCS_SENDER_COLLECTION02",
-        "interface": "s12f",
-        "messageType": "s130",
-        "readAt": "s131",
-        "recipient": "s132",
-        "sender": "s133",
-        "senderId": "s134",
-        "sentAt": "s135"
-      }
+      "USER_RCS_SENDER_COLLECTION00": {},
+      "USER_RCS_SENDER_COLLECTION01": {},
+      "USER_RCS_SENDER_COLLECTION02": {}
     }
   },
   "new": {
     "user_rcs_sender_collection": {
-      "user_rcs_sender_collection_ref01": {
-        "deliveredAt": "s190",
-        "expiredAt": "s191",
-        "interface": "s193",
-        "messageType": "s194",
-        "readAt": "s195",
-        "recipient": "s196",
-        "sender": "s197",
-        "senderId": "s198",
-        "sentAt": "s199"
-      }
+      "user_rcs_sender_collection_ref01": {}
     }
   },
   "requests": {

@@ -34,6 +34,11 @@ func resultBodyUtil(_ ctx: Context) -> Result {
     if let jf = response?.jsonFunc, let resp = response, !isNil(resp.body) {
       result.body = jf()
     }
+    if let resp = response, resp.unreadable {
+      let sent: Value = ctx.spec == nil ? .noval : .map(ctx.spec!.headers)
+      result.err = Response.unreadableBody(
+        ctx, result.status, .map(result.headers), resp.body, sent, result.err)
+    }
   }
 
   return result!
@@ -60,13 +65,18 @@ private func stripAction(_ reqdata: Value) -> Value {
   return omitKeys(reqdata, ["$action"])
 }
 
-// A header argument travels as a header, which prepareHeadersUtil sends, so
-// the body is built from the request data without it.
-private func headerArgNames(_ ctx: Context) -> [String] {
-  guard let ahl = gpath(ctx.point, "args", "header").asList else { return [] }
-  return ahl.items.compactMap { hd in
-    guard let name = gp(hd, "name").asString, !name.isEmpty else { return nil }
-    return name
+// A header, cookie or query argument travels where prepareHeadersUtil or
+// prepareQueryUtil sends it, so the body is built from the request data
+// without it, unless the point marks it as a field the body keeps.
+private func routedArgNames(_ ctx: Context) -> [String] {
+  return (callArgs(ctx, "header") + callArgs(ctx, "cookie") + callArgs(ctx, "query")).map { $0.name }
+    .filter { !fieldArg(ctx, $0) }
+}
+
+private func fieldArg(_ ctx: Context, _ name: String) -> Bool {
+  return ["header", "cookie", "query"].contains { kind in
+    guard let defs = gpath(ctx.point, "args", kind).asList else { return false }
+    return defs.items.contains { gp($0, "name").asString == name && gp($0, "field").asBool == true }
   }
 }
 
@@ -84,7 +94,7 @@ private func omitKeys(_ reqdata: Value, _ names: [String]) -> Value {
 func transformRequestUtil(_ ctx: Context) -> Value {
   if let sp = ctx.spec { sp.step = "reqform" }
 
-  let reqdata = omitKeys(.map(ctx.reqdata), headerArgNames(ctx))
+  let reqdata = omitKeys(.map(ctx.reqdata), routedArgNames(ctx))
 
   guard let tfm = gp(ctx.point, "transform").asMap else { return stripAction(reqdata) }
   let reqform = gp(tfm, "req")
@@ -133,11 +143,43 @@ extension Utility {
   public final class CleanConfig {
     public var active = true
     public var keys: [String] = []
-    public var values: [String] = []
     public var mask = "[redacted]"
     public var hint = 0
     public var min = 4
+
+    // Requests on other threads clean while one registers, so the registry
+    // is read and written under its own lock.
+    private let lock = NSLock()
+    private var registry: [String] = []
+
+    public var values: [String] {
+      get {
+        lock.lock()
+        defer { lock.unlock() }
+        return registry
+      }
+      set {
+        lock.lock()
+        defer { lock.unlock() }
+        registry = newValue
+      }
+    }
+
     public init() {}
+
+    // The forms not yet registered are added, longest first, in one step.
+    func register(_ forms: [String]) {
+      lock.lock()
+      defer { lock.unlock() }
+      var changed = false
+      for form in forms where form.count >= min && !registry.contains(form) {
+        registry.append(form)
+        changed = true
+      }
+      if changed {
+        registry.sort { $0.count > $1.count }
+      }
+    }
   }
 }
 
@@ -218,16 +260,7 @@ private func cleanForms(_ value: String) -> [String] {
 func cleanAddUtil(_ ctx: Context, _ value: Value) {
   let cfg = cleanConfigOf(ctx)
   guard let s = value.asString, s.count >= cfg.min else { return }
-  var changed = false
-  for form in cleanForms(s) {
-    if form.count >= cfg.min && !cfg.values.contains(form) {
-      cfg.values.append(form)
-      changed = true
-    }
-  }
-  if changed {
-    cfg.values.sort { $0.count > $1.count }
-  }
+  cfg.register(cleanForms(s))
 }
 
 // Every scalar under a sensitive name, at any depth and of any shape: a

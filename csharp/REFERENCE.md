@@ -9,6 +9,7 @@ Complete API reference for the Smsapi C# SDK.
 
 ```csharp
 using SmsapiSdk;
+using Voxgig.Struct;
 
 var client = new SmsapiSDK(options);
 ```
@@ -236,11 +237,14 @@ var available = client.Available();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Available().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Available().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -280,7 +284,7 @@ var blacklist = client.Blacklist();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Blacklist().Create(new Dictionary<string, object?>
@@ -288,9 +292,11 @@ var result = client.Blacklist().Create(new Dictionary<string, object?>
 });
 ```
 
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Blacklist().Load(null);
@@ -298,7 +304,7 @@ var result = client.Blacklist().Load(null);
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Blacklist().Remove(new Dictionary<string, object?> { ["id"] = "id" });
@@ -361,7 +367,7 @@ var callback = client.Callback();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Callback().Create(new Dictionary<string, object?>
@@ -371,16 +377,19 @@ var result = client.Callback().Create(new Dictionary<string, object?>
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Callback().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Callback().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Callback().Load(new Dictionary<string, object?> { ["id"] = "callback_id" });
@@ -388,7 +397,7 @@ var result = client.Callback().Load(new Dictionary<string, object?> { ["id"] = "
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Callback().Remove(new Dictionary<string, object?> { ["id"] = "callback_id" });
@@ -396,7 +405,7 @@ var result = client.Callback().Remove(new Dictionary<string, object?> { ["id"] =
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.Callback().Update(new Dictionary<string, object?>
@@ -450,7 +459,6 @@ var contact = client.Contact();
 | `email` | `string` | No |  |
 | `first_name` | `string` | No |  |
 | `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
 | `groups` | `List<object?>` | Yes |  |
 | `id` | `string` | Yes | Object ID |
 | `idx` | `string` | No | User provided resource id |
@@ -458,14 +466,8 @@ var contact = client.Contact();
 | `name` | `string` | Yes | Group name |
 | `permissions` | `List<object?>` | No |  |
 | `phone_number` | `string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
 | `size` | `long` | Yes |  |
 | `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `bool` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -473,9 +475,9 @@ var contact = client.Contact();
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -484,28 +486,21 @@ var contact = client.Contact();
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Contact().Create(new Dictionary<string, object?>
@@ -524,18 +519,23 @@ var result = client.Contact().Create(new Dictionary<string, object?>
 });
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Contact().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Contact().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Contact().Load(new Dictionary<string, object?> { ["id"] = "contact_id" });
@@ -543,7 +543,7 @@ var result = client.Contact().Load(new Dictionary<string, object?> { ["id"] = "c
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Contact().Remove(new Dictionary<string, object?> { ["id"] = "contact_id" });
@@ -551,7 +551,7 @@ var result = client.Contact().Remove(new Dictionary<string, object?> { ["id"] = 
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.Contact().Update(new Dictionary<string, object?>
@@ -560,6 +560,8 @@ var result = client.Contact().Update(new Dictionary<string, object?>
     // Fields to update
 });
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -592,96 +594,39 @@ var contactsField = client.ContactsField();
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `long` | Yes | Contact expire after days |
-| `contacts_count` | `long` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `List<object?>` | Yes |  |
 | `id` | `string` | No | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `List<object?>` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `string` | No |  |
+| `name` | `string` | No |  |
 | `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `bool` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.ContactsField().Create(new Dictionary<string, object?>
 {
-    ["contact_expire_after"] = 1L,  // long
-    ["created_by"] = "example_created_by",  // string
-    ["date_created"] = "example_date_created",  // string
-    ["date_updated"] = "example_date_updated",  // string
-    ["gender"] = "example_gender",  // string
-    ["groups"] = new List<object?>(),  // List<object?>
 });
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.ContactsField().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.ContactsField().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.ContactsField().Remove(new Dictionary<string, object?> { ["id"] = "id" });
@@ -689,7 +634,7 @@ var result = client.ContactsField().Remove(new Dictionary<string, object?> { ["i
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.ContactsField().Update(new Dictionary<string, object?>
@@ -698,6 +643,8 @@ var result = client.ContactsField().Update(new Dictionary<string, object?>
     // Fields to update
 });
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -726,47 +673,18 @@ Return the entity name.
 var contactsFieldOption = client.ContactsFieldOption();
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `long` | Yes | Contact expire after days |
-| `contacts_count` | `long` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `List<object?>` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `List<object?>` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `bool` | No | Has write permission |
-
 ### Operations
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.ContactsFieldOption().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.ContactsFieldOption().List(new Dictionary<string, object?> { ["field_id"] = "example" })!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -800,83 +718,22 @@ var contactsgroup = client.Contactsgroup();
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `long` | Yes | Contact expire after days |
-| `contacts_count` | `long` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
 | `group_id` | `string` | Yes | Object ID |
-| `groups` | `List<object?>` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `List<object?>` | No |  |
-| `phone_number` | `string` | No |  |
 | `read` | `bool` | Yes | Has read permission |
 | `send` | `bool` | Yes | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
 | `username` | `string` | Yes |  |
-| `value` | `string` | No |  |
 | `write` | `bool` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Contactsgroup().Create(new Dictionary<string, object?>
 {
-    ["contact_expire_after"] = 1L,  // long
-    ["created_by"] = "example_created_by",  // string
-    ["date_created"] = "example_date_created",  // string
-    ["date_updated"] = "example_date_updated",  // string
-    ["gender"] = "example_gender",  // string
     ["group_id"] = "example_group_id",  // string
-    ["groups"] = new List<object?>(),  // List<object?>
-    ["id"] = "example_id",  // string
     ["read"] = true,  // bool
     ["send"] = true,  // bool
     ["username"] = "example_username",  // string
@@ -884,18 +741,23 @@ var result = client.Contactsgroup().Create(new Dictionary<string, object?>
 });
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Contactsgroup().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Contactsgroup().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Contactsgroup().Remove(new Dictionary<string, object?> { ["group_id"] = "group_id" });
@@ -903,7 +765,7 @@ var result = client.Contactsgroup().Remove(new Dictionary<string, object?> { ["g
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.Contactsgroup().Update(new Dictionary<string, object?>
@@ -912,6 +774,8 @@ var result = client.Contactsgroup().Update(new Dictionary<string, object?>
     // Fields to update
 });
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -944,7 +808,7 @@ var contactstrash = client.Contactstrash();
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Contactstrash().Remove(null);
@@ -952,7 +816,7 @@ var result = client.Contactstrash().Remove(null);
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.Contactstrash().Update(new Dictionary<string, object?>
@@ -1002,11 +866,14 @@ var fieldAvailable = client.FieldAvailable();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.FieldAvailable().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.FieldAvailable().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -1055,7 +922,7 @@ var group = client.Group();
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Group().Load(new Dictionary<string, object?> { ["id"] = "group_id" });
@@ -1063,7 +930,7 @@ var result = client.Group().Load(new Dictionary<string, object?> { ["id"] = "gro
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.Group().Update(new Dictionary<string, object?>
@@ -1072,6 +939,8 @@ var result = client.Group().Update(new Dictionary<string, object?>
     // Fields to update
 });
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1113,7 +982,7 @@ var mfaCode = client.MfaCode();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.MfaCode().Create(new Dictionary<string, object?>
@@ -1121,6 +990,8 @@ var result = client.MfaCode().Create(new Dictionary<string, object?>
     ["phone_number"] = "example_phone_number",  // string
 });
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1162,16 +1033,19 @@ var optOut = client.OptOut();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.OptOut().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.OptOut().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.OptOut().Remove(new Dictionary<string, object?> { ["id"] = "id" });
@@ -1214,7 +1088,7 @@ var optOutSetting = client.OptOutSetting();
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.OptOutSetting().Load(null);
@@ -1222,7 +1096,7 @@ var result = client.OptOutSetting().Load(null);
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.OptOutSetting().Update(new Dictionary<string, object?>
@@ -1273,7 +1147,7 @@ var permission = client.Permission();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Permission().Create(new Dictionary<string, object?>
@@ -1286,12 +1160,14 @@ var result = client.Permission().Create(new Dictionary<string, object?>
 });
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
-var result = client.Permission().Load(new Dictionary<string, object?> { ["id"] = "permission_id", ["group_id"] = "group_id", ["username"] = "username" });
+var result = client.Permission().Load(new Dictionary<string, object?> { ["id"] = "permission_id", ["group_id"] = "group_id" });
 ```
 
 ### Common Methods
@@ -1332,11 +1208,14 @@ var ping = client.Ping();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Ping().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Ping().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -1382,16 +1261,19 @@ var profile = client.Profile();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Profile().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Profile().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Profile().Load(null);
@@ -1428,11 +1310,14 @@ var rcs = client.Rcs();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Rcs().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Rcs().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -1476,7 +1361,7 @@ var sendername = client.Sendername();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Sendername().Create(new Dictionary<string, object?>
@@ -1484,18 +1369,23 @@ var result = client.Sendername().Create(new Dictionary<string, object?>
 });
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Sendername().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Sendername().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Sendername().Load(new Dictionary<string, object?> { ["id"] = "sendername_id" });
@@ -1540,11 +1430,14 @@ var sendernameStatement = client.SendernameStatement();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.SendernameStatement().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.SendernameStatement().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -1580,20 +1473,20 @@ var sentRcsMessage = client.SentRcsMessage();
 | --- | --- | --- | --- |
 | `content` | `Dictionary<string, object?>` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Yes | Recipient phone number (e.g. |
-| `sender` | `object?` | Yes |  |
+| `sender` | `string` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | No | Plain text message content. |
 
 ### Operations
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.SentRcsMessage().Create(new Dictionary<string, object?>
 {
     ["phone_number"] = "example_phone_number",  // string
-    ["sender"] = "example_sender",  // object?
+    ["sender"] = "example_sender",  // string
 });
 ```
 
@@ -1637,11 +1530,14 @@ var shipmentCountryVolume = client.ShipmentCountryVolume();
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.ShipmentCountryVolume().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.ShipmentCountryVolume().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -1690,7 +1586,7 @@ var shortUrl = client.ShortUrl();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.ShortUrl().Create(new Dictionary<string, object?>
@@ -1700,16 +1596,19 @@ var result = client.ShortUrl().Create(new Dictionary<string, object?>
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.ShortUrl().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.ShortUrl().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.ShortUrl().Load(new Dictionary<string, object?> { ["id"] = "short_url_id" });
@@ -1717,7 +1616,7 @@ var result = client.ShortUrl().Load(new Dictionary<string, object?> { ["id"] = "
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.ShortUrl().Remove(new Dictionary<string, object?> { ["id"] = "short_url_id" });
@@ -1725,7 +1624,7 @@ var result = client.ShortUrl().Remove(new Dictionary<string, object?> { ["id"] =
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.ShortUrl().Update(new Dictionary<string, object?>
@@ -1734,6 +1633,8 @@ var result = client.ShortUrl().Update(new Dictionary<string, object?>
     // Fields to update
 });
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1792,7 +1693,7 @@ var smsdo = client.Smsdo();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Smsdo().Create(new Dictionary<string, object?>
@@ -1831,18 +1732,18 @@ var smssendername = client.Smssendername();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Smssendername().Create(new Dictionary<string, object?>
 {
-    ["sendername_id"] = "example_sendername_id",  // string
+    ["sender"] = "example_sender",  // string
 });
 ```
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Smssendername().Remove(new Dictionary<string, object?> { ["sender"] = "sender" });
@@ -1885,7 +1786,7 @@ var smstemplate = client.Smstemplate();
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Smstemplate().Remove(new Dictionary<string, object?> { ["id"] = "id" });
@@ -1944,7 +1845,7 @@ var subuser = client.Subuser();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Subuser().Create(new Dictionary<string, object?>
@@ -1955,16 +1856,19 @@ var result = client.Subuser().Create(new Dictionary<string, object?>
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Subuser().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Subuser().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Subuser().Load(new Dictionary<string, object?> { ["id"] = "subuser_id" });
@@ -1972,7 +1876,7 @@ var result = client.Subuser().Load(new Dictionary<string, object?> { ["id"] = "s
 
 #### `Remove(reqmatch, ctrl = null) -> object?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```csharp
 var result = client.Subuser().Remove(new Dictionary<string, object?> { ["id"] = "subuser_id" });
@@ -1980,7 +1884,7 @@ var result = client.Subuser().Remove(new Dictionary<string, object?> { ["id"] = 
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.Subuser().Update(new Dictionary<string, object?>
@@ -2030,7 +1934,7 @@ var template = client.Template();
 
 #### `Create(reqdata, ctrl = null) -> object?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```csharp
 var result = client.Template().Create(new Dictionary<string, object?>
@@ -2038,18 +1942,23 @@ var result = client.Template().Create(new Dictionary<string, object?>
 });
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.Template().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.Template().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 #### `Load(reqmatch, ctrl = null) -> object?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `Data()` reads, and raises on error.
 
 ```csharp
 var result = client.Template().Load(new Dictionary<string, object?> { ["id"] = "template_id" });
@@ -2057,7 +1966,7 @@ var result = client.Template().Load(new Dictionary<string, object?> { ["id"] = "
 
 #### `Update(reqdata, ctrl = null) -> object?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```csharp
 var result = client.Template().Update(new Dictionary<string, object?>
@@ -2066,6 +1975,8 @@ var result = client.Template().Update(new Dictionary<string, object?>
     // Fields to update
 });
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2094,30 +2005,18 @@ Return the entity name.
 var userRcsSenderCollection = client.UserRcsSenderCollection();
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `string` | No |  |
-| `expiredAt` | `string` | No |  |
-| `id` | `string` | No | Object ID |
-| `interface` | `string` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | No | RCS message type (basic, single, ...). |
-| `readAt` | `string` | No |  |
-| `recipient` | `string` | No | Recipient phone number (without +). |
-| `sender` | `string` | No | Sender name |
-| `senderId` | `string` | No | Sender id |
-| `sentAt` | `string` | No |  |
-
 ### Operations
 
 #### `List(reqmatch, ctrl = null) -> object?`
 
-List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `List(null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```csharp
-var results = client.UserRcsSenderCollection().List(null);
-Console.WriteLine(results);
+var results = (List<object?>)client.UserRcsSenderCollection().List(null)!;
+foreach (var item in results)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)item!).Data()));
+}
 ```
 
 ### Common Methods
@@ -2798,6 +2697,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

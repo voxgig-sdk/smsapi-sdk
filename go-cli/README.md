@@ -20,7 +20,7 @@ export SMSAPI_APIKEY=sk_live_xxx
 
 # 4. Each command line is ONE boru expression, run against the API:
 ./smsapi-cli list available
-./smsapi-cli list blacklist
+./smsapi-cli list callback
 
 # 5. Override the API base URL for a single call
 SMSAPI_BASE=https://api.example.com ./smsapi-cli list available

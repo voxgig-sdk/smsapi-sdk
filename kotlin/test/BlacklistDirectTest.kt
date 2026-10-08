@@ -16,6 +16,17 @@ import voxgig.smsapisdk.utility.Json
 @Suppress("UNCHECKED_CAST", "UNUSED_VARIABLE")
 class BlacklistDirectTest {
 
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  private val LIVE_STRICT = true
+
+  private fun liveOk(result: Map<String, Any?>): Boolean {
+    val status = Helpers.toInt(result["status"])
+    return result["err"] == null && result["ok"] == true && status in 200..299
+  }
+
   @Test
   fun directLoadBlacklist() {
     val setup = directSetup(jm("id", "direct01"))
@@ -33,10 +44,12 @@ class BlacklistDirectTest {
         "method", "GET",
         "params", linkedMapOf<String, Any?>()))
     if (setup.live) {
-      Assumptions.assumeTrue(result["ok"] == true,
-          "load call not ok (likely synthetic IDs against live API): " + result)
-      val status = Helpers.toInt(result["status"])
-      Assumptions.assumeTrue(status in 200..299, "expected 2xx status, got " + result["status"])
+      if (!liveOk(result)) {
+        RunnerSupport.liveMiss(LIVE_STRICT, "Live load failed: " + RunnerSupport.liveDescribe(result))
+      }
+      if (result["data"] == null) {
+        RunnerSupport.liveMiss(LIVE_STRICT, "Live load returned no data: " + RunnerSupport.liveDescribe(result))
+      }
     } else {
       assertEquals(true, result["ok"], "expected ok to be true")
       assertEquals(200, Helpers.toInt(result["status"]), "expected status 200")

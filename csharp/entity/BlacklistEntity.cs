@@ -76,6 +76,8 @@ public class BlacklistEntity : SmsapiEntityBase
 
     // (update not defined by this API - base class throws UnsupportedOp)
 
+    // (patch not defined by this API - base class throws UnsupportedOp)
+
     public override object? Remove(Dictionary<string, object?>? reqmatch,
         Dictionary<string, object?>? ctrl = null)
     {

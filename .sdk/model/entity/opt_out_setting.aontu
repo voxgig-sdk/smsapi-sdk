@@ -26,6 +26,10 @@ main: kit: entity: opt_out_setting: {
           }
           m: "GET"
           o: "/opt_outs/settings"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "opt_outs"
@@ -45,6 +49,9 @@ main: kit: entity: opt_out_setting: {
       name: "update"
       points: [
         {
+          bf: [
+            "brand"
+          ]
           co: {
             id: "PUT /opt_outs/settings"
             source: "openapi3"
@@ -52,6 +59,10 @@ main: kit: entity: opt_out_setting: {
           }
           m: "PUT"
           o: "/opt_outs/settings"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "opt_outs"

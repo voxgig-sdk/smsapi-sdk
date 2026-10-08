@@ -15,7 +15,7 @@ keeps the cognitive load low.
 
 ## Install
 This package is not yet published to NuGet. Install it from the GitHub
-release tag (`csharp/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)) or
+release tag (`csharp/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)) or
 from a source checkout — build the library and add a project reference:
 
 ```bash
@@ -32,6 +32,7 @@ loading a specific record.
 
 ```csharp
 using SmsapiSdk;
+using Voxgig.Struct;
 
 var client = new SmsapiSDK(new Dictionary<string, object?>
 {
@@ -41,14 +42,17 @@ var client = new SmsapiSDK(new Dictionary<string, object?>
 
 ### 2. List available records
 
-`List(null)` returns an aggregate list of records (as `object?`) and raises
-on error.
+`List(null)` returns a list of entities, one per record (as `object?`), and
+raises on error; an entity's `Data()` reads its record.
 
 ```csharp
 try
 {
-    var availableList = client.Available().List(null);
-    Console.WriteLine(availableList);
+    var availableList = (List<object?>)client.Available().List(null)!;
+    foreach (var availableItem in availableList)
+    {
+        Console.WriteLine(StructUtils.Jsonify(((IEntity)availableItem!).Data()));
+    }
 }
 catch (Exception err)
 {
@@ -59,13 +63,14 @@ catch (Exception err)
 ### 3. Load a permission
 
 Permission is nested under group, so provide the `group_id`.
-`Load()` returns the bare record (as `object?`) and raises on error.
+`Load()` returns the entity (as `object?`) and raises on error; an entity's
+`Data()` reads its record.
 
 ```csharp
 try
 {
-    var permission = client.Permission().Load(new Dictionary<string, object?> { ["group_id"] = "example_group_id", ["username"] = "example_username", ["id"] = "example_id" });
-    Console.WriteLine(permission);
+    var permission = (IEntity)client.Permission().Load(new Dictionary<string, object?> { ["group_id"] = "example_group_id", ["id"] = "example_id" })!;
+    Console.WriteLine(StructUtils.Jsonify(permission.Data()));
 }
 catch (Exception err)
 {
@@ -80,15 +85,16 @@ Entity operations reject on failure, so wrap them in `try` / `catch`:
 
 ```ts
 try {
-  const permission = await client.Permission().load({ group_id: "example", id: "example_id", username: "example" })
-  console.log(permission)
+  const templates = await client.Template().list()
+  console.log(templates.map((item) => item.data()))
 } catch (err) {
-  console.error('load failed:', err)
+  console.error('list failed:', err)
 }
 ```
 
 The low-level `direct()` method does **not** throw — it returns the
-value or an `Error`, so check the result before using it:
+result envelope. Branch on `ok`; on failure `status` holds the HTTP status
+(for error responses) and `err` holds the error:
 
 ```ts
 const result = await client.direct({
@@ -97,8 +103,8 @@ const result = await client.direct({
   params: { id: 'example_id' },
 })
 
-if (result instanceof Error) {
-  throw result
+if (!result.ok) {
+  console.error('request failed:', result.status, result.err)
 }
 ```
 
@@ -156,10 +162,12 @@ Create a mock client for unit testing — no server required:
 ```csharp
 var client = SmsapiSDK.TestSDK(null, null);
 
-// Entity ops return the bare record and raise on error.
-var permission = client.Permission().Load(new Dictionary<string, object?> { ["id"] = "test01" });
-// permission holds the mock response record
-Console.WriteLine(permission);
+// List returns a list of entities, one per mock record; it raises on error.
+var templateList = (List<object?>)client.Template().List(null)!;
+foreach (var templateItem in templateList)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)templateItem!).Data()));
+}
 ```
 
 ### Use a custom fetch function
@@ -275,11 +283,11 @@ All entities share the same interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `Load` | `(reqmatch, ctrl) -> object?` | Load a single entity by match criteria. Raises on error. |
-| `List` | `(reqmatch, ctrl) -> object?` | List entities matching the criteria (an aggregate list). Raises on error. |
-| `Create` | `(reqdata, ctrl) -> object?` | Create a new entity. Raises on error. |
-| `Update` | `(reqdata, ctrl) -> object?` | Update an existing entity. Raises on error. |
-| `Remove` | `(reqmatch, ctrl) -> object?` | Remove an entity. Raises on error. |
+| `Load` | `(reqmatch, ctrl) -> object?` | Load a single entity by match criteria, and return it. Raises on error. |
+| `List` | `(reqmatch, ctrl) -> object?` | List entities matching the criteria, one per record. Raises on error. |
+| `Create` | `(reqdata, ctrl) -> object?` | Create a new entity, and return it. Raises on error. |
+| `Update` | `(reqdata, ctrl) -> object?` | Update an existing entity, and return it. Raises on error. |
+| `Remove` | `(reqmatch, ctrl) -> object?` | Remove an entity, and return it marked as deleted. Raises on error. |
 | `Data` | `(newdata) -> object?` | Get or set entity data. |
 | `Match` | `(newmatch) -> object?` | Get or set entity match criteria. |
 | `Make` | `() -> IEntity` | Create a new instance with the same options. |
@@ -287,9 +295,10 @@ All entities share the same interface.
 
 ### Result shape
 
-Entity operations return the bare result data (a `Dictionary` for
-single-entity ops, an aggregate list for `List`) as `object?` and raise on
-error. Wrap calls in `try`/`catch` to handle failures.
+Entity operations return the entity, and `List` a list of entities, one per
+record, as `object?`; an entity is an `IEntity`, whose `Data()` reads its
+record. They raise on error, so wrap calls in `try`/`catch` to handle
+failures.
 
 The `Direct()` escape hatch never raises — it returns a result
 `Dictionary<string, object?>` you branch on via `result["ok"]`:
@@ -361,7 +370,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -369,14 +377,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -386,33 +388,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -422,33 +400,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -458,32 +409,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -651,7 +580,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -771,16 +700,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -928,7 +847,6 @@ Create an instance: `var contact = client.Contact();`
 | `email` | `string` |  |
 | `first_name` | `string` |  |
 | `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
 | `groups` | `List<object?>` |  |
 | `id` | `string` | Object ID |
 | `idx` | `string` | User provided resource id |
@@ -936,14 +854,8 @@ Create an instance: `var contact = client.Contact();`
 | `name` | `string` | Group name |
 | `permissions` | `List<object?>` |  |
 | `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
 | `size` | `long` |  |
 | `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: Load
 
@@ -994,33 +906,9 @@ Create an instance: `var contactsField = client.ContactsField();`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `long` | Contact expire after days |
-| `contacts_count` | `long` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `List<object?>` |  |
 | `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `List<object?>` |  |
-| `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `string` |  |
+| `name` | `string` |  |
 | `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: List
 
@@ -1033,12 +921,6 @@ var contactsFieldList = client.ContactsField().List(null);
 ```csharp
 var contactsField = client.ContactsField().Create(new Dictionary<string, object?>
 {
-    ["contact_expire_after"] = 1L,  // long
-    ["created_by"] = "example_created_by",  // string
-    ["date_created"] = "example_date_created",  // string
-    ["date_updated"] = "example_date_updated",  // string
-    ["gender"] = "example_gender",  // string
-    ["groups"] = new List<object?>(),  // List<object?>
 });
 ```
 
@@ -1053,42 +935,10 @@ Create an instance: `var contactsFieldOption = client.ContactsFieldOption();`
 | --- | --- |
 | `List(null)` | List entities, optionally matching the given criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `long` | Contact expire after days |
-| `contacts_count` | `long` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `List<object?>` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `List<object?>` |  |
-| `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
-
 #### Example: List
 
 ```csharp
-var contactsFieldOptionList = client.ContactsFieldOption().List(null);
+var contactsFieldOptionList = client.ContactsFieldOption().List(new Dictionary<string, object?> { ["field_id"] = "example" });
 ```
 
 
@@ -1109,32 +959,10 @@ Create an instance: `var contactsgroup = client.Contactsgroup();`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `long` | Contact expire after days |
-| `contacts_count` | `long` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
 | `group_id` | `string` | Object ID |
-| `groups` | `List<object?>` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `List<object?>` |  |
-| `phone_number` | `string` |  |
 | `read` | `bool` | Has read permission |
 | `send` | `bool` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
 | `username` | `string` |  |
-| `value` | `string` |  |
 | `write` | `bool` | Has write permission |
 
 #### Example: List
@@ -1148,14 +976,7 @@ var contactsgroupList = client.Contactsgroup().List(null);
 ```csharp
 var contactsgroup = client.Contactsgroup().Create(new Dictionary<string, object?>
 {
-    ["contact_expire_after"] = 1L,  // long
-    ["created_by"] = "example_created_by",  // string
-    ["date_created"] = "example_date_created",  // string
-    ["date_updated"] = "example_date_updated",  // string
-    ["gender"] = "example_gender",  // string
     ["group_id"] = "example_group_id",  // string
-    ["groups"] = new List<object?>(),  // List<object?>
-    ["id"] = "example_id",  // string
     ["read"] = true,  // bool
     ["send"] = true,  // bool
     ["username"] = "example_username",  // string
@@ -1341,7 +1162,7 @@ Create an instance: `var permission = client.Permission();`
 #### Example: Load
 
 ```csharp
-var permission = client.Permission().Load(new Dictionary<string, object?> { ["id"] = "permission_id", ["group_id"] = "group_id", ["username"] = "username" });
+var permission = client.Permission().Load(new Dictionary<string, object?> { ["id"] = "permission_id", ["group_id"] = "group_id" });
 ```
 
 #### Example: Create
@@ -1519,7 +1340,7 @@ Create an instance: `var sentRcsMessage = client.SentRcsMessage();`
 | --- | --- | --- |
 | `content` | `Dictionary<string, object?>` | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Recipient phone number (e.g. |
-| `sender` | `object?` |  |
+| `sender` | `string` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | Plain text message content. |
 
 #### Example: Create
@@ -1528,7 +1349,7 @@ Create an instance: `var sentRcsMessage = client.SentRcsMessage();`
 var sentRcsMessage = client.SentRcsMessage().Create(new Dictionary<string, object?>
 {
     ["phone_number"] = "example_phone_number",  // string
-    ["sender"] = "example_sender",  // object?
+    ["sender"] = "example_sender",  // string
 });
 ```
 
@@ -1670,7 +1491,7 @@ Create an instance: `var smssendername = client.Smssendername();`
 ```csharp
 var smssendername = client.Smssendername().Create(new Dictionary<string, object?>
 {
-    ["sendername_id"] = "example_sendername_id",  // string
+    ["sender"] = "example_sender",  // string
 });
 ```
 
@@ -1791,21 +1612,6 @@ Create an instance: `var userRcsSenderCollection = client.UserRcsSenderCollectio
 | Method | Description |
 | --- | --- |
 | `List(null)` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `string` |  |
-| `expiredAt` | `string` |  |
-| `id` | `string` | Object ID |
-| `interface` | `string` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | RCS message type (basic, single, ...). |
-| `readAt` | `string` |  |
-| `recipient` | `string` | Recipient phone number (without +). |
-| `sender` | `string` | Sender name |
-| `senderId` | `string` | Sender id |
-| `sentAt` | `string` |  |
 
 #### Example: List
 
@@ -2252,16 +2058,16 @@ utility types directly only when needed.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally. Subsequent
 calls on the same instance can rely on this state.
 
 ```ts
-const permission = client.Permission()
-await permission.load({ group_id: "example", id: "example_id", username: "example" })
+const template = client.Template()
+await template.list()
 
-// permission.data() now returns the permission data from the last `load`
-// permission.match() returns { id: "example_id" }
+// template.data() now returns the template data from the last `list`
+// template.match() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

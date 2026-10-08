@@ -16,6 +16,17 @@ import voxgig.smsapisdk.utility.Json
 @Suppress("UNCHECKED_CAST", "UNUSED_VARIABLE")
 class ContactsgroupDirectTest {
 
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  private val LIVE_STRICT = true
+
+  private fun liveOk(result: Map<String, Any?>): Boolean {
+    val status = Helpers.toInt(result["status"])
+    return result["err"] == null && result["ok"] == true && status in 200..299
+  }
+
   @Test
   fun directListContactsgroup() {
     val mockres = mutableListOf<Any?>()
@@ -28,18 +39,33 @@ class ContactsgroupDirectTest {
       reason == null,
       if (reason == null || "" == reason) "skipped via sdk-test-control.json" else reason,
     )
+    if (setup.live) {
+      for (liveKey in arrayOf<String>("group01")) {
+        if (setup.idmap[liveKey] == null) {
+          RunnerSupport.liveMiss(LIVE_STRICT, "Live test blocked: needs " + liveKey + " via SMSAPI_TEST_CONTACTSGROUP_ENTID")
+        }
+      }
+    }
     val client = setup.client
 
+    val params = linkedMapOf<String, Any?>()
+    if (setup.live) {
+      params["group_id"] = setup.idmap["group01"]
+    } else {
+      params["group_id"] = "direct01"
+    }
 
     val result = client.direct(jm(
-        "path", "contacts/groups",
+        "path", "contacts/groups/{group_id}/permissions",
         "method", "GET",
-        "params", linkedMapOf<String, Any?>()))
+        "params", params))
     if (setup.live) {
-      Assumptions.assumeTrue(result["ok"] == true,
-          "list call not ok (likely synthetic IDs against live API): " + result)
-      val status = Helpers.toInt(result["status"])
-      Assumptions.assumeTrue(status in 200..299, "expected 2xx status, got " + result["status"])
+      if (!liveOk(result)) {
+        RunnerSupport.liveMiss(LIVE_STRICT, "Live list failed: " + RunnerSupport.liveDescribe(result))
+      }
+      if (RunnerSupport.liveList(result["data"]) == null) {
+        RunnerSupport.liveMiss(LIVE_STRICT, "Live list returned no list: " + RunnerSupport.liveDescribe(result))
+      }
     } else {
       assertEquals(true, result["ok"], "expected ok to be true")
       assertEquals(200, Helpers.toInt(result["status"]), "expected status 200")
@@ -51,6 +77,14 @@ class ContactsgroupDirectTest {
       assertEquals(2, (result["data"] as List<Any?>).size, "expected 2 items")
 
       assertEquals(1, setup.calls.size, "expected 1 call")
+      val call = setup.calls[0]
+      val initMap = Helpers.toMapAny(call["init"])
+      if (initMap != null) {
+        assertEquals("GET", initMap["method"], "expected method GET")
+      }
+      val url = if (call["url"] is String) call["url"] as String else ""
+      assertTrue(url.contains("direct01"),
+          "expected url to contain direct01, got " + url)
     }
   }
 

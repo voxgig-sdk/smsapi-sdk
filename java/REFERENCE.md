@@ -233,11 +233,13 @@ SdkEntity available = client.available(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.available(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.available(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -277,16 +279,18 @@ SdkEntity blacklist = client.blacklist(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.blacklist(null).create(Map.of(
 ), null);
 ```
 
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.blacklist(null).load(null, null);
@@ -294,7 +298,7 @@ Object result = client.blacklist(null).load(null, null);
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.blacklist(null).remove(Map.of("id", "id"), null);
@@ -357,7 +361,7 @@ SdkEntity callback = client.callback(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.callback(null).create(Map.of(
@@ -366,16 +370,18 @@ Object result = client.callback(null).create(Map.of(
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.callback(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.callback(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.callback(null).load(Map.of("id", "callback_id"), null);
@@ -383,7 +389,7 @@ Object result = client.callback(null).load(Map.of("id", "callback_id"), null);
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.callback(null).remove(Map.of("id", "callback_id"), null);
@@ -391,7 +397,7 @@ Object result = client.callback(null).remove(Map.of("id", "callback_id"), null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.callback(null).update(Map.of(
@@ -443,7 +449,6 @@ SdkEntity contact = client.contact(null);
 | `email` | `String` | No |  |
 | `first_name` | `String` | No |  |
 | `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
 | `groups` | `List<Object>` | Yes |  |
 | `id` | `String` | Yes | Object ID |
 | `idx` | `String` | No | User provided resource id |
@@ -451,14 +456,8 @@ SdkEntity contact = client.contact(null);
 | `name` | `String` | Yes | Group name |
 | `permissions` | `List<Object>` | No |  |
 | `phone_number` | `String` | No |  |
-| `read` | `Boolean` | No | Has read permission |
-| `send` | `Boolean` | No | Has send permission |
 | `size` | `Long` | Yes |  |
 | `source` | `String` | No |  |
-| `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Boolean` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -466,9 +465,9 @@ SdkEntity contact = client.contact(null);
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -477,57 +476,54 @@ SdkEntity contact = client.contact(null);
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
-Object result = client.contact(null).create(Map.of(
-    "collection", List.of(),  // List<Object>
-    "contact_expire_after", 1L,  // Long
-    "contacts_count", 1L,  // Long
-    "created_by", "example_created_by",  // String
-    "date_created", "example_date_created",  // String
-    "date_updated", "example_date_updated",  // String
-    "gender", "example_gender",  // String
-    "groups", List.of(),  // List<Object>
-    "id", "example_id",  // String
-    "name", "example_name",  // String
-    "size", 1L  // Long
+Object result = client.contact(null).create(Map.ofEntries(
+    Map.entry("collection", List.of()),  // List<Object>
+    Map.entry("contact_expire_after", 1L),  // Long
+    Map.entry("contacts_count", 1L),  // Long
+    Map.entry("created_by", "example_created_by"),  // String
+    Map.entry("date_created", "example_date_created"),  // String
+    Map.entry("date_updated", "example_date_updated"),  // String
+    Map.entry("gender", "example_gender"),  // String
+    Map.entry("groups", List.of()),  // List<Object>
+    Map.entry("id", "example_id"),  // String
+    Map.entry("name", "example_name"),  // String
+    Map.entry("size", 1L)  // Long
 ), null);
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.contact(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.contact(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.contact(null).load(Map.of("id", "contact_id"), null);
@@ -535,7 +531,7 @@ Object result = client.contact(null).load(Map.of("id", "contact_id"), null);
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.contact(null).remove(Map.of("id", "contact_id"), null);
@@ -543,13 +539,15 @@ Object result = client.contact(null).remove(Map.of("id", "contact_id"), null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.contact(null).update(Map.of(
     "id", "contact_id"
 ), null);
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -582,95 +580,37 @@ SdkEntity contactsField = client.contactsField(null);
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Long` | Yes | Contact expire after days |
-| `contacts_count` | `Long` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
-| `groups` | `List<Object>` | Yes |  |
 | `id` | `String` | No | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `List<Object>` | No |  |
-| `phone_number` | `String` | No |  |
-| `read` | `Boolean` | No | Has read permission |
-| `send` | `Boolean` | No | Has send permission |
-| `source` | `String` | No |  |
+| `name` | `String` | No |  |
 | `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Boolean` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.contactsField(null).create(Map.of(
-    "contact_expire_after", 1L,  // Long
-    "created_by", "example_created_by",  // String
-    "date_created", "example_date_created",  // String
-    "date_updated", "example_date_updated",  // String
-    "gender", "example_gender",  // String
-    "groups", List.of()  // List<Object>
 ), null);
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.contactsField(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.contactsField(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.contactsField(null).remove(Map.of("id", "id"), null);
@@ -678,13 +618,15 @@ Object result = client.contactsField(null).remove(Map.of("id", "id"), null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.contactsField(null).update(Map.of(
     "id", "id"
 ), null);
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -713,47 +655,17 @@ Return the entity name.
 SdkEntity contactsFieldOption = client.contactsFieldOption(null);
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Long` | Yes | Contact expire after days |
-| `contacts_count` | `Long` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
-| `groups` | `List<Object>` | Yes |  |
-| `id` | `String` | Yes | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `List<Object>` | No |  |
-| `phone_number` | `String` | No |  |
-| `read` | `Boolean` | No | Has read permission |
-| `send` | `Boolean` | No | Has send permission |
-| `source` | `String` | No |  |
-| `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Boolean` | No | Has write permission |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.contactsFieldOption(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.contactsFieldOption(null).list(Map.of("field_id", "example"), null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -787,82 +699,21 @@ SdkEntity contactsgroup = client.contactsgroup(null);
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Long` | Yes | Contact expire after days |
-| `contacts_count` | `Long` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
 | `group_id` | `String` | Yes | Object ID |
-| `groups` | `List<Object>` | Yes |  |
-| `id` | `String` | Yes | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `List<Object>` | No |  |
-| `phone_number` | `String` | No |  |
 | `read` | `Boolean` | Yes | Has read permission |
 | `send` | `Boolean` | Yes | Has send permission |
-| `source` | `String` | No |  |
-| `type` | `String` | No |  |
 | `username` | `String` | Yes |  |
-| `value` | `String` | No |  |
 | `write` | `Boolean` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.contactsgroup(null).create(Map.of(
-    "contact_expire_after", 1L,  // Long
-    "created_by", "example_created_by",  // String
-    "date_created", "example_date_created",  // String
-    "date_updated", "example_date_updated",  // String
-    "gender", "example_gender",  // String
     "group_id", "example_group_id",  // String
-    "groups", List.of(),  // List<Object>
-    "id", "example_id",  // String
     "read", true,  // Boolean
     "send", true,  // Boolean
     "username", "example_username",  // String
@@ -870,18 +721,22 @@ Object result = client.contactsgroup(null).create(Map.of(
 ), null);
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.contactsgroup(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.contactsgroup(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.contactsgroup(null).remove(Map.of("group_id", "group_id"), null);
@@ -889,13 +744,15 @@ Object result = client.contactsgroup(null).remove(Map.of("group_id", "group_id")
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.contactsgroup(null).update(Map.of(
     "group_id", "group_id"
 ), null);
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -928,7 +785,7 @@ SdkEntity contactstrash = client.contactstrash(null);
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.contactstrash(null).remove(null, null);
@@ -936,7 +793,7 @@ Object result = client.contactstrash(null).remove(null, null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.contactstrash(null).update(Map.of(
@@ -984,11 +841,13 @@ SdkEntity fieldAvailable = client.fieldAvailable(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.fieldAvailable(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.fieldAvailable(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -1037,7 +896,7 @@ SdkEntity group = client.group(null);
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.group(null).load(Map.of("id", "group_id"), null);
@@ -1045,13 +904,15 @@ Object result = client.group(null).load(Map.of("id", "group_id"), null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.group(null).update(Map.of(
     "id", "group_id"
 ), null);
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1093,13 +954,15 @@ SdkEntity mfaCode = client.mfaCode(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.mfaCode(null).create(Map.of(
     "phone_number", "example_phone_number"  // String
 ), null);
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1141,16 +1004,18 @@ SdkEntity optOut = client.optOut(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.optOut(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.optOut(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.optOut(null).remove(Map.of("id", "id"), null);
@@ -1193,7 +1058,7 @@ SdkEntity optOutSetting = client.optOutSetting(null);
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.optOutSetting(null).load(null, null);
@@ -1201,7 +1066,7 @@ Object result = client.optOutSetting(null).load(null, null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.optOutSetting(null).update(Map.of(
@@ -1250,7 +1115,7 @@ SdkEntity permission = client.permission(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.permission(null).create(Map.of(
@@ -1262,12 +1127,14 @@ Object result = client.permission(null).create(Map.of(
 ), null);
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
-Object result = client.permission(null).load(Map.of("id", "permission_id", "group_id", "group_id", "username", "username"), null);
+Object result = client.permission(null).load(Map.of("id", "permission_id", "group_id", "group_id"), null);
 ```
 
 ### Common Methods
@@ -1308,11 +1175,13 @@ SdkEntity ping = client.ping(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.ping(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.ping(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -1358,16 +1227,18 @@ SdkEntity profile = client.profile(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.profile(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.profile(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.profile(null).load(null, null);
@@ -1404,11 +1275,13 @@ SdkEntity rcs = client.rcs(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.rcs(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.rcs(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -1452,25 +1325,29 @@ SdkEntity sendername = client.sendername(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.sendername(null).create(Map.of(
 ), null);
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.sendername(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.sendername(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.sendername(null).load(Map.of("id", "sendername_id"), null);
@@ -1515,11 +1392,13 @@ SdkEntity sendernameStatement = client.sendernameStatement(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.sendernameStatement(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.sendernameStatement(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -1555,19 +1434,19 @@ SdkEntity sentRcsMessage = client.sentRcsMessage(null);
 | --- | --- | --- | --- |
 | `content` | `Map<String, Object>` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `String` | Yes | Recipient phone number (e.g. |
-| `sender` | `Object` | Yes |  |
+| `sender` | `String` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String` | No | Plain text message content. |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.sentRcsMessage(null).create(Map.of(
     "phone_number", "example_phone_number",  // String
-    "sender", "example_sender"  // Object
+    "sender", "example_sender"  // String
 ), null);
 ```
 
@@ -1611,11 +1490,13 @@ SdkEntity shipmentCountryVolume = client.shipmentCountryVolume(null);
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.shipmentCountryVolume(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.shipmentCountryVolume(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -1664,7 +1545,7 @@ SdkEntity shortUrl = client.shortUrl(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.shortUrl(null).create(Map.of(
@@ -1673,16 +1554,18 @@ Object result = client.shortUrl(null).create(Map.of(
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.shortUrl(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.shortUrl(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.shortUrl(null).load(Map.of("id", "short_url_id"), null);
@@ -1690,7 +1573,7 @@ Object result = client.shortUrl(null).load(Map.of("id", "short_url_id"), null);
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.shortUrl(null).remove(Map.of("id", "short_url_id"), null);
@@ -1698,13 +1581,15 @@ Object result = client.shortUrl(null).remove(Map.of("id", "short_url_id"), null)
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.shortUrl(null).update(Map.of(
     "id", "short_url_id"
 ), null);
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1763,7 +1648,7 @@ SdkEntity smsdo = client.smsdo(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.smsdo(null).create(Map.of(
@@ -1801,17 +1686,17 @@ SdkEntity smssendername = client.smssendername(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.smssendername(null).create(Map.of(
-    "sendername_id", "example_sendername_id"  // String
+    "sender", "example_sender"  // String
 ), null);
 ```
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.smssendername(null).remove(Map.of("sender", "sender"), null);
@@ -1854,7 +1739,7 @@ SdkEntity smstemplate = client.smstemplate(null);
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.smstemplate(null).remove(Map.of("id", "id"), null);
@@ -1913,7 +1798,7 @@ SdkEntity subuser = client.subuser(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.subuser(null).create(Map.of(
@@ -1923,16 +1808,18 @@ Object result = client.subuser(null).create(Map.of(
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.subuser(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.subuser(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.subuser(null).load(Map.of("id", "subuser_id"), null);
@@ -1940,7 +1827,7 @@ Object result = client.subuser(null).load(Map.of("id", "subuser_id"), null);
 
 #### `remove(reqmatch, ctrl) -> Object`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```java
 Object result = client.subuser(null).remove(Map.of("id", "subuser_id"), null);
@@ -1948,7 +1835,7 @@ Object result = client.subuser(null).remove(Map.of("id", "subuser_id"), null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.subuser(null).update(Map.of(
@@ -1996,25 +1883,29 @@ SdkEntity template = client.template(null);
 
 #### `create(reqdata, ctrl) -> Object`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```java
 Object result = client.template(null).create(Map.of(
 ), null);
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.template(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.template(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Object`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```java
 Object result = client.template(null).load(Map.of("id", "template_id"), null);
@@ -2022,13 +1913,15 @@ Object result = client.template(null).load(Map.of("id", "template_id"), null);
 
 #### `update(reqdata, ctrl) -> Object`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```java
 Object result = client.template(null).update(Map.of(
     "id", "template_id"
 ), null);
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2057,30 +1950,17 @@ Return the entity name.
 SdkEntity userRcsSenderCollection = client.userRcsSenderCollection(null);
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `String` | No |  |
-| `expiredAt` | `String` | No |  |
-| `id` | `String` | No | Object ID |
-| `interface` | `String` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String` | No | RCS message type (basic, single, ...). |
-| `readAt` | `String` | No |  |
-| `recipient` | `String` | No | Recipient phone number (without +). |
-| `sender` | `String` | No | Sender name |
-| `senderId` | `String` | No | Sender id |
-| `sentAt` | `String` | No |  |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) -> Object`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```java
-Object results = client.userRcsSenderCollection(null).list(null, null);
-System.out.println(results);
+List<?> results = (List<?>) client.userRcsSenderCollection(null).list(null, null);
+for (Object item : results) {
+    System.out.println(((SdkEntity) item).data());
+}
 ```
 
 ### Common Methods
@@ -2759,6 +2639,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

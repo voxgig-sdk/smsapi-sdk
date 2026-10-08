@@ -4,85 +4,6 @@ main: kit: entity: user_rcs_sender_collection: {
 
   alias: field: {}
 
-  fields: {
-    deliveredAt: {
-      fo: "date-time"
-      h: "Delivered At"
-      n: "deliveredAt"
-      r: false
-      t: "`$STRING`"
-    }
-    expiredAt: {
-      fo: "date-time"
-      h: "Expired At"
-      n: "expiredAt"
-      r: false
-      t: "`$STRING`"
-    }
-    id: {
-      fo: "oid"
-      h: "Id"
-      n: "id"
-      r: false
-      sh: "Object ID"
-      t: "`$STRING`"
-    }
-    interface: {
-      h: "Interface"
-      n: "interface"
-      r: false
-      sh: "Interface through which the message was sent (www, api, ...)."
-      t: "`$STRING`"
-    }
-    messageType: {
-      h: "Message Type"
-      n: "messageType"
-      r: false
-      sh: "RCS message type (basic, single, ...)."
-      t: "`$STRING`"
-    }
-    readAt: {
-      fo: "date-time"
-      h: "Read At"
-      n: "readAt"
-      r: false
-      t: "`$STRING`"
-    }
-    recipient: {
-      h: "Recipient"
-      n: "recipient"
-      r: false
-      sh: "Recipient phone number (without +)."
-      t: "`$STRING`"
-    }
-    sender: {
-      h: "Sender"
-      n: "sender"
-      r: false
-      sh: "Sender name"
-      t: "`$STRING`"
-    }
-    senderId: {
-      h: "Sender Id"
-      n: "senderId"
-      r: false
-      sh: "Sender id"
-      t: "`$STRING`"
-    }
-    sentAt: {
-      fo: "date-time"
-      h: "Sent At"
-      n: "sentAt"
-      r: false
-      t: "`$STRING`"
-    }
-  }
-
-  id: {
-    field: "id"
-    name: "id"
-  }
-
   name: "user_rcs_sender_collection"
   op: {
     list: {
@@ -96,6 +17,10 @@ main: kit: entity: user_rcs_sender_collection: {
           }
           m: "GET"
           o: "/rcs/senders"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "rcs"
@@ -111,6 +36,9 @@ main: kit: entity: user_rcs_sender_collection: {
         }
       ]
     }
+  }
+
+  fields: {
   }
 
 

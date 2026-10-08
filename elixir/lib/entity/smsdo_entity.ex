@@ -1,7 +1,7 @@
 # Smsapi SDK Smsdo entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Smsdo do
@@ -30,9 +30,10 @@ defmodule Smsapi.Entity.Smsdo do
   
 
   
-  # Returns the created smsdo entity map (Smsapi.Types.smsdo/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the created smsdo entity, whose data_get/1 reads its record
+  # (Smsapi.Types.smsdo/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec create(map(), Smsapi.Types.smsdo_create_data() | nil, map() | nil) :: term()
   def create(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -61,6 +62,8 @@ defmodule Smsapi.Entity.Smsdo do
   end
 
 
+
+  
 
   
 

@@ -24,7 +24,7 @@ public enum SdkSchema {
 {
   "allow": {
     "method": "GET,PUT,POST,PATCH,DELETE,OPTIONS",
-    "op": "create,update,load,list,remove,command,direct,graphql"
+    "op": "create,update,patch,load,list,remove,command,direct,graphql"
   },
   "apikey": "",
   "auth": {
@@ -783,6 +783,11 @@ public enum SdkSchema {
           "`$FUNCTION`",
           "`$NIL`"
         ],
+        "now": [
+          "`$ONE`",
+          "`$FUNCTION`",
+          "`$NIL`"
+        ],
         "setTimer": [
           "`$ONE`",
           "`$FUNCTION`",
@@ -1311,15 +1316,6 @@ public enum SdkSchema {
           ""
         ]
       ],
-      "group_id": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
       "groups": "`$LIST`",
       "id": [
         "`$ONE`",
@@ -1369,16 +1365,6 @@ public enum SdkSchema {
         ],
         "`$NIL`"
       ],
-      "read": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
-      ],
-      "send": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
-      ],
       "size": "`$INTEGER`",
       "source": [
         "`$ONE`",
@@ -1387,38 +1373,6 @@ public enum SdkSchema {
           "`$EXACT`",
           ""
         ],
-        "`$NIL`"
-      ],
-      "type": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "username": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "value": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "write": [
-        "`$ONE`",
-        "`$BOOLEAN`",
         "`$NIL`"
       ]
     },
@@ -1514,15 +1468,6 @@ public enum SdkSchema {
             ""
           ]
         ],
-        "group_id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "groups": "`$LIST`",
         "id": [
           "`$ONE`",
@@ -1572,16 +1517,6 @@ public enum SdkSchema {
           ],
           "`$NIL`"
         ],
-        "read": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "send": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
         "size": "`$INTEGER`",
         "source": [
           "`$ONE`",
@@ -1590,38 +1525,6 @@ public enum SdkSchema {
             "`$EXACT`",
             ""
           ],
-          "`$NIL`"
-        ],
-        "type": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "username": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "value": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "write": [
-          "`$ONE`",
-          "`$BOOLEAN`",
           "`$NIL`"
         ]
       },
@@ -1832,15 +1735,6 @@ public enum SdkSchema {
           ],
           "`$NIL`"
         ],
-        "group_id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "groups": [
           "`$ONE`",
           "`$LIST`",
@@ -1887,16 +1781,6 @@ public enum SdkSchema {
           ],
           "`$NIL`"
         ],
-        "read": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "send": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
         "size": [
           "`$ONE`",
           "`$INTEGER`",
@@ -1910,38 +1794,6 @@ public enum SdkSchema {
             ""
           ],
           "`$NIL`"
-        ],
-        "type": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "username": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "value": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "write": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
         ]
       }
     }
@@ -1949,127 +1801,7 @@ public enum SdkSchema {
   "contacts_field": {
     "data": {
       "`$OPEN`": true,
-      "birthday_date": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "city": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "contact_expire_after": "`$INTEGER`",
-      "contacts_count": [
-        "`$ONE`",
-        "`$INTEGER`",
-        "`$NIL`"
-      ],
-      "country": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "created_by": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "date_created": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "date_updated": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "description": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "email": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "first_name": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "gender": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "group_id": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "groups": "`$LIST`",
       "id": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "idx": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "last_name": [
         "`$ONE`",
         "`$STRING`",
         [
@@ -2087,39 +1819,6 @@ public enum SdkSchema {
         ],
         "`$NIL`"
       ],
-      "permissions": [
-        "`$ONE`",
-        "`$LIST`",
-        "`$NIL`"
-      ],
-      "phone_number": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "read": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
-      ],
-      "send": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
-      ],
-      "source": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
       "type": [
         "`$ONE`",
         "`$STRING`",
@@ -2128,155 +1827,12 @@ public enum SdkSchema {
           ""
         ],
         "`$NIL`"
-      ],
-      "username": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "value": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "write": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
       ]
     },
     "op": {
       "create": {
         "`$OPEN`": true,
-        "birthday_date": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "city": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "contact_expire_after": "`$INTEGER`",
-        "contacts_count": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "country": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "created_by": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "date_created": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "date_updated": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "description": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "email": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "first_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "gender": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "group_id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "groups": "`$LIST`",
         "id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "idx": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "last_name": [
           "`$ONE`",
           "`$STRING`",
           [
@@ -2294,39 +1850,6 @@ public enum SdkSchema {
           ],
           "`$NIL`"
         ],
-        "permissions": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
-        "phone_number": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "read": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "send": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "source": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "type": [
           "`$ONE`",
           "`$STRING`",
@@ -2334,167 +1857,12 @@ public enum SdkSchema {
             "`$EXACT`",
             ""
           ],
-          "`$NIL`"
-        ],
-        "username": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "value": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "write": [
-          "`$ONE`",
-          "`$BOOLEAN`",
           "`$NIL`"
         ]
       },
       "list": {
         "`$OPEN`": true,
-        "birthday_date": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "city": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "contact_expire_after": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "contacts_count": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "country": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "created_by": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "date_created": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "date_updated": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "description": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "email": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "first_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "gender": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "group_id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "groups": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
         "id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "idx": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "last_name": [
           "`$ONE`",
           "`$STRING`",
           [
@@ -2512,39 +1880,6 @@ public enum SdkSchema {
           ],
           "`$NIL`"
         ],
-        "permissions": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
-        "phone_number": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "read": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "send": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "source": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "type": [
           "`$ONE`",
           "`$STRING`",
@@ -2552,29 +1887,6 @@ public enum SdkSchema {
             "`$EXACT`",
             ""
           ],
-          "`$NIL`"
-        ],
-        "username": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "value": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "write": [
-          "`$ONE`",
-          "`$BOOLEAN`",
           "`$NIL`"
         ]
       },
@@ -2599,172 +1911,7 @@ public enum SdkSchema {
             ""
           ]
         ],
-        "birthday_date": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "city": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "contact_expire_after": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "contacts_count": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "country": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "created_by": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "date_created": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "date_updated": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "description": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "email": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "first_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "gender": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "group_id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "groups": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
-        "idx": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "last_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "permissions": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
-        "phone_number": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "read": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "send": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "source": [
           "`$ONE`",
           "`$STRING`",
           [
@@ -2781,238 +1928,13 @@ public enum SdkSchema {
             ""
           ],
           "`$NIL`"
-        ],
-        "username": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "value": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "write": [
-          "`$ONE`",
-          "`$BOOLEAN`",
-          "`$NIL`"
         ]
       }
     }
   },
   "contacts_field_option": {
     "data": {
-      "`$OPEN`": true,
-      "birthday_date": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "city": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "contact_expire_after": "`$INTEGER`",
-      "contacts_count": [
-        "`$ONE`",
-        "`$INTEGER`",
-        "`$NIL`"
-      ],
-      "country": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "created_by": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "date_created": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "date_updated": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "description": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "email": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "first_name": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "gender": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "group_id": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "groups": "`$LIST`",
-      "id": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "idx": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "last_name": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "name": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "permissions": [
-        "`$ONE`",
-        "`$LIST`",
-        "`$NIL`"
-      ],
-      "phone_number": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "read": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
-      ],
-      "send": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
-      ],
-      "source": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "type": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "username": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "value": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "write": [
-        "`$ONE`",
-        "`$BOOLEAN`",
-        "`$NIL`"
-      ]
+      "`$OPEN`": true
     },
     "op": {
       "list": {
@@ -3031,98 +1953,6 @@ public enum SdkSchema {
   "contactsgroup": {
     "data": {
       "`$OPEN`": true,
-      "birthday_date": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "city": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "contact_expire_after": "`$INTEGER`",
-      "contacts_count": [
-        "`$ONE`",
-        "`$INTEGER`",
-        "`$NIL`"
-      ],
-      "country": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "created_by": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "date_created": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "date_updated": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "description": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "email": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "first_name": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "gender": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
       "group_id": [
         "`$ONE`",
         "`$STRING`",
@@ -3131,76 +1961,8 @@ public enum SdkSchema {
           ""
         ]
       ],
-      "groups": "`$LIST`",
-      "id": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ]
-      ],
-      "idx": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "last_name": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "name": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "permissions": [
-        "`$ONE`",
-        "`$LIST`",
-        "`$NIL`"
-      ],
-      "phone_number": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
       "read": "`$BOOLEAN`",
       "send": "`$BOOLEAN`",
-      "source": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "type": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
       "username": [
         "`$ONE`",
         "`$STRING`",
@@ -3209,112 +1971,11 @@ public enum SdkSchema {
           ""
         ]
       ],
-      "value": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
       "write": "`$BOOLEAN`"
     },
     "op": {
       "create": {
         "`$OPEN`": true,
-        "birthday_date": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "city": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "contact_expire_after": "`$INTEGER`",
-        "contacts_count": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "country": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "created_by": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "date_created": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "date_updated": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "description": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "email": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "first_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "gender": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
         "group_id": [
           "`$ONE`",
           "`$STRING`",
@@ -3323,76 +1984,8 @@ public enum SdkSchema {
             ""
           ]
         ],
-        "groups": "`$LIST`",
-        "id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
-        ],
-        "idx": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "last_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "permissions": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
-        "phone_number": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "read": "`$BOOLEAN`",
         "send": "`$BOOLEAN`",
-        "source": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "type": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "username": [
           "`$ONE`",
           "`$STRING`",
@@ -3400,15 +1993,6 @@ public enum SdkSchema {
             "`$EXACT`",
             ""
           ]
-        ],
-        "value": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
         ],
         "write": "`$BOOLEAN`"
       },
@@ -3455,161 +2039,6 @@ public enum SdkSchema {
           ],
           "`$NIL`"
         ],
-        "birthday_date": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "city": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "contact_expire_after": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "contacts_count": [
-          "`$ONE`",
-          "`$INTEGER`",
-          "`$NIL`"
-        ],
-        "country": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "created_by": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "date_created": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "date_updated": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "description": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "email": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "first_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "gender": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "groups": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
-        "id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "idx": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "last_name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "name": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "permissions": [
-          "`$ONE`",
-          "`$LIST`",
-          "`$NIL`"
-        ],
-        "phone_number": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
         "read": [
           "`$ONE`",
           "`$BOOLEAN`",
@@ -3618,33 +2047,6 @@ public enum SdkSchema {
         "send": [
           "`$ONE`",
           "`$BOOLEAN`",
-          "`$NIL`"
-        ],
-        "source": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "type": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "value": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
           "`$NIL`"
         ],
         "write": [
@@ -4160,14 +2562,6 @@ public enum SdkSchema {
             "`$EXACT`",
             ""
           ]
-        ],
-        "username": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ]
         ]
       }
     }
@@ -4542,7 +2936,14 @@ public enum SdkSchema {
           ""
         ]
       ],
-      "sender": "`$ANY`",
+      "sender": [
+        "`$ONE`",
+        "`$STRING`",
+        [
+          "`$EXACT`",
+          ""
+        ]
+      ],
       "text": [
         "`$ONE`",
         "`$STRING`",
@@ -4569,7 +2970,14 @@ public enum SdkSchema {
             ""
           ]
         ],
-        "sender": "`$ANY`",
+        "sender": [
+          "`$ONE`",
+          "`$STRING`",
+          [
+            "`$EXACT`",
+            ""
+          ]
+        ],
         "text": [
           "`$ONE`",
           "`$STRING`",
@@ -5262,7 +3670,7 @@ public enum SdkSchema {
     "op": {
       "create": {
         "`$OPEN`": true,
-        "sendername_id": [
+        "sender": [
           "`$ONE`",
           "`$STRING`",
           [
@@ -5631,193 +4039,9 @@ public enum SdkSchema {
   },
   "user_rcs_sender_collection": {
     "data": {
-      "`$OPEN`": true,
-      "deliveredAt": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "expiredAt": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "id": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "interface": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "messageType": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "readAt": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "recipient": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "sender": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "senderId": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ],
-      "sentAt": [
-        "`$ONE`",
-        "`$STRING`",
-        [
-          "`$EXACT`",
-          ""
-        ],
-        "`$NIL`"
-      ]
+      "`$OPEN`": true
     },
-    "op": {
-      "list": {
-        "`$OPEN`": true,
-        "deliveredAt": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "expiredAt": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "id": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "interface": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "messageType": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "readAt": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "recipient": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "sender": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "senderId": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ],
-        "sentAt": [
-          "`$ONE`",
-          "`$STRING`",
-          [
-            "`$EXACT`",
-            ""
-          ],
-          "`$NIL`"
-        ]
-      }
-    }
+    "op": {}
   }
 }
 """#

@@ -107,6 +107,13 @@ public final class SmsapiSDK {
     let path = gp(fetchargs, "path").asString ?? ""
     var method = gp(fetchargs, "method").asString ?? ""
     if method == "" { method = "GET" }
+    method = method.uppercased()
+
+    if !allowed(gpath(options, "allow", "method"), method) {
+      throw ctx.makeError("spec_method_allow",
+        "Method \"\(method)\" not allowed by SDK option allow.method value: \""
+          + (gpath(options, "allow", "method").asString ?? "") + "\"")
+    }
 
     let pathParams = gp(fetchargs, "params").asMap ?? SmsapiSdk.VMap()
     let query = gp(fetchargs, "query").asMap ?? SmsapiSdk.VMap()
@@ -155,8 +162,7 @@ public final class SmsapiSDK {
 
   // Is this raw-access op permitted by the SDK's allow.op option?
   private func opAllowed(_ op: String) -> Bool {
-    guard let allow = gpath(options, "allow", "op").asString else { return false }
-    return allow.contains(op)
+    return allowed(gpath(options, "allow", "op"), op)
   }
 
   private func opDenied(_ op: String) -> SmsapiSdk.VMap {
@@ -230,11 +236,25 @@ public final class SmsapiSDK {
         jsonData = jf()
       }
 
+      var bodyErr: Swift.Error? = nil
+      if !noBody, gp(fm, "unreadable") == .bool(true) {
+        var failed: Swift.Error? = nil
+        if status < 200 || status >= 300 {
+          failed = ctx.makeError(
+            "request_status", "request: \(status): \(gp(fm, "statusText").asString ?? "")")
+        }
+        bodyErr = SmsapiSdk.Response.unreadableBody(
+          ctx, status, headers, gp(fm, "body"), gp(fetchdef, "headers"), failed)
+      }
+
       let r = SmsapiSdk.VMap()
-      r.entries["ok"] = .bool(status >= 200 && status < 300)
+      r.entries["ok"] = .bool(bodyErr == nil && status >= 200 && status < 300)
       r.entries["status"] = .int(Int64(status))
       r.entries["headers"] = headers
       r.entries["data"] = jsonData
+      if let bodyErr = bodyErr {
+        r.entries["err"] = utility.clean(ctx, .nat(bodyErr))
+      }
       return r
     }
 

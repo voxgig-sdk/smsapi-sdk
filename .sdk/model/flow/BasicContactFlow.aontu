@@ -19,10 +19,6 @@ main: kit: flow: BasicContactFlow:
     }
 
     {
-      m: {
-        contact_id: "contact01"
-      }
-
       o: "list",
       v: [
         {
@@ -87,10 +83,6 @@ main: kit: flow: BasicContactFlow:
     {
       i: {
         suffix: "_rt0"
-      }
-
-      m: {
-        contact_id: "contact01"
       }
 
       o: "list",

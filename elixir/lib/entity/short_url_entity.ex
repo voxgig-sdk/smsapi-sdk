@@ -1,7 +1,7 @@
 # Smsapi SDK ShortUrl entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.ShortUrl do
@@ -26,9 +26,10 @@ defmodule Smsapi.Entity.ShortUrl do
     do: EntityBase.stream(ent, action, args, callopts)
 
   
-  # Returns the short_url entity map (Smsapi.Types.short_url/0) on
-  # success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the short_url entity, whose data_get/1 reads its record
+  # (Smsapi.Types.short_url/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec load(map(), Smsapi.Types.short_url_load_match() | nil, map() | nil) :: term()
   def load(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -63,9 +64,10 @@ defmodule Smsapi.Entity.ShortUrl do
 
 
   
-  # Returns a list of short_url entity maps (Smsapi.Types.short_url/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of short_url entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.short_url/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.short_url_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -98,9 +100,10 @@ defmodule Smsapi.Entity.ShortUrl do
 
 
   
-  # Returns the created short_url entity map (Smsapi.Types.short_url/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the created short_url entity, whose data_get/1 reads its record
+  # (Smsapi.Types.short_url/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec create(map(), Smsapi.Types.short_url_create_data() | nil, map() | nil) :: term()
   def create(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -131,9 +134,10 @@ defmodule Smsapi.Entity.ShortUrl do
 
 
   
-  # Returns the updated short_url entity map (Smsapi.Types.short_url/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the updated short_url entity, whose data_get/1 reads its record
+  # (Smsapi.Types.short_url/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec update(map(), Smsapi.Types.short_url_update_data() | nil, map() | nil) :: term()
   def update(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -166,9 +170,12 @@ defmodule Smsapi.Entity.ShortUrl do
 
 
   
-  # Returns the removed short_url entity map (Smsapi.Types.short_url/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed short_url entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.short_url/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.short_url_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

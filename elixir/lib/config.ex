@@ -309,6 +309,7 @@ defmodule Smsapi.Config do
           },
           "optspec" => %{
             "clearTimer" => "`$FUNCTION`",
+            "now" => "`$FUNCTION`",
             "setTimer" => "`$FUNCTION`"
           },
           "strict" => false,
@@ -430,7 +431,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.collection`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -481,6 +486,28 @@ defmodule Smsapi.Config do
                   "args" => %{},
                   "select" => %{
                     "$action" => "phone_number"
+                  },
+                  "body" => %{
+                    "alternatives" => [
+                      %{
+                        "fields" => [
+                          %{
+                            "name" => "expire_at"
+                          },
+                          %{
+                            "name" => "phone_number"
+                          }
+                        ],
+                        "kind" => "form",
+                        "media" => "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -509,7 +536,22 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "alternatives" => [
+                      %{
+                        "kind" => "raw",
+                        "media" => "text/csv"
+                      }
+                    ],
+                    "fields" => [
+                      %{
+                        "name" => "import"
+                      }
+                    ],
+                    "kind" => "multipart",
+                    "media" => "multipart/form-data"
+                  }
                 }
               ]
             },
@@ -580,14 +622,17 @@ defmodule Smsapi.Config do
                     ]
                   },
                   "select" => %{
-                    "$action" => "phone_number",
-                    "exist" => [
-                      "accept",
-                      "limit",
-                      "offset",
-                      "q",
-                      "x_async"
-                    ]
+                    "$action" => "phone_number"
+                  },
+                  "response" => %{
+                    "alternatives" => [
+                      %{
+                        "kind" => "raw",
+                        "media" => "text/csv"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -671,10 +716,7 @@ defmodule Smsapi.Config do
                     ]
                   },
                   "select" => %{
-                    "$action" => "phone_number",
-                    "exist" => [
-                      "phone_number"
-                    ]
+                    "$action" => "phone_number"
                   }
                 }
               ]
@@ -766,7 +808,11 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -792,7 +838,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.collection`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -837,6 +887,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -885,6 +939,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -975,6 +1033,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -1097,12 +1159,7 @@ defmodule Smsapi.Config do
               "name" => "collection",
               "title" => "Collection",
               "type" => "`$ARRAY`",
-              "req" => true,
-              "op" => %{
-                "update" => %{
-                  "type" => "`$ARRAY`"
-                }
-              }
+              "req" => true
             },
             %{
               "name" => "contact_expire_after",
@@ -1115,12 +1172,7 @@ defmodule Smsapi.Config do
               "name" => "contacts_count",
               "title" => "Contacts Count",
               "type" => "`$INTEGER`",
-              "req" => true,
-              "op" => %{
-                "list" => %{
-                  "type" => "`$INTEGER`"
-                }
-              }
+              "req" => true
             },
             %{
               "name" => "country",
@@ -1176,13 +1228,6 @@ defmodule Smsapi.Config do
               "req" => true
             },
             %{
-              "name" => "group_id",
-              "title" => "Group Id",
-              "type" => "`$STRING`",
-              "short" => "Object ID",
-              "format" => "oid"
-            },
-            %{
               "name" => "groups",
               "title" => "Groups",
               "type" => "`$ARRAY`",
@@ -1212,11 +1257,6 @@ defmodule Smsapi.Config do
               "title" => "Name",
               "type" => "`$STRING`",
               "req" => true,
-              "op" => %{
-                "list" => %{
-                  "type" => "`$STRING`"
-                }
-              },
               "short" => "Group name"
             },
             %{
@@ -1230,18 +1270,6 @@ defmodule Smsapi.Config do
               "type" => "`$STRING`"
             },
             %{
-              "name" => "read",
-              "title" => "Read",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has read permission"
-            },
-            %{
-              "name" => "send",
-              "title" => "Send",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has send permission"
-            },
-            %{
               "name" => "size",
               "title" => "Size",
               "type" => "`$INTEGER`",
@@ -1251,27 +1279,6 @@ defmodule Smsapi.Config do
               "name" => "source",
               "title" => "Source",
               "type" => "`$STRING`"
-            },
-            %{
-              "name" => "type",
-              "title" => "Type",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "username",
-              "title" => "Username",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "value",
-              "title" => "Value",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "write",
-              "title" => "Write",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has write permission"
             }
           ],
           "id" => %{
@@ -1330,6 +1337,14 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "body" => %{
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -1350,7 +1365,62 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "birthday_date"
+                      },
+                      %{
+                        "name" => "browser"
+                      },
+                      %{
+                        "name" => "city"
+                      },
+                      %{
+                        "name" => "country"
+                      },
+                      %{
+                        "name" => "description"
+                      },
+                      %{
+                        "name" => "device"
+                      },
+                      %{
+                        "name" => "email"
+                      },
+                      %{
+                        "name" => "first_name"
+                      },
+                      %{
+                        "name" => "gender"
+                      },
+                      %{
+                        "name" => "idx"
+                      },
+                      %{
+                        "name" => "last_name"
+                      },
+                      %{
+                        "name" => "operating_system"
+                      },
+                      %{
+                        "name" => "phone_number"
+                      },
+                      %{
+                        "name" => "source"
+                      },
+                      %{
+                        "name" => "undelivered_messages"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -1358,112 +1428,6 @@ defmodule Smsapi.Config do
               "input" => "data",
               "name" => "list",
               "points" => [
-                %{
-                  "kind" => "http",
-                  "method" => "GET",
-                  "orig" => "/contacts",
-                  "segments" => [
-                    %{
-                      "lit" => "contacts"
-                    }
-                  ],
-                  "parts" => [
-                    "contacts"
-                  ],
-                  "rename" => %{},
-                  "transform" => %{
-                    "req" => "`reqdata`",
-                    "res" => "`body.collection`"
-                  },
-                  "args" => %{
-                    "query" => [
-                      %{
-                        "name" => "birthday_date",
-                        "orig" => "birthday_date",
-                        "type" => "`$ARRAY`",
-                        "kind" => "query",
-                        "example" => "2022-06-24"
-                      },
-                      %{
-                        "name" => "email",
-                        "orig" => "email",
-                        "type" => "`$ARRAY`",
-                        "kind" => "query"
-                      },
-                      %{
-                        "name" => "first_name",
-                        "orig" => "first_name",
-                        "type" => "`$ARRAY`",
-                        "kind" => "query"
-                      },
-                      %{
-                        "name" => "gender",
-                        "orig" => "gender",
-                        "type" => "`$STRING`",
-                        "kind" => "query"
-                      },
-                      %{
-                        "name" => "group_id",
-                        "orig" => "group_id",
-                        "type" => "`$ARRAY`",
-                        "kind" => "query"
-                      },
-                      %{
-                        "name" => "last_name",
-                        "orig" => "last_name",
-                        "type" => "`$ARRAY`",
-                        "kind" => "query"
-                      },
-                      %{
-                        "name" => "limit",
-                        "orig" => "limit",
-                        "type" => "`$INTEGER`",
-                        "kind" => "query",
-                        "example" => 5
-                      },
-                      %{
-                        "name" => "offset",
-                        "orig" => "offset",
-                        "type" => "`$INTEGER`",
-                        "kind" => "query",
-                        "example" => 0
-                      },
-                      %{
-                        "name" => "order_by",
-                        "orig" => "order_by",
-                        "type" => "`$STRING`",
-                        "kind" => "query"
-                      },
-                      %{
-                        "name" => "phone_number",
-                        "orig" => "phone_number",
-                        "type" => "`$ARRAY`",
-                        "kind" => "query"
-                      },
-                      %{
-                        "name" => "q",
-                        "orig" => "q",
-                        "type" => "`$STRING`",
-                        "kind" => "query"
-                      }
-                    ]
-                  },
-                  "select" => %{
-                    "exist" => [
-                      "birthday_date",
-                      "email",
-                      "first_name",
-                      "gender",
-                      "group_id",
-                      "last_name",
-                      "limit",
-                      "offset",
-                      "order_by",
-                      "phone_number",
-                      "q"
-                    ]
-                  }
-                },
                 %{
                   "kind" => "http",
                   "method" => "GET",
@@ -1510,6 +1474,112 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
+                },
+                %{
+                  "kind" => "http",
+                  "method" => "GET",
+                  "orig" => "/contacts",
+                  "segments" => [
+                    %{
+                      "lit" => "contacts"
+                    }
+                  ],
+                  "parts" => [
+                    "contacts"
+                  ],
+                  "rename" => %{},
+                  "transform" => %{
+                    "req" => "`reqdata`",
+                    "res" => "`body.collection`"
+                  },
+                  "args" => %{
+                    "query" => [
+                      %{
+                        "name" => "birthday_date",
+                        "orig" => "birthday_date",
+                        "type" => "`$ARRAY`",
+                        "kind" => "query",
+                        "example" => "2022-06-24",
+                        "field" => true
+                      },
+                      %{
+                        "name" => "email",
+                        "orig" => "email",
+                        "type" => "`$ARRAY`",
+                        "kind" => "query",
+                        "field" => true
+                      },
+                      %{
+                        "name" => "first_name",
+                        "orig" => "first_name",
+                        "type" => "`$ARRAY`",
+                        "kind" => "query",
+                        "field" => true
+                      },
+                      %{
+                        "name" => "gender",
+                        "orig" => "gender",
+                        "type" => "`$STRING`",
+                        "kind" => "query",
+                        "field" => true
+                      },
+                      %{
+                        "name" => "group_id",
+                        "orig" => "group_id",
+                        "type" => "`$ARRAY`",
+                        "kind" => "query"
+                      },
+                      %{
+                        "name" => "last_name",
+                        "orig" => "last_name",
+                        "type" => "`$ARRAY`",
+                        "kind" => "query",
+                        "field" => true
+                      },
+                      %{
+                        "name" => "limit",
+                        "orig" => "limit",
+                        "type" => "`$INTEGER`",
+                        "kind" => "query",
+                        "example" => 5
+                      },
+                      %{
+                        "name" => "offset",
+                        "orig" => "offset",
+                        "type" => "`$INTEGER`",
+                        "kind" => "query",
+                        "example" => 0
+                      },
+                      %{
+                        "name" => "order_by",
+                        "orig" => "order_by",
+                        "type" => "`$STRING`",
+                        "kind" => "query"
+                      },
+                      %{
+                        "name" => "phone_number",
+                        "orig" => "phone_number",
+                        "type" => "`$ARRAY`",
+                        "kind" => "query",
+                        "field" => true
+                      },
+                      %{
+                        "name" => "q",
+                        "orig" => "q",
+                        "type" => "`$STRING`",
+                        "kind" => "query"
+                      }
+                    ]
+                  },
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -1581,6 +1651,10 @@ defmodule Smsapi.Config do
                       "contact_id",
                       "group_id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -1642,6 +1716,10 @@ defmodule Smsapi.Config do
                       "group_id",
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -1685,6 +1763,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -1886,6 +1968,10 @@ defmodule Smsapi.Config do
                       "contact_id",
                       "group_id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -1947,6 +2033,10 @@ defmodule Smsapi.Config do
                       "group_id",
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -1990,6 +2080,43 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "birthday_date"
+                      },
+                      %{
+                        "name" => "city"
+                      },
+                      %{
+                        "name" => "description"
+                      },
+                      %{
+                        "name" => "email"
+                      },
+                      %{
+                        "name" => "first_name"
+                      },
+                      %{
+                        "name" => "gender"
+                      },
+                      %{
+                        "name" => "last_name"
+                      },
+                      %{
+                        "name" => "phone_number"
+                      },
+                      %{
+                        "name" => "source"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -2009,165 +2136,21 @@ defmodule Smsapi.Config do
         "contacts_field" => %{
           "fields" => [
             %{
-              "name" => "birthday_date",
-              "title" => "Birthday Date",
-              "type" => "`$STRING`",
-              "format" => "date"
-            },
-            %{
-              "name" => "city",
-              "title" => "City",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "contact_expire_after",
-              "title" => "Contact Expire After",
-              "type" => "`$INTEGER`",
-              "req" => true,
-              "short" => "Contact expire after days"
-            },
-            %{
-              "name" => "contacts_count",
-              "title" => "Contacts Count",
-              "type" => "`$INTEGER`"
-            },
-            %{
-              "name" => "country",
-              "title" => "Country",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "created_by",
-              "title" => "Created By",
-              "type" => "`$STRING`",
-              "req" => true
-            },
-            %{
-              "name" => "date_created",
-              "title" => "Date Created",
-              "type" => "`$STRING`",
-              "req" => true,
-              "format" => "date-time"
-            },
-            %{
-              "name" => "date_updated",
-              "title" => "Date Updated",
-              "type" => "`$STRING`",
-              "req" => true,
-              "format" => "date-time"
-            },
-            %{
-              "name" => "description",
-              "title" => "Description",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "email",
-              "title" => "Email",
-              "type" => "`$STRING`",
-              "format" => "email"
-            },
-            %{
-              "name" => "first_name",
-              "title" => "First Name",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "gender",
-              "title" => "Gender",
-              "type" => "`$STRING`",
-              "req" => true
-            },
-            %{
-              "name" => "group_id",
-              "title" => "Group Id",
-              "type" => "`$STRING`",
-              "short" => "Object ID",
-              "format" => "oid"
-            },
-            %{
-              "name" => "groups",
-              "title" => "Groups",
-              "type" => "`$ARRAY`",
-              "req" => true
-            },
-            %{
               "name" => "id",
               "title" => "Id",
               "type" => "`$STRING`",
-              "op" => %{
-                "list" => %{
-                  "req" => true,
-                  "type" => "`$STRING`"
-                }
-              },
               "short" => "Object ID",
               "format" => "oid"
-            },
-            %{
-              "name" => "idx",
-              "title" => "Idx",
-              "type" => "`$STRING`",
-              "short" => "User provided resource id"
-            },
-            %{
-              "name" => "last_name",
-              "title" => "Last Name",
-              "type" => "`$STRING`"
             },
             %{
               "name" => "name",
               "title" => "Name",
-              "type" => "`$STRING`",
-              "short" => "Group name"
-            },
-            %{
-              "name" => "permissions",
-              "title" => "Permissions",
-              "type" => "`$ARRAY`"
-            },
-            %{
-              "name" => "phone_number",
-              "title" => "Phone Number",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "read",
-              "title" => "Read",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has read permission"
-            },
-            %{
-              "name" => "send",
-              "title" => "Send",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has send permission"
-            },
-            %{
-              "name" => "source",
-              "title" => "Source",
               "type" => "`$STRING`"
             },
             %{
               "name" => "type",
               "title" => "Type",
               "type" => "`$STRING`"
-            },
-            %{
-              "name" => "username",
-              "title" => "Username",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "value",
-              "title" => "Value",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "write",
-              "title" => "Write",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has write permission"
             }
           ],
           "id" => %{
@@ -2202,7 +2185,23 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "name"
+                      },
+                      %{
+                        "name" => "type"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -2232,7 +2231,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.collection`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -2338,6 +2341,19 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "name"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -2348,168 +2364,7 @@ defmodule Smsapi.Config do
           }
         },
         "contacts_field_option" => %{
-          "fields" => [
-            %{
-              "name" => "birthday_date",
-              "title" => "Birthday Date",
-              "type" => "`$STRING`",
-              "format" => "date"
-            },
-            %{
-              "name" => "city",
-              "title" => "City",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "contact_expire_after",
-              "title" => "Contact Expire After",
-              "type" => "`$INTEGER`",
-              "req" => true,
-              "short" => "Contact expire after days"
-            },
-            %{
-              "name" => "contacts_count",
-              "title" => "Contacts Count",
-              "type" => "`$INTEGER`"
-            },
-            %{
-              "name" => "country",
-              "title" => "Country",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "created_by",
-              "title" => "Created By",
-              "type" => "`$STRING`",
-              "req" => true
-            },
-            %{
-              "name" => "date_created",
-              "title" => "Date Created",
-              "type" => "`$STRING`",
-              "req" => true,
-              "format" => "date-time"
-            },
-            %{
-              "name" => "date_updated",
-              "title" => "Date Updated",
-              "type" => "`$STRING`",
-              "req" => true,
-              "format" => "date-time"
-            },
-            %{
-              "name" => "description",
-              "title" => "Description",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "email",
-              "title" => "Email",
-              "type" => "`$STRING`",
-              "format" => "email"
-            },
-            %{
-              "name" => "first_name",
-              "title" => "First Name",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "gender",
-              "title" => "Gender",
-              "type" => "`$STRING`",
-              "req" => true
-            },
-            %{
-              "name" => "group_id",
-              "title" => "Group Id",
-              "type" => "`$STRING`",
-              "short" => "Object ID",
-              "format" => "oid"
-            },
-            %{
-              "name" => "groups",
-              "title" => "Groups",
-              "type" => "`$ARRAY`",
-              "req" => true
-            },
-            %{
-              "name" => "id",
-              "title" => "Id",
-              "type" => "`$STRING`",
-              "req" => true,
-              "short" => "Object ID",
-              "format" => "oid"
-            },
-            %{
-              "name" => "idx",
-              "title" => "Idx",
-              "type" => "`$STRING`",
-              "short" => "User provided resource id"
-            },
-            %{
-              "name" => "last_name",
-              "title" => "Last Name",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "name",
-              "title" => "Name",
-              "type" => "`$STRING`",
-              "short" => "Group name"
-            },
-            %{
-              "name" => "permissions",
-              "title" => "Permissions",
-              "type" => "`$ARRAY`"
-            },
-            %{
-              "name" => "phone_number",
-              "title" => "Phone Number",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "read",
-              "title" => "Read",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has read permission"
-            },
-            %{
-              "name" => "send",
-              "title" => "Send",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has send permission"
-            },
-            %{
-              "name" => "source",
-              "title" => "Source",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "type",
-              "title" => "Type",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "username",
-              "title" => "Username",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "value",
-              "title" => "Value",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "write",
-              "title" => "Write",
-              "type" => "`$BOOLEAN`",
-              "short" => "Has write permission"
-            }
-          ],
-          "id" => %{
-            "field" => "id",
-            "name" => "id"
-          },
+          "fields" => [],
           "name" => "contacts_field_option",
           "op" => %{
             "list" => %{
@@ -2565,6 +2420,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "field_id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -2577,139 +2436,18 @@ defmodule Smsapi.Config do
         "contactsgroup" => %{
           "fields" => [
             %{
-              "name" => "birthday_date",
-              "title" => "Birthday Date",
-              "type" => "`$STRING`",
-              "format" => "date"
-            },
-            %{
-              "name" => "city",
-              "title" => "City",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "contact_expire_after",
-              "title" => "Contact Expire After",
-              "type" => "`$INTEGER`",
-              "req" => true,
-              "short" => "Contact expire after days"
-            },
-            %{
-              "name" => "contacts_count",
-              "title" => "Contacts Count",
-              "type" => "`$INTEGER`"
-            },
-            %{
-              "name" => "country",
-              "title" => "Country",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "created_by",
-              "title" => "Created By",
-              "type" => "`$STRING`",
-              "req" => true
-            },
-            %{
-              "name" => "date_created",
-              "title" => "Date Created",
-              "type" => "`$STRING`",
-              "req" => true,
-              "format" => "date-time"
-            },
-            %{
-              "name" => "date_updated",
-              "title" => "Date Updated",
-              "type" => "`$STRING`",
-              "req" => true,
-              "format" => "date-time"
-            },
-            %{
-              "name" => "description",
-              "title" => "Description",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "email",
-              "title" => "Email",
-              "type" => "`$STRING`",
-              "format" => "email"
-            },
-            %{
-              "name" => "first_name",
-              "title" => "First Name",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "gender",
-              "title" => "Gender",
-              "type" => "`$STRING`",
-              "req" => true
-            },
-            %{
               "name" => "group_id",
               "title" => "Group Id",
               "type" => "`$STRING`",
               "req" => true,
-              "op" => %{
-                "list" => %{
-                  "type" => "`$STRING`"
-                }
-              },
               "short" => "Object ID",
               "format" => "oid"
-            },
-            %{
-              "name" => "groups",
-              "title" => "Groups",
-              "type" => "`$ARRAY`",
-              "req" => true
-            },
-            %{
-              "name" => "id",
-              "title" => "Id",
-              "type" => "`$STRING`",
-              "req" => true,
-              "short" => "Object ID",
-              "format" => "oid"
-            },
-            %{
-              "name" => "idx",
-              "title" => "Idx",
-              "type" => "`$STRING`",
-              "short" => "User provided resource id"
-            },
-            %{
-              "name" => "last_name",
-              "title" => "Last Name",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "name",
-              "title" => "Name",
-              "type" => "`$STRING`",
-              "short" => "Group name"
-            },
-            %{
-              "name" => "permissions",
-              "title" => "Permissions",
-              "type" => "`$ARRAY`"
-            },
-            %{
-              "name" => "phone_number",
-              "title" => "Phone Number",
-              "type" => "`$STRING`"
             },
             %{
               "name" => "read",
               "title" => "Read",
               "type" => "`$BOOLEAN`",
               "req" => true,
-              "op" => %{
-                "list" => %{
-                  "type" => "`$BOOLEAN`"
-                }
-              },
               "short" => "Has read permission"
             },
             %{
@@ -2717,56 +2455,22 @@ defmodule Smsapi.Config do
               "title" => "Send",
               "type" => "`$BOOLEAN`",
               "req" => true,
-              "op" => %{
-                "list" => %{
-                  "type" => "`$BOOLEAN`"
-                }
-              },
               "short" => "Has send permission"
-            },
-            %{
-              "name" => "source",
-              "title" => "Source",
-              "type" => "`$STRING`"
-            },
-            %{
-              "name" => "type",
-              "title" => "Type",
-              "type" => "`$STRING`"
             },
             %{
               "name" => "username",
               "title" => "Username",
               "type" => "`$STRING`",
-              "req" => true,
-              "op" => %{
-                "list" => %{
-                  "type" => "`$STRING`"
-                }
-              }
-            },
-            %{
-              "name" => "value",
-              "title" => "Value",
-              "type" => "`$STRING`"
+              "req" => true
             },
             %{
               "name" => "write",
               "title" => "Write",
               "type" => "`$BOOLEAN`",
               "req" => true,
-              "op" => %{
-                "list" => %{
-                  "type" => "`$BOOLEAN`"
-                }
-              },
               "short" => "Has write permission"
             }
           ],
-          "id" => %{
-            "field" => "id",
-            "name" => "id"
-          },
           "name" => "contactsgroup",
           "op" => %{
             "create" => %{
@@ -2822,6 +2526,42 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "group_id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "list" => true,
+                        "name" => "birthday_date"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "email"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "first_name"
+                      },
+                      %{
+                        "name" => "gender"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "group_id"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "last_name"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "phone_number"
+                      },
+                      %{
+                        "name" => "q"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
                   }
                 },
                 %{
@@ -2846,7 +2586,29 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "contact_expire_after"
+                      },
+                      %{
+                        "name" => "description"
+                      },
+                      %{
+                        "name" => "idx"
+                      },
+                      %{
+                        "name" => "name"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -2854,51 +2616,6 @@ defmodule Smsapi.Config do
               "input" => "data",
               "name" => "list",
               "points" => [
-                %{
-                  "kind" => "http",
-                  "method" => "GET",
-                  "orig" => "/contacts/groups",
-                  "segments" => [
-                    %{
-                      "lit" => "contacts"
-                    },
-                    %{
-                      "lit" => "groups"
-                    }
-                  ],
-                  "parts" => [
-                    "contacts",
-                    "groups"
-                  ],
-                  "rename" => %{},
-                  "transform" => %{
-                    "req" => "`reqdata`",
-                    "res" => "`body.collection`"
-                  },
-                  "args" => %{
-                    "query" => [
-                      %{
-                        "name" => "name",
-                        "orig" => "name",
-                        "type" => "`$OBJECT`",
-                        "kind" => "query",
-                        "example" => "{\"name\" : \"group name\"}"
-                      },
-                      %{
-                        "name" => "with",
-                        "orig" => "with",
-                        "type" => "`$ARRAY`",
-                        "kind" => "query"
-                      }
-                    ]
-                  },
-                  "select" => %{
-                    "exist" => [
-                      "name",
-                      "with"
-                    ]
-                  }
-                },
                 %{
                   "kind" => "http",
                   "method" => "GET",
@@ -2948,6 +2665,54 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "group_id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
+                },
+                %{
+                  "kind" => "http",
+                  "method" => "GET",
+                  "orig" => "/contacts/groups",
+                  "segments" => [
+                    %{
+                      "lit" => "contacts"
+                    },
+                    %{
+                      "lit" => "groups"
+                    }
+                  ],
+                  "parts" => [
+                    "contacts",
+                    "groups"
+                  ],
+                  "rename" => %{},
+                  "transform" => %{
+                    "req" => "`reqdata`",
+                    "res" => "`body.collection`"
+                  },
+                  "args" => %{
+                    "query" => [
+                      %{
+                        "name" => "name",
+                        "orig" => "name",
+                        "type" => "`$OBJECT`",
+                        "kind" => "query",
+                        "example" => "{\"name\" : \"group name\"}"
+                      },
+                      %{
+                        "name" => "with",
+                        "orig" => "with",
+                        "type" => "`$ARRAY`",
+                        "kind" => "query"
+                      }
+                    ]
+                  },
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -3073,15 +2838,6 @@ defmodule Smsapi.Config do
                         "orig" => "username",
                         "type" => "`$STRING`",
                         "kind" => "param",
-                        "reqd" => true
-                      }
-                    ],
-                    "query" => [
-                      %{
-                        "name" => "username",
-                        "orig" => "username",
-                        "type" => "`$STRING`",
-                        "kind" => "query",
                         "reqd" => true,
                         "example" => "example_username"
                       }
@@ -3139,6 +2895,15 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "group_id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "delete_contacts"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
                   }
                 },
                 %{
@@ -3190,6 +2955,42 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "group_id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "list" => true,
+                        "name" => "birthday_date"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "email"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "first_name"
+                      },
+                      %{
+                        "name" => "gender"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "group_id"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "last_name"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "phone_number"
+                      },
+                      %{
+                        "name" => "q"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
                   }
                 },
                 %{
@@ -3274,15 +3075,6 @@ defmodule Smsapi.Config do
                         "orig" => "username",
                         "type" => "`$STRING`",
                         "kind" => "param",
-                        "reqd" => true
-                      }
-                    ],
-                    "query" => [
-                      %{
-                        "name" => "username",
-                        "orig" => "username",
-                        "type" => "`$STRING`",
-                        "kind" => "query",
                         "reqd" => true,
                         "example" => "example_username"
                       }
@@ -3293,6 +3085,25 @@ defmodule Smsapi.Config do
                       "group_id",
                       "username"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "read"
+                      },
+                      %{
+                        "name" => "send"
+                      },
+                      %{
+                        "name" => "write"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -3344,6 +3155,42 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "group_id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "list" => true,
+                        "name" => "birthday_date"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "email"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "first_name"
+                      },
+                      %{
+                        "name" => "gender"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "group_id"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "last_name"
+                      },
+                      %{
+                        "list" => true,
+                        "name" => "phone_number"
+                      },
+                      %{
+                        "name" => "q"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
                   }
                 }
               ]
@@ -3503,7 +3350,11 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -3635,6 +3486,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -3688,6 +3543,28 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "contact_expire_after"
+                      },
+                      %{
+                        "name" => "description"
+                      },
+                      %{
+                        "name" => "idx"
+                      },
+                      %{
+                        "name" => "name"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -3751,7 +3628,11 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 },
                 %{
                   "kind" => "http",
@@ -3781,6 +3662,18 @@ defmodule Smsapi.Config do
                   "args" => %{},
                   "select" => %{
                     "$action" => "verification"
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "code"
+                      },
+                      %{
+                        "name" => "phone_number"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
                   }
                 }
               ]
@@ -3881,14 +3774,16 @@ defmodule Smsapi.Config do
                       }
                     ]
                   },
-                  "select" => %{
-                    "exist" => [
-                      "accept",
-                      "limit",
-                      "offset",
-                      "phone_number",
-                      "x_async"
-                    ]
+                  "select" => %{},
+                  "response" => %{
+                    "alternatives" => [
+                      %{
+                        "kind" => "raw",
+                        "media" => "text/csv"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -3982,7 +3877,11 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -4012,7 +3911,11 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -4123,6 +4026,28 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "group_id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "read"
+                      },
+                      %{
+                        "name" => "send"
+                      },
+                      %{
+                        "name" => "username"
+                      },
+                      %{
+                        "name" => "write"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4184,15 +4109,6 @@ defmodule Smsapi.Config do
                         "orig" => "username",
                         "type" => "`$STRING`",
                         "kind" => "param",
-                        "reqd" => true
-                      }
-                    ],
-                    "query" => [
-                      %{
-                        "name" => "username",
-                        "orig" => "username",
-                        "type" => "`$STRING`",
-                        "kind" => "query",
                         "reqd" => true,
                         "example" => "example_username"
                       }
@@ -4201,9 +4117,12 @@ defmodule Smsapi.Config do
                   "select" => %{
                     "exist" => [
                       "group_id",
-                      "id",
-                      "username"
+                      "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4256,7 +4175,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.unavailable`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -4349,10 +4272,11 @@ defmodule Smsapi.Config do
                     ]
                   },
                   "select" => %{
-                    "$action" => "price",
-                    "exist" => [
-                      "type"
-                    ]
+                    "$action" => "price"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4379,7 +4303,11 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -4420,6 +4348,10 @@ defmodule Smsapi.Config do
                   "args" => %{},
                   "select" => %{
                     "$action" => "message"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4491,7 +4423,20 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "sender"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -4521,7 +4466,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.collection`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -4573,6 +4522,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4632,7 +4585,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.sections`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -4659,8 +4616,10 @@ defmodule Smsapi.Config do
             %{
               "name" => "sender",
               "title" => "Sender",
-              "type" => "`$ANY`",
-              "req" => true
+              "type" => "`$STRING`",
+              "req" => true,
+              "short" => "RCS sender ID (object ID of the agent/sender the user has access to).",
+              "format" => "oid"
             },
             %{
               "name" => "text",
@@ -4697,7 +4656,35 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "alternatives" => [
+                      %{
+                        "fields" => [
+                          %{
+                            "name" => "content"
+                          },
+                          %{
+                            "name" => "phone_number"
+                          },
+                          %{
+                            "name" => "sender"
+                          },
+                          %{
+                            "name" => "text"
+                          }
+                        ],
+                        "kind" => "form",
+                        "media" => "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -4781,12 +4768,16 @@ defmodule Smsapi.Config do
                       }
                     ]
                   },
-                  "select" => %{
-                    "exist" => [
-                      "accept",
-                      "month",
-                      "year"
-                    ]
+                  "select" => %{},
+                  "response" => %{
+                    "alternatives" => [
+                      %{
+                        "kind" => "raw",
+                        "media" => "text/csv"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4888,6 +4879,20 @@ defmodule Smsapi.Config do
                   "args" => %{},
                   "select" => %{
                     "$action" => "link"
+                  },
+                  "body" => %{
+                    "alternatives" => [
+                      %{
+                        "kind" => "form",
+                        "media" => "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4920,6 +4925,10 @@ defmodule Smsapi.Config do
                   "args" => %{},
                   "select" => %{
                     "$action" => "link"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -4969,6 +4978,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -5067,6 +5080,25 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "description"
+                      },
+                      %{
+                        "name" => "name"
+                      },
+                      %{
+                        "name" => "url"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -5229,7 +5261,93 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "alternatives" => [
+                      %{
+                        "fields" => [
+                          %{
+                            "name" => "allow_duplicates"
+                          },
+                          %{
+                            "name" => "check_idx"
+                          },
+                          %{
+                            "name" => "date"
+                          },
+                          %{
+                            "name" => "date_validate"
+                          },
+                          %{
+                            "name" => "details"
+                          },
+                          %{
+                            "name" => "encoding"
+                          },
+                          %{
+                            "name" => "expiration_date"
+                          },
+                          %{
+                            "list" => true,
+                            "name" => "fallback"
+                          },
+                          %{
+                            "name" => "fast"
+                          },
+                          %{
+                            "name" => "flash"
+                          },
+                          %{
+                            "name" => "format"
+                          },
+                          %{
+                            "name" => "from"
+                          },
+                          %{
+                            "name" => "group"
+                          },
+                          %{
+                            "name" => "idx"
+                          },
+                          %{
+                            "name" => "max_parts"
+                          },
+                          %{
+                            "name" => "message"
+                          },
+                          %{
+                            "name" => "normalize"
+                          },
+                          %{
+                            "name" => "notify_url"
+                          },
+                          %{
+                            "name" => "test"
+                          },
+                          %{
+                            "name" => "time_restriction"
+                          },
+                          %{
+                            "name" => "to"
+                          }
+                        ],
+                        "kind" => "form",
+                        "media" => "application/x-www-form-urlencoded"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
+                  },
+                  "response" => %{
+                    "alternatives" => [
+                      %{
+                        "kind" => "raw",
+                        "media" => "text/plain"
+                      }
+                    ],
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }
@@ -5258,7 +5376,7 @@ defmodule Smsapi.Config do
                       "lit" => "sendernames"
                     },
                     %{
-                      "var" => "sendername_id"
+                      "var" => "sender"
                     },
                     %{
                       "lit" => "commands"
@@ -5270,15 +5388,11 @@ defmodule Smsapi.Config do
                   "parts" => [
                     "sms",
                     "sendernames",
-                    "{sendername_id}",
+                    "{sender}",
                     "commands",
                     "make_default"
                   ],
-                  "rename" => %{
-                    "param" => %{
-                      "sender" => "sendername_id"
-                    }
-                  },
+                  "rename" => %{},
                   "transform" => %{
                     "req" => "`reqdata`",
                     "res" => "`body`"
@@ -5286,7 +5400,7 @@ defmodule Smsapi.Config do
                   "args" => %{
                     "params" => [
                       %{
-                        "name" => "sendername_id",
+                        "name" => "sender",
                         "orig" => "sender",
                         "type" => "`$STRING`",
                         "kind" => "param",
@@ -5296,7 +5410,7 @@ defmodule Smsapi.Config do
                   },
                   "select" => %{
                     "exist" => [
-                      "sendername_id"
+                      "sender"
                     ]
                   }
                 }
@@ -5495,7 +5609,11 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -5549,6 +5667,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -5597,6 +5719,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -5626,10 +5752,10 @@ defmodule Smsapi.Config do
                       }
                     ]
                   },
-                  "select" => %{
-                    "exist" => [
-                      "q"
-                    ]
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -5675,6 +5801,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -5765,6 +5895,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 },
                 %{
@@ -5925,7 +6059,26 @@ defmodule Smsapi.Config do
                     "res" => "`body`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "name"
+                      },
+                      %{
+                        "name" => "normalize"
+                      },
+                      %{
+                        "name" => "template"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -5955,7 +6108,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.collection`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             },
@@ -6003,6 +6160,10 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -6051,6 +6212,25 @@ defmodule Smsapi.Config do
                     "exist" => [
                       "id"
                     ]
+                  },
+                  "body" => %{
+                    "fields" => [
+                      %{
+                        "name" => "name"
+                      },
+                      %{
+                        "name" => "normalize"
+                      },
+                      %{
+                        "name" => "template"
+                      }
+                    ],
+                    "kind" => "form",
+                    "media" => "application/x-www-form-urlencoded"
+                  },
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
                   }
                 }
               ]
@@ -6061,73 +6241,7 @@ defmodule Smsapi.Config do
           }
         },
         "user_rcs_sender_collection" => %{
-          "fields" => [
-            %{
-              "name" => "deliveredAt",
-              "title" => "Delivered At",
-              "type" => "`$STRING`",
-              "format" => "date-time"
-            },
-            %{
-              "name" => "expiredAt",
-              "title" => "Expired At",
-              "type" => "`$STRING`",
-              "format" => "date-time"
-            },
-            %{
-              "name" => "id",
-              "title" => "Id",
-              "type" => "`$STRING`",
-              "short" => "Object ID",
-              "format" => "oid"
-            },
-            %{
-              "name" => "interface",
-              "title" => "Interface",
-              "type" => "`$STRING`",
-              "short" => "Interface through which the message was sent (www, api, ...)."
-            },
-            %{
-              "name" => "messageType",
-              "title" => "Message Type",
-              "type" => "`$STRING`",
-              "short" => "RCS message type (basic, single, ...)."
-            },
-            %{
-              "name" => "readAt",
-              "title" => "Read At",
-              "type" => "`$STRING`",
-              "format" => "date-time"
-            },
-            %{
-              "name" => "recipient",
-              "title" => "Recipient",
-              "type" => "`$STRING`",
-              "short" => "Recipient phone number (without +)."
-            },
-            %{
-              "name" => "sender",
-              "title" => "Sender",
-              "type" => "`$STRING`",
-              "short" => "Sender name"
-            },
-            %{
-              "name" => "senderId",
-              "title" => "Sender Id",
-              "type" => "`$STRING`",
-              "short" => "Sender id"
-            },
-            %{
-              "name" => "sentAt",
-              "title" => "Sent At",
-              "type" => "`$STRING`",
-              "format" => "date-time"
-            }
-          ],
-          "id" => %{
-            "field" => "id",
-            "name" => "id"
-          },
+          "fields" => [],
           "name" => "user_rcs_sender_collection",
           "op" => %{
             "list" => %{
@@ -6156,7 +6270,11 @@ defmodule Smsapi.Config do
                     "res" => "`body.collection`"
                   },
                   "args" => %{},
-                  "select" => %{}
+                  "select" => %{},
+                  "response" => %{
+                    "kind" => "json",
+                    "media" => "application/json"
+                  }
                 }
               ]
             }

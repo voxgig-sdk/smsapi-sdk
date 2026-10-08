@@ -15,7 +15,7 @@ keeps the cognitive load low.
 
 ## Install
 This package is not yet published to Maven Central. Install it from the GitHub
-release tag (`java/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)) or
+release tag (`java/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)) or
 from a source checkout — build the library with Maven:
 
 ```bash
@@ -31,7 +31,10 @@ loading a specific record.
 ### 1. Create a client
 
 ```java
+import java.util.List;
+import java.util.Map;
 import voxgig.smsapisdk.core.SmsapiSDK;
+import voxgig.smsapisdk.core.SdkEntity;
 
 Map<String, Object> options = new java.util.LinkedHashMap<>();
 options.put("apikey", System.getenv("SMSAPI_APIKEY"));
@@ -40,13 +43,15 @@ SmsapiSDK client = new SmsapiSDK(options);
 
 ### 2. List available records
 
-`list(null, null)` returns an aggregate list of records (as `Object`, an
-aggregate list) and raises on error.
+`list(null, null)` returns a list of entities, one per record (as `Object`),
+and raises on error; an entity's `data()` reads its record.
 
 ```java
 try {
-    Object availableList = client.available(null).list(null, null);
-    System.out.println(availableList);
+    List<?> availableList = (List<?>) client.available(null).list(null, null);
+    for (Object availableItem : availableList) {
+        System.out.println(((SdkEntity) availableItem).data());
+    }
 }
 catch (RuntimeException err) {
     System.out.println("list failed: " + err.getMessage());
@@ -60,8 +65,8 @@ Permission is nested under group, so provide the `group_id`.
 
 ```java
 try {
-    Object permission = client.permission(null).load(Map.of("group_id", "example_group_id", "username", "example_username", "id", "example_id"), null);
-    System.out.println(permission);
+    SdkEntity permission = (SdkEntity) client.permission(null).load(Map.of("group_id", "example_group_id", "id", "example_id"), null);
+    System.out.println(permission.data());
 }
 catch (RuntimeException err) {
     System.out.println("load failed: " + err.getMessage());
@@ -75,15 +80,16 @@ Entity operations reject on failure, so wrap them in `try` / `catch`:
 
 ```ts
 try {
-  const permission = await client.Permission().load({ group_id: "example", id: "example_id", username: "example" })
-  console.log(permission)
+  const templates = await client.Template().list()
+  console.log(templates.map((item) => item.data()))
 } catch (err) {
-  console.error('load failed:', err)
+  console.error('list failed:', err)
 }
 ```
 
 The low-level `direct()` method does **not** throw — it returns the
-value or an `Error`, so check the result before using it:
+result envelope. Branch on `ok`; on failure `status` holds the HTTP status
+(for error responses) and `err` holds the error:
 
 ```ts
 const result = await client.direct({
@@ -92,8 +98,8 @@ const result = await client.direct({
   params: { id: 'example_id' },
 })
 
-if (result instanceof Error) {
-  throw result
+if (!result.ok) {
+  console.error('request failed:', result.status, result.err)
 }
 ```
 
@@ -143,11 +149,11 @@ Create a mock client for unit testing — no server required:
 ```java
 SmsapiSDK client = SmsapiSDK.testSDK(null, null);
 
-// Entity ops return the ENTITY and raises on error;
-// call data() for the record.
-Object permission = client.permission(null).load(Map.of("id", "test01"), null);
-// permission holds the mock response record
-System.out.println(permission);
+// list returns a list of entities, one per mock record; it raises on error.
+List<?> templateList = (List<?>) client.template(null).list(null, null);
+for (Object templateItem : templateList) {
+    System.out.println(((SdkEntity) templateItem).data());
+}
 ```
 
 ### Use a custom fetch function
@@ -259,11 +265,11 @@ All entities share the same interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `load` | `(reqmatch, ctrl) -> Object` | Load a single entity by match criteria. Raises on error. |
-| `list` | `(reqmatch, ctrl) -> Object` | List entities matching the criteria (an aggregate list). Raises on error. |
-| `create` | `(reqdata, ctrl) -> Object` | Create a new entity. Raises on error. |
-| `update` | `(reqdata, ctrl) -> Object` | Update an existing entity. Raises on error. |
-| `remove` | `(reqmatch, ctrl) -> Object` | Remove an entity. Raises on error. |
+| `load` | `(reqmatch, ctrl) -> Object` | Load a single entity by match criteria, and return it. Raises on error. |
+| `list` | `(reqmatch, ctrl) -> Object` | List entities matching the criteria, one per record. Raises on error. |
+| `create` | `(reqdata, ctrl) -> Object` | Create a new entity, and return it. Raises on error. |
+| `update` | `(reqdata, ctrl) -> Object` | Update an existing entity, and return it. Raises on error. |
+| `remove` | `(reqmatch, ctrl) -> Object` | Remove an entity, and return it marked as deleted. Raises on error. |
 | `data` | `(newdata...) -> Object` | Get or set entity data. |
 | `match` | `(newmatch...) -> Object` | Get or set entity match criteria. |
 | `make` | `() -> Entity` | Create a new instance with the same options. |
@@ -271,9 +277,10 @@ All entities share the same interface.
 
 ### Result shape
 
-Entity operations return the ENTITY (call data() for the record) (a `Map` for single-entity
-ops, an aggregate `List` for `list`) as `Object` and raise on error. Wrap
-calls in `try`/`catch` to handle failures.
+Entity operations return the entity, and `list` a list of entities, one per
+record, as `Object`; an entity is an `SdkEntity`, whose `data()` reads its
+record. They raise on error, so wrap calls in `try`/`catch` to handle
+failures.
 
 The `direct()` escape hatch never raises — it returns a result
 `Map<String, Object>` you branch on via `result.get("ok")`:
@@ -345,7 +352,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -353,14 +359,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: create, list, load, remove, update.
 
@@ -370,33 +370,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: create, list, remove, update.
 
@@ -406,33 +382,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: list.
 
@@ -442,32 +391,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: create, list, remove, update.
@@ -635,7 +562,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: create.
@@ -755,16 +682,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: list.
 
@@ -910,7 +827,6 @@ Create an instance: `SdkEntity contact = client.contact(null);`
 | `email` | `String` |  |
 | `first_name` | `String` |  |
 | `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
 | `groups` | `List<Object>` |  |
 | `id` | `String` | Object ID |
 | `idx` | `String` | User provided resource id |
@@ -918,14 +834,8 @@ Create an instance: `SdkEntity contact = client.contact(null);`
 | `name` | `String` | Group name |
 | `permissions` | `List<Object>` |  |
 | `phone_number` | `String` |  |
-| `read` | `Boolean` | Has read permission |
-| `send` | `Boolean` | Has send permission |
 | `size` | `Long` |  |
 | `source` | `String` |  |
-| `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Boolean` | Has write permission |
 
 #### Example: Load
 
@@ -942,18 +852,18 @@ Object contactList = client.contact(null).list(null, null);
 #### Example: Create
 
 ```java
-Object contact = client.contact(null).create(Map.of(
-    "collection", List.of(),  // List<Object>
-    "contact_expire_after", 1L,  // Long
-    "contacts_count", 1L,  // Long
-    "created_by", "example_created_by",  // String
-    "date_created", "example_date_created",  // String
-    "date_updated", "example_date_updated",  // String
-    "gender", "example_gender",  // String
-    "groups", List.of(),  // List<Object>
-    "id", "example_id",  // String
-    "name", "example_name",  // String
-    "size", 1L  // Long
+Object contact = client.contact(null).create(Map.ofEntries(
+    Map.entry("collection", List.of()),  // List<Object>
+    Map.entry("contact_expire_after", 1L),  // Long
+    Map.entry("contacts_count", 1L),  // Long
+    Map.entry("created_by", "example_created_by"),  // String
+    Map.entry("date_created", "example_date_created"),  // String
+    Map.entry("date_updated", "example_date_updated"),  // String
+    Map.entry("gender", "example_gender"),  // String
+    Map.entry("groups", List.of()),  // List<Object>
+    Map.entry("id", "example_id"),  // String
+    Map.entry("name", "example_name"),  // String
+    Map.entry("size", 1L)  // Long
 ), null);
 ```
 
@@ -975,33 +885,9 @@ Create an instance: `SdkEntity contactsField = client.contactsField(null);`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Long` | Contact expire after days |
-| `contacts_count` | `Long` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
-| `groups` | `List<Object>` |  |
 | `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `List<Object>` |  |
-| `phone_number` | `String` |  |
-| `read` | `Boolean` | Has read permission |
-| `send` | `Boolean` | Has send permission |
-| `source` | `String` |  |
+| `name` | `String` |  |
 | `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Boolean` | Has write permission |
 
 #### Example: List
 
@@ -1013,12 +899,6 @@ Object contactsFieldList = client.contactsField(null).list(null, null);
 
 ```java
 Object contactsField = client.contactsField(null).create(Map.of(
-    "contact_expire_after", 1L,  // Long
-    "created_by", "example_created_by",  // String
-    "date_created", "example_date_created",  // String
-    "date_updated", "example_date_updated",  // String
-    "gender", "example_gender",  // String
-    "groups", List.of()  // List<Object>
 ), null);
 ```
 
@@ -1033,42 +913,10 @@ Create an instance: `SdkEntity contactsFieldOption = client.contactsFieldOption(
 | --- | --- |
 | `list(null, null)` | List entities, optionally matching the given criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Long` | Contact expire after days |
-| `contacts_count` | `Long` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
-| `groups` | `List<Object>` |  |
-| `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `List<Object>` |  |
-| `phone_number` | `String` |  |
-| `read` | `Boolean` | Has read permission |
-| `send` | `Boolean` | Has send permission |
-| `source` | `String` |  |
-| `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Boolean` | Has write permission |
-
 #### Example: List
 
 ```java
-Object contactsFieldOptionList = client.contactsFieldOption(null).list(null, null);
+Object contactsFieldOptionList = client.contactsFieldOption(null).list(Map.of("field_id", "example"), null);
 ```
 
 
@@ -1089,32 +937,10 @@ Create an instance: `SdkEntity contactsgroup = client.contactsgroup(null);`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Long` | Contact expire after days |
-| `contacts_count` | `Long` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
 | `group_id` | `String` | Object ID |
-| `groups` | `List<Object>` |  |
-| `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `List<Object>` |  |
-| `phone_number` | `String` |  |
 | `read` | `Boolean` | Has read permission |
 | `send` | `Boolean` | Has send permission |
-| `source` | `String` |  |
-| `type` | `String` |  |
 | `username` | `String` |  |
-| `value` | `String` |  |
 | `write` | `Boolean` | Has write permission |
 
 #### Example: List
@@ -1127,14 +953,7 @@ Object contactsgroupList = client.contactsgroup(null).list(null, null);
 
 ```java
 Object contactsgroup = client.contactsgroup(null).create(Map.of(
-    "contact_expire_after", 1L,  // Long
-    "created_by", "example_created_by",  // String
-    "date_created", "example_date_created",  // String
-    "date_updated", "example_date_updated",  // String
-    "gender", "example_gender",  // String
     "group_id", "example_group_id",  // String
-    "groups", List.of(),  // List<Object>
-    "id", "example_id",  // String
     "read", true,  // Boolean
     "send", true,  // Boolean
     "username", "example_username",  // String
@@ -1319,7 +1138,7 @@ Create an instance: `SdkEntity permission = client.permission(null);`
 #### Example: Load
 
 ```java
-Object permission = client.permission(null).load(Map.of("id", "permission_id", "group_id", "group_id", "username", "username"), null);
+Object permission = client.permission(null).load(Map.of("id", "permission_id", "group_id", "group_id"), null);
 ```
 
 #### Example: Create
@@ -1495,7 +1314,7 @@ Create an instance: `SdkEntity sentRcsMessage = client.sentRcsMessage(null);`
 | --- | --- | --- |
 | `content` | `Map<String, Object>` | RCS message content in RCS JSON format. |
 | `phone_number` | `String` | Recipient phone number (e.g. |
-| `sender` | `Object` |  |
+| `sender` | `String` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String` | Plain text message content. |
 
 #### Example: Create
@@ -1503,7 +1322,7 @@ Create an instance: `SdkEntity sentRcsMessage = client.sentRcsMessage(null);`
 ```java
 Object sentRcsMessage = client.sentRcsMessage(null).create(Map.of(
     "phone_number", "example_phone_number",  // String
-    "sender", "example_sender"  // Object
+    "sender", "example_sender"  // String
 ), null);
 ```
 
@@ -1642,7 +1461,7 @@ Create an instance: `SdkEntity smssendername = client.smssendername(null);`
 
 ```java
 Object smssendername = client.smssendername(null).create(Map.of(
-    "sendername_id", "example_sendername_id"  // String
+    "sender", "example_sender"  // String
 ), null);
 ```
 
@@ -1761,21 +1580,6 @@ Create an instance: `SdkEntity userRcsSenderCollection = client.userRcsSenderCol
 | Method | Description |
 | --- | --- |
 | `list(null, null)` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `String` |  |
-| `expiredAt` | `String` |  |
-| `id` | `String` | Object ID |
-| `interface` | `String` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String` | RCS message type (basic, single, ...). |
-| `readAt` | `String` |  |
-| `recipient` | `String` | Recipient phone number (without +). |
-| `sender` | `String` | Sender name |
-| `senderId` | `String` | Sender id |
-| `sentAt` | `String` |  |
 
 #### Example: List
 
@@ -2222,16 +2026,16 @@ when needed.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally. Subsequent
 calls on the same instance can rely on this state.
 
 ```ts
-const permission = client.Permission()
-await permission.load({ group_id: "example", id: "example_id", username: "example" })
+const template = client.Template()
+await template.list()
 
-// permission.data() now returns the permission data from the last `load`
-// permission.match() returns { id: "example_id" }
+// template.data() now returns the template data from the last `list`
+// template.match() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

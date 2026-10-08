@@ -206,11 +206,11 @@ Prepare a fetch definition without sending. Returns the `fetchdef` and raises on
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [available (e-available/list (api/available client nil) nil nil)]
-  (println available))
+  (println ((:data-get available))))
 ```
 
 ### Common Members
@@ -260,9 +260,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -272,17 +272,19 @@ Create a new entity with the given data. Returns the created entity data and rai
     nil))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+#### `(load ent reqmatch ctrl) -> entity`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-blacklist/load (api/blacklist client nil) nil nil))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-blacklist/remove (api/blacklist client nil) (vs/jm "id" "id") nil))
@@ -355,9 +357,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -369,32 +371,32 @@ Create a new entity with the given data. Returns the created entity data and rai
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [callback (e-callback/list (api/callback client nil) nil nil)]
-  (println callback))
+  (println ((:data-get callback))))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-callback/load (api/callback client nil) (vs/jm "id" "callback_id") nil))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-callback/remove (api/callback client nil) (vs/jm "id" "callback_id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -462,7 +464,6 @@ Return the entity name.
 | `email` | `string` | No |  |
 | `first_name` | `string` | No |  |
 | `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
 | `groups` | `vector` | Yes |  |
 | `id` | `string` | Yes | Object ID |
 | `idx` | `string` | No | User provided resource id |
@@ -470,14 +471,8 @@ Return the entity name.
 | `name` | `string` | Yes | Group name |
 | `permissions` | `vector` | No |  |
 | `phone_number` | `string` | No |  |
-| `read` | `boolean` | No | Has read permission |
-| `send` | `boolean` | No | Has send permission |
 | `size` | `long` | Yes |  |
 | `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `boolean` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -485,9 +480,9 @@ Return the entity name.
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -496,28 +491,21 @@ Return the entity name.
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -538,34 +526,36 @@ Create a new entity with the given data. Returns the created entity data and rai
     nil))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [contact (e-contact/list (api/contact client nil) nil nil)]
-  (println contact))
+  (println ((:data-get contact))))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-contact/load (api/contact client nil) (vs/jm "id" "contact_id") nil))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-contact/remove (api/contact client nil) (vs/jm "id" "contact_id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -576,6 +566,8 @@ Update an existing entity. The data must include the entity `id`. Returns the up
       )
     nil))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Members
 
@@ -620,106 +612,46 @@ Return the entity name.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `long` | Yes | Contact expire after days |
-| `contacts_count` | `long` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `vector` | Yes |  |
 | `id` | `string` | No | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `vector` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `boolean` | No | Has read permission |
-| `send` | `boolean` | No | Has send permission |
-| `source` | `string` | No |  |
+| `name` | `string` | No |  |
 | `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `boolean` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
   (e-contacts_field/create (api/contacts_field client nil)
     (vs/jm
-      "contact_expire_after" 1  ;; long
-      "created_by" "example_created_by"  ;; string
-      "date_created" "example_date_created"  ;; string
-      "date_updated" "example_date_updated"  ;; string
-      "gender" "example_gender"  ;; string
-      "groups" (vs/jt)  ;; vector
       )
     nil))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [contacts_field (e-contacts_field/list (api/contacts_field client nil) nil nil)]
-  (println contacts_field))
+  (println ((:data-get contacts_field))))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-contacts_field/remove (api/contacts_field client nil) (vs/jm "id" "id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -730,6 +662,8 @@ Update an existing entity. The data must include the entity `id`. Returns the up
       )
     nil))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Members
 
@@ -770,47 +704,15 @@ Return the entity name.
 (def contacts_field_option (api/contacts_field_option client nil))
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `long` | Yes | Contact expire after days |
-| `contacts_count` | `long` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `vector` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `vector` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `boolean` | No | Has read permission |
-| `send` | `boolean` | No | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `boolean` | No | Has write permission |
-
 ### Operations
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
-(doseq [contacts_field_option (e-contacts_field_option/list (api/contacts_field_option client nil) nil nil)]
-  (println contacts_field_option))
+(doseq [contacts_field_option (e-contacts_field_option/list (api/contacts_field_option client nil) (vs/jm "field_id" "example") nil)]
+  (println ((:data-get contacts_field_option))))
 ```
 
 ### Common Members
@@ -856,84 +758,23 @@ Return the entity name.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `long` | Yes | Contact expire after days |
-| `contacts_count` | `long` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
 | `group_id` | `string` | Yes | Object ID |
-| `groups` | `vector` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `vector` | No |  |
-| `phone_number` | `string` | No |  |
 | `read` | `boolean` | Yes | Has read permission |
 | `send` | `boolean` | Yes | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
 | `username` | `string` | Yes |  |
-| `value` | `string` | No |  |
 | `write` | `boolean` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
   (e-contactsgroup/create (api/contactsgroup client nil)
     (vs/jm
-      "contact_expire_after" 1  ;; long
-      "created_by" "example_created_by"  ;; string
-      "date_created" "example_date_created"  ;; string
-      "date_updated" "example_date_updated"  ;; string
-      "gender" "example_gender"  ;; string
       "group_id" "example_group_id"  ;; string
-      "groups" (vs/jt)  ;; vector
-      "id" "example_id"  ;; string
       "read" true  ;; boolean
       "send" true  ;; boolean
       "username" "example_username"  ;; string
@@ -942,26 +783,28 @@ Create a new entity with the given data. Returns the created entity data and rai
     nil))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [contactsgroup (e-contactsgroup/list (api/contactsgroup client nil) nil nil)]
-  (println contactsgroup))
+  (println ((:data-get contactsgroup))))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-contactsgroup/remove (api/contactsgroup client nil) (vs/jm "group_id" "group_id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -972,6 +815,8 @@ Update an existing entity. The data must include the entity `id`. Returns the up
       )
     nil))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Members
 
@@ -1014,17 +859,17 @@ Return the entity name.
 
 ### Operations
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-contactstrash/remove (api/contactstrash client nil) nil nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -1088,11 +933,11 @@ Return the entity name.
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [field_available (e-field_available/list (api/field_available client nil) nil nil)]
-  (println field_available))
+  (println ((:data-get field_available))))
 ```
 
 ### Common Members
@@ -1151,17 +996,17 @@ Return the entity name.
 
 ### Operations
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-group/load (api/group client nil) (vs/jm "id" "group_id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -1172,6 +1017,8 @@ Update an existing entity. The data must include the entity `id`. Returns the up
       )
     nil))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Members
 
@@ -1223,9 +1070,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -1235,6 +1082,8 @@ Create a new entity with the given data. Returns the created entity data and rai
       )
     nil))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Members
 
@@ -1288,16 +1137,16 @@ Return the entity name.
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [opt_out (e-opt_out/list (api/opt_out client nil) nil nil)]
-  (println opt_out))
+  (println ((:data-get opt_out))))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-opt_out/remove (api/opt_out client nil) (vs/jm "id" "id") nil))
@@ -1350,17 +1199,17 @@ Return the entity name.
 
 ### Operations
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-opt_out_setting/load (api/opt_out_setting client nil) nil nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -1423,9 +1272,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -1440,12 +1289,14 @@ Create a new entity with the given data. Returns the created entity data and rai
     nil))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+#### `(load ent reqmatch ctrl) -> entity`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
-(def result (e-permission/load (api/permission client nil) (vs/jm "id" "permission_id" "group_id" "group_id" "username" "username") nil))
+(def result (e-permission/load (api/permission client nil) (vs/jm "id" "permission_id" "group_id" "group_id") nil))
 ```
 
 ### Common Members
@@ -1498,11 +1349,11 @@ Return the entity name.
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [ping (e-ping/list (api/ping client nil) nil nil)]
-  (println ping))
+  (println ((:data-get ping))))
 ```
 
 ### Common Members
@@ -1560,16 +1411,16 @@ Return the entity name.
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [profile (e-profile/list (api/profile client nil) nil nil)]
-  (println profile))
+  (println ((:data-get profile))))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-profile/load (api/profile client nil) nil nil))
@@ -1618,11 +1469,11 @@ Return the entity name.
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [rcs (e-rcs/list (api/rcs client nil) nil nil)]
-  (println rcs))
+  (println ((:data-get rcs))))
 ```
 
 ### Common Members
@@ -1676,9 +1527,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -1688,18 +1539,20 @@ Create a new entity with the given data. Returns the created entity data and rai
     nil))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [sendername (e-sendername/list (api/sendername client nil) nil nil)]
-  (println sendername))
+  (println ((:data-get sendername))))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-sendername/load (api/sendername client nil) (vs/jm "id" "sendername_id") nil))
@@ -1756,11 +1609,11 @@ Return the entity name.
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [sendername_statement (e-sendername_statement/list (api/sendername_statement client nil) nil nil)]
-  (println sendername_statement))
+  (println ((:data-get sendername_statement))))
 ```
 
 ### Common Members
@@ -1808,21 +1661,21 @@ Return the entity name.
 | --- | --- | --- | --- |
 | `content` | `map` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Yes | Recipient phone number (e.g. |
-| `sender` | `any` | Yes |  |
+| `sender` | `string` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | No | Plain text message content. |
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
   (e-sent_rcs_message/create (api/sent_rcs_message client nil)
     (vs/jm
       "phone_number" "example_phone_number"  ;; string
-      "sender" "example_sender"  ;; any
+      "sender" "example_sender"  ;; string
       )
     nil))
 ```
@@ -1879,11 +1732,11 @@ Return the entity name.
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [shipment_country_volume (e-shipment_country_volume/list (api/shipment_country_volume client nil) nil nil)]
-  (println shipment_country_volume))
+  (println ((:data-get shipment_country_volume))))
 ```
 
 ### Common Members
@@ -1942,9 +1795,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -1956,32 +1809,32 @@ Create a new entity with the given data. Returns the created entity data and rai
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [short_url (e-short_url/list (api/short_url client nil) nil nil)]
-  (println short_url))
+  (println ((:data-get short_url))))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-short_url/load (api/short_url client nil) (vs/jm "id" "short_url_id") nil))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-short_url/remove (api/short_url client nil) (vs/jm "id" "short_url_id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -1992,6 +1845,8 @@ Update an existing entity. The data must include the entity `id`. Returns the up
       )
     nil))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Members
 
@@ -2060,9 +1915,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -2113,22 +1968,22 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
   (e-smssendername/create (api/smssendername client nil)
     (vs/jm
-      "sendername_id" "example_sendername_id"  ;; string
+      "sender" "example_sender"  ;; string
       )
     nil))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-smssendername/remove (api/smssendername client nil) (vs/jm "sender" "sender") nil))
@@ -2181,9 +2036,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-smstemplate/remove (api/smstemplate client nil) (vs/jm "id" "id") nil))
@@ -2252,9 +2107,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -2267,32 +2122,32 @@ Create a new entity with the given data. Returns the created entity data and rai
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [subuser (e-subuser/list (api/subuser client nil) nil nil)]
-  (println subuser))
+  (println ((:data-get subuser))))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-subuser/load (api/subuser client nil) (vs/jm "id" "subuser_id") nil))
 ```
 
-#### `(remove ent reqmatch ctrl) -> map`
+#### `(remove ent reqmatch ctrl) -> entity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```clojure
 (def result (e-subuser/remove (api/subuser client nil) (vs/jm "id" "subuser_id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -2354,9 +2209,9 @@ Return the entity name.
 
 ### Operations
 
-#### `(create ent reqdata ctrl) -> map`
+#### `(create ent reqdata ctrl) -> entity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```clojure
 (def result
@@ -2366,26 +2221,28 @@ Create a new entity with the given data. Returns the created entity data and rai
     nil))
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [template (e-template/list (api/template client nil) nil nil)]
-  (println template))
+  (println ((:data-get template))))
 ```
 
-#### `(load ent reqmatch ctrl) -> map`
+#### `(load ent reqmatch ctrl) -> entity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `((:data-get ent))` reads, and raises on error.
 
 ```clojure
 (def result (e-template/load (api/template client nil) (vs/jm "id" "template_id") nil))
 ```
 
-#### `(update ent reqdata ctrl) -> map`
+#### `(update ent reqdata ctrl) -> entity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```clojure
 (def result
@@ -2396,6 +2253,8 @@ Update an existing entity. The data must include the entity `id`. Returns the up
       )
     nil))
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Members
 
@@ -2436,30 +2295,15 @@ Return the entity name.
 (def user_rcs_sender_collection (api/user_rcs_sender_collection client nil))
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `string` | No |  |
-| `expiredAt` | `string` | No |  |
-| `id` | `string` | No | Object ID |
-| `interface` | `string` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | No | RCS message type (basic, single, ...). |
-| `readAt` | `string` | No |  |
-| `recipient` | `string` | No | Recipient phone number (without +). |
-| `sender` | `string` | No | Sender name |
-| `senderId` | `string` | No | Sender id |
-| `sentAt` | `string` | No |  |
-
 ### Operations
 
 #### `(list ent reqmatch ctrl) -> vector`
 
-List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector and raises on error.
+List entities matching the given criteria. The match is optional — call with `nil` to list all records. Returns a vector of entities, one per record, and raises on error.
 
 ```clojure
 (doseq [user_rcs_sender_collection (e-user_rcs_sender_collection/list (api/user_rcs_sender_collection client nil) nil nil)]
-  (println user_rcs_sender_collection))
+  (println ((:data-get user_rcs_sender_collection))))
 ```
 
 ### Common Members
@@ -3149,6 +2993,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

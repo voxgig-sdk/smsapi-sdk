@@ -80,6 +80,10 @@ open class SmsapiEntityBase: Entity {
     throw unsupportedOp("update", name)
   }
 
+  open func patch(_ reqdata: VMap?, _ ctrl: VMap?) throws -> Value {
+    throw unsupportedOp("patch", name)
+  }
+
   open func remove(_ reqmatch: VMap?, _ ctrl: VMap?) throws -> Value {
     throw unsupportedOp("remove", name)
   }
@@ -188,7 +192,11 @@ open class SmsapiEntityBase: Entity {
 
     let signal = opts.entries["signal"]?.asNative as? @Sendable () -> Bool
 
-    let ctrl = opts.entries["ctrl"]?.asMap ?? VMap()
+    // A copy: the caller's ctrl gains no key, and explain stays its own record.
+    let ctrl = VMap()
+    if let given = opts.entries["ctrl"]?.asMap {
+      ctrl.entries = given.entries
+    }
     ctrl.entries["stream"] = .map(opts)
 
     var ctxmap: [String: Any?] = [

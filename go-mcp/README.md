@@ -1,10 +1,14 @@
 # smsapi-mcp
 
 [MCP](https://modelcontextprotocol.io) server exposing the Smsapi SDK as
-two agent tools — `smsapi_list` and `smsapi_load` — built on the
+2 agent tools, `smsapi_list` and `smsapi_load`, built on the
 [official Go MCP SDK](https://github.com/modelcontextprotocol/go-sdk) and the
 sibling Go SDK at `../go`. Runs over **stdio** (default, for spawnable installs)
 or **streamable HTTP** (one shared server for several agents).
+
+The server only reads. Create, update, patch and remove become tools too when the
+SDK's own model sets `main: kit: target: 'go-mcp': tool: write: true`; they are off by default, as an agent calling
+them changes the API's data.
 
 ## Examples
 
@@ -28,10 +32,9 @@ Tool-call arguments (what an agent sends):
 ```jsonc
 // smsapi_list: first page of records
 { "entity": "available" }
-{ "entity": "available", "query": { } }
 
-// smsapi_load: one record by id
-{ "entity": "blacklist", "query": { "id": 1 } }
+// smsapi_load: one record
+{ "entity": "blacklist", "query": {} }
 ```
 
 > The rest of this guide follows the [Diátaxis](https://diataxis.fr) framework:
@@ -59,8 +62,8 @@ Tool-call arguments (what an agent sends):
      -- "$PWD"/dist/*/smsapi-mcp -transport stdio
    ```
 
-4. **Restart Claude Code.** The `smsapi_list` and `smsapi_load` tools now appear
-   in new sessions. Ask the agent to *"list available using smsapi"*
+4. **Restart Claude Code.** The `smsapi_list` and `smsapi_load` tools now appear in new
+   sessions. Ask the agent to *"list available using smsapi"*
    and it calls `smsapi_list` with `{"entity":"available"}`.
 
 ## How-to guides
@@ -88,8 +91,8 @@ default) spawns a fresh process per client.
 
 ### Call the `smsapi_list` tool
 
-Args: `entity` (required), `query` (optional filter map). Returns the first
-page of records as JSON:
+Args: `entity` (required), `query` (optional: optional filter map; omit it for the first page).
+Returns the first page of records as JSON:
 
 ```jsonc
 { "entity": "available" }
@@ -97,11 +100,19 @@ page of records as JSON:
 
 ### Call the `smsapi_load` tool
 
-Args: `entity` (required), `query` = `{"id":N}` (required). Returns the single
-record as JSON:
+Args: `entity` (required), `query` (required: match map naming the record, such as {"id":1}).
+Returns the record as JSON:
 
 ```jsonc
-{ "entity": "blacklist", "query": { "id": 1 } }
+{ "entity": "blacklist", "query": {} }
+```
+
+### Turn on the write tools
+
+In the SDK's own model (`.sdk/model/sdk.aontu`), then regenerate:
+
+```
+main: kit: target: 'go-mcp': tool: write: true
 ```
 
 ### Cross-compile release binaries
@@ -115,25 +126,28 @@ make build-all   # linux/darwin/windows x amd64/arm64, under dist/<os>-<arch>/
 
 ### Tools
 
-| Tool | Args | Returns |
-|------|------|---------|
-| `smsapi_list` | `entity` (required), `query` (optional map) | First page of records as JSON |
-| `smsapi_load` | `entity` (required), `query` = `{id:N}` | Single record as JSON |
+| Tool | Args | Returns | MCP hints |
+|------|------|---------|-----------|
+| `smsapi_list` | `entity`, `query` (optional map) | The first page of records as JSON | read-only |
+| `smsapi_load` | `entity`, `query` (required map) | The record as JSON | read-only |
 
 On error, a tool returns an MCP error result (`isError: true`) whose text is the
 failure message (e.g. unknown entity, or an API error).
 
-### `Args` schema
+### Entities
 
-Both tools take the same argument object:
+Each tool takes as its `entity` argument one of the entities that has its
+operation, of the 28 the SDK has:
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `entity` | string | One of the 28 supported entities (see below). |
-| `query` | object | Optional match map. `{"id":N}` for load; omit or `{}` for list. |
+| Tool | Entities |
+|------|----------|
+| `smsapi_list` | available, callback, contact, contacts_field, contacts_field_option, contactsgroup, field_available, opt_out, ping, profile, rcs, sendername, sendername_statement, shipment_country_volume, short_url, subuser, template, user_rcs_sender_collection |
+| `smsapi_load` | blacklist, callback, contact, group, opt_out_setting, permission, profile, sendername, short_url, subuser, template |
 
-JSON schemas are emitted by the SDK from the `Args` struct's `json` /
-`jsonschema` tags — no schema is hand-written.
+JSON schemas are emitted by the SDK from each tool's argument struct's
+`json` / `jsonschema` tags — no schema is hand-written. Each tool's
+`entity` is an `enum` of the entities in its row, so the server refuses
+any other before it runs a call.
 
 ### Transports & flags
 
@@ -148,12 +162,6 @@ JSON schemas are emitted by the SDK from the `Args` struct's `json` /
 |----------|---------|
 | `SMSAPI_APIKEY` | API key sent with every request. |
 | `SMSAPI_BASE` | Optional override of the API base URL. |
-
-### Entities
-
-The 28 entities valid as the `entity` argument:
-
-available | blacklist | callback | contact | contacts_field | contacts_field_option | contactsgroup | contactstrash | field_available | group | mfa_code | opt_out | opt_out_setting | permission | ping | profile | rcs | sendername | sendername_statement | sent_rcs_message | shipment_country_volume | short_url | smsdo | smssendername | smstemplate | subuser | template | user_rcs_sender_collection
 
 ### Smoke test via HTTP (raw JSON-RPC)
 
@@ -173,7 +181,7 @@ curl -sN -X POST http://localhost:18080 \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
   -H "Mcp-Session-Id: $SESSION" \
-  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"smsapi_load","arguments":{"entity":"blacklist","query":{"id":1}}}}'
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"smsapi_list","arguments":{"entity":"available"}}}'
 ```
 
 ## Explanation
@@ -181,9 +189,10 @@ curl -sN -X POST http://localhost:18080 \
 ### How tools map to the SDK
 
 `main.go` builds the SDK client (configured from the environment) and registers
-two tools. Each dispatches on the `entity` argument to the matching entity in
-the sibling Go SDK at `../go`, calls `List` or `Load`, unwraps the `Entity`
-wrappers to plain data, and returns it as pretty-printed JSON.
+one tool per operation the SDK's entities have. Each dispatches on the
+`entity` argument to the matching entity in the sibling Go SDK at `../go`,
+calls its operation, unwraps the `Entity` wrappers to plain data, and returns
+it as pretty-printed JSON.
 
 ### Why two transports
 
@@ -193,9 +202,10 @@ that many agents can share — handy for a long-lived deployment.
 
 ### Schema generation
 
-The input schema is derived from the `Args` Go struct's `json` / `jsonschema`
-tags at registration time, so the advertised tool schema can never drift from
-the code that consumes it.
+The input schema is derived from each tool's argument struct's `json` /
+`jsonschema` tags at registration time, so the advertised tool schema can
+never drift from the code that consumes it. The `entity` enum comes from the
+same list the tool is registered for.
 
 ## Generated by
 

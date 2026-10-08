@@ -17,7 +17,7 @@ public static partial class SdkUtility
             spec.Step = "reqform";
         }
 
-        var data = OmitKeys(ctx.Reqdata, HeaderArgNames(point));
+        var data = OmitKeys(ctx.Reqdata, RoutedArgNames(ctx));
 
         var transform = Helpers.ToMapAny(StructUtils.GetProp(point, "transform"));
         if (transform == null)
@@ -47,23 +47,31 @@ public static partial class SdkUtility
         return OmitKeys(reqdata, new List<string> { "$action" });
     }
 
-    // A header argument travels as a header, which PrepareHeadersUtil sends,
-    // so the body is built from the request data without it.
-    private static List<string> HeaderArgNames(object? point)
+    // A header, cookie or query argument travels where PrepareHeadersUtil or
+    // PrepareQueryUtil sends it, so the body is built from the request data
+    // without it, unless the point marks it as a field the body keeps.
+    private static List<string> RoutedArgNames(Context ctx)
     {
-        var names = new List<string>();
-        if (point != null &&
-            StructUtils.GetPath(point, StructUtils.Jt("args", "header")) is List<object?> hl)
+        return CallArgs(ctx, "header").Concat(CallArgs(ctx, "cookie")).Concat(CallArgs(ctx, "query"))
+            .Select(arg => arg.Name).Where(name => !FieldArg(ctx, name)).ToList();
+    }
+
+    private static bool FieldArg(Context ctx, string name)
+    {
+        if (ctx.Point == null)
         {
-            foreach (var hd in hl)
+            return false;
+        }
+        foreach (var kind in new[] { "header", "cookie", "query" })
+        {
+            if (StructUtils.GetPath(ctx.Point, StructUtils.Jt("args", kind)) is List<object?> defs &&
+                defs.Any(ad => name == StructUtils.GetProp(ad, "name") as string &&
+                    StructUtils.GetProp(ad, "field") is true))
             {
-                if (StructUtils.GetProp(hd, "name") is string name && name != "")
-                {
-                    names.Add(name);
-                }
+                return true;
             }
         }
-        return names;
+        return false;
     }
 
     private static object? OmitKeys(object? reqdata, List<string> names)

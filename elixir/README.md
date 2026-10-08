@@ -16,7 +16,7 @@ keeps the cognitive load low.
 
 ## Install
 This package is not yet published to [Hex](https://hex.pm). Install it from
-the GitHub release tag (`elixir/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases))
+the GitHub release tag (`elixir/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags))
 by adding a git dependency to your `mix.exs`:
 
 ```elixir
@@ -55,13 +55,17 @@ sdk = Smsapi.new(H.deep(%{"apikey" => System.get_env("SMSAPI_APIKEY")}))
 
 ### 2. List available records
 
-`list/2` returns a list value node and raises on error.
+`list/2` returns a `Voxgig.Struct` list of entities, one per record, and
+raises on error; `Voxgig.Struct.getelem/2` reads an item, and `data_get/1`
+an entity's record.
 
 ```elixir
 try do
   available = Smsapi.available(sdk)
-  records = Smsapi.Entity.Available.list(available)
-  IO.inspect(records)
+  availables = Smsapi.Entity.Available.list(available)
+  for i <- 0..(Voxgig.Struct.size(availables) - 1)//1 do
+    IO.puts(Voxgig.Struct.jsonify(Smsapi.Entity.Available.data_get(Voxgig.Struct.getelem(availables, i))))
+  end
 rescue
   err -> IO.puts("list failed: " <> inspect(err))
 end
@@ -70,13 +74,14 @@ end
 ### 3. Load a permission
 
 Permission is nested under group, so provide the `group_id`.
-`load/2` returns the bare record and raises on error.
+`load/2` returns the entity and raises on error; `data_get/1` reads its
+record.
 
 ```elixir
 try do
   permission = Smsapi.permission(sdk)
-  record = Smsapi.Entity.Permission.load(permission, H.deep(%{"group_id" => "example_group_id", "username" => "example_username", "id" => "example_id"}))
-  IO.inspect(record)
+  permission = Smsapi.Entity.Permission.load(permission, H.deep(%{"group_id" => "example_group_id", "id" => "example_id"}))
+  IO.puts(Voxgig.Struct.jsonify(Smsapi.Entity.Permission.data_get(permission)))
 rescue
   err -> IO.puts("load failed: " <> inspect(err))
 end
@@ -89,15 +94,16 @@ Entity operations reject on failure, so wrap them in `try` / `catch`:
 
 ```ts
 try {
-  const permission = await client.Permission().load({ group_id: "example", id: "example_id", username: "example" })
-  console.log(permission)
+  const templates = await client.Template().list()
+  console.log(templates.map((item) => item.data()))
 } catch (err) {
-  console.error('load failed:', err)
+  console.error('list failed:', err)
 }
 ```
 
 The low-level `direct()` method does **not** throw — it returns the
-value or an `Error`, so check the result before using it:
+result envelope. Branch on `ok`; on failure `status` holds the HTTP status
+(for error responses) and `err` holds the error:
 
 ```ts
 const result = await client.direct({
@@ -106,8 +112,8 @@ const result = await client.direct({
   params: { id: 'example_id' },
 })
 
-if (result instanceof Error) {
-  throw result
+if (!result.ok) {
+  console.error('request failed:', result.status, result.err)
 }
 ```
 
@@ -164,10 +170,12 @@ alias Smsapi.Helpers, as: H
 
 sdk = Smsapi.test()
 
-# Entity ops return the bare record (raise on error).
-permission = Smsapi.permission(sdk)
-record = Smsapi.Entity.Permission.load(permission, H.deep(%{"id" => "test01"}))
-IO.inspect(record)
+# Entity ops return the entity, and list one per record (raise on error).
+template = Smsapi.template(sdk)
+templates = Smsapi.Entity.Template.list(template, H.deep(%{}))
+for i <- 0..(Voxgig.Struct.size(templates) - 1)//1 do
+  IO.puts(Voxgig.Struct.jsonify(Smsapi.Entity.Template.data_get(Voxgig.Struct.getelem(templates, i))))
+end
 ```
 
 ### Use a custom fetch function
@@ -283,11 +291,11 @@ Every entity's `Smsapi.Entity.<Name>` module shares the same interface.
 
 | Function | Signature | Description |
 | --- | --- | --- |
-| `load` | `(entity, reqmatch, ctrl \\ nil) :: map()` | Load a single entity by match criteria. Raises on error. |
-| `list` | `(entity, reqmatch \\ nil, ctrl \\ nil) :: list()` | List entities matching the criteria. Raises on error. |
-| `create` | `(entity, reqdata, ctrl \\ nil) :: map()` | Create a new entity. Raises on error. |
-| `update` | `(entity, reqdata, ctrl \\ nil) :: map()` | Update an existing entity. Raises on error. |
-| `remove` | `(entity, reqmatch \\ nil, ctrl \\ nil) :: map()` | Remove an entity. Raises on error. |
+| `load` | `(entity, reqmatch, ctrl \\ nil) :: entity` | Load a single entity by match criteria, and return it. Raises on error. |
+| `list` | `(entity, reqmatch \\ nil, ctrl \\ nil) :: list()` | List entities matching the criteria, one per record. Raises on error. |
+| `create` | `(entity, reqdata, ctrl \\ nil) :: entity` | Create a new entity, and return it. Raises on error. |
+| `update` | `(entity, reqdata, ctrl \\ nil) :: entity` | Update an existing entity, and return it. Raises on error. |
+| `remove` | `(entity, reqmatch \\ nil, ctrl \\ nil) :: entity` | Remove an entity, and return it marked as deleted. Raises on error. |
 | `data_get` | `(entity) :: map()` | Get entity data. |
 | `data_set` | `(entity, data)` | Set entity data. |
 | `match_get` | `(entity) :: map()` | Get entity match criteria. |
@@ -297,9 +305,10 @@ Every entity's `Smsapi.Entity.<Name>` module shares the same interface.
 
 ### Result shape
 
-Entity operations return the bare result data (a value node — a map for
-single-entity ops, a list for `list`) and raise a `Smsapi.Error` on
-failure. Wrap calls in `try`/`rescue` to handle errors.
+Entity operations return the entity, and `list` a list of entities, one per
+record; an entity module's `data_get/1` reads an entity's record. They raise
+a `Smsapi.Error` on failure, so wrap calls in `try`/`rescue` to handle
+errors.
 
 The `direct/2` escape hatch never raises — it returns a result node you
 branch on via `Voxgig.Struct.getprop(result, "ok")`:
@@ -371,7 +380,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -379,14 +387,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -396,33 +398,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -432,33 +410,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -468,32 +419,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -661,7 +590,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -781,16 +710,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -826,7 +745,7 @@ Create a handle: `available = Smsapi.available(sdk)`
 
 ```elixir
 available = Smsapi.available(sdk)
-records = Smsapi.Entity.Available.list(available)
+availables = Smsapi.Entity.Available.list(available)
 ```
 
 
@@ -852,14 +771,14 @@ Create a handle: `blacklist = Smsapi.blacklist(sdk)`
 
 ```elixir
 blacklist = Smsapi.blacklist(sdk)
-record = Smsapi.Entity.Blacklist.load(blacklist, Smsapi.Helpers.deep(%{}))
+blacklist = Smsapi.Entity.Blacklist.load(blacklist, Smsapi.Helpers.deep(%{}))
 ```
 
 #### Example: Create
 
 ```elixir
 blacklist = Smsapi.blacklist(sdk)
-record = Smsapi.Entity.Blacklist.create(blacklist, Smsapi.Helpers.deep(%{
+blacklist = Smsapi.Entity.Blacklist.create(blacklist, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -895,21 +814,21 @@ Create a handle: `callback = Smsapi.callback(sdk)`
 
 ```elixir
 callback = Smsapi.callback(sdk)
-record = Smsapi.Entity.Callback.load(callback, Smsapi.Helpers.deep(%{"id" => "callback_id"}))
+callback = Smsapi.Entity.Callback.load(callback, Smsapi.Helpers.deep(%{"id" => "callback_id"}))
 ```
 
 #### Example: List
 
 ```elixir
 callback = Smsapi.callback(sdk)
-records = Smsapi.Entity.Callback.list(callback)
+callbacks = Smsapi.Entity.Callback.list(callback)
 ```
 
 #### Example: Create
 
 ```elixir
 callback = Smsapi.callback(sdk)
-record = Smsapi.Entity.Callback.create(callback, Smsapi.Helpers.deep(%{
+callback = Smsapi.Entity.Callback.create(callback, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -945,7 +864,6 @@ Create a handle: `contact = Smsapi.contact(sdk)`
 | `email` | `String.t()` |  |
 | `first_name` | `String.t()` |  |
 | `gender` | `String.t()` |  |
-| `group_id` | `String.t()` | Object ID |
 | `groups` | `list()` |  |
 | `id` | `String.t()` | Object ID |
 | `idx` | `String.t()` | User provided resource id |
@@ -953,34 +871,28 @@ Create a handle: `contact = Smsapi.contact(sdk)`
 | `name` | `String.t()` | Group name |
 | `permissions` | `list()` |  |
 | `phone_number` | `String.t()` |  |
-| `read` | `boolean()` | Has read permission |
-| `send` | `boolean()` | Has send permission |
 | `size` | `integer()` |  |
 | `source` | `String.t()` |  |
-| `type` | `String.t()` |  |
-| `username` | `String.t()` |  |
-| `value` | `String.t()` |  |
-| `write` | `boolean()` | Has write permission |
 
 #### Example: Load
 
 ```elixir
 contact = Smsapi.contact(sdk)
-record = Smsapi.Entity.Contact.load(contact, Smsapi.Helpers.deep(%{"id" => "contact_id"}))
+contact = Smsapi.Entity.Contact.load(contact, Smsapi.Helpers.deep(%{"id" => "contact_id"}))
 ```
 
 #### Example: List
 
 ```elixir
 contact = Smsapi.contact(sdk)
-records = Smsapi.Entity.Contact.list(contact)
+contacts = Smsapi.Entity.Contact.list(contact)
 ```
 
 #### Example: Create
 
 ```elixir
 contact = Smsapi.contact(sdk)
-record = Smsapi.Entity.Contact.create(contact, Smsapi.Helpers.deep(%{
+contact = Smsapi.Entity.Contact.create(contact, Smsapi.Helpers.deep(%{
   "collection" => [],  # list()
   "contact_expire_after" => 1,  # integer()
   "contacts_count" => 1,  # integer()
@@ -1013,52 +925,22 @@ Create a handle: `contacts_field = Smsapi.contacts_field(sdk)`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String.t()` |  |
-| `city` | `String.t()` |  |
-| `contact_expire_after` | `integer()` | Contact expire after days |
-| `contacts_count` | `integer()` |  |
-| `country` | `String.t()` |  |
-| `created_by` | `String.t()` |  |
-| `date_created` | `String.t()` |  |
-| `date_updated` | `String.t()` |  |
-| `description` | `String.t()` |  |
-| `email` | `String.t()` |  |
-| `first_name` | `String.t()` |  |
-| `gender` | `String.t()` |  |
-| `group_id` | `String.t()` | Object ID |
-| `groups` | `list()` |  |
 | `id` | `String.t()` | Object ID |
-| `idx` | `String.t()` | User provided resource id |
-| `last_name` | `String.t()` |  |
-| `name` | `String.t()` | Group name |
-| `permissions` | `list()` |  |
-| `phone_number` | `String.t()` |  |
-| `read` | `boolean()` | Has read permission |
-| `send` | `boolean()` | Has send permission |
-| `source` | `String.t()` |  |
+| `name` | `String.t()` |  |
 | `type` | `String.t()` |  |
-| `username` | `String.t()` |  |
-| `value` | `String.t()` |  |
-| `write` | `boolean()` | Has write permission |
 
 #### Example: List
 
 ```elixir
 contacts_field = Smsapi.contacts_field(sdk)
-records = Smsapi.Entity.ContactsField.list(contacts_field)
+contacts_fields = Smsapi.Entity.ContactsField.list(contacts_field)
 ```
 
 #### Example: Create
 
 ```elixir
 contacts_field = Smsapi.contacts_field(sdk)
-record = Smsapi.Entity.ContactsField.create(contacts_field, Smsapi.Helpers.deep(%{
-  "contact_expire_after" => 1,  # integer()
-  "created_by" => "example_created_by",  # String.t()
-  "date_created" => "example_date_created",  # String.t()
-  "date_updated" => "example_date_updated",  # String.t()
-  "gender" => "example_gender",  # String.t()
-  "groups" => [],  # list()
+contacts_field = Smsapi.Entity.ContactsField.create(contacts_field, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -1073,43 +955,11 @@ Create a handle: `contacts_field_option = Smsapi.contacts_field_option(sdk)`
 | --- | --- |
 | `list(entity)` | List entities, optionally matching the given criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `String.t()` |  |
-| `city` | `String.t()` |  |
-| `contact_expire_after` | `integer()` | Contact expire after days |
-| `contacts_count` | `integer()` |  |
-| `country` | `String.t()` |  |
-| `created_by` | `String.t()` |  |
-| `date_created` | `String.t()` |  |
-| `date_updated` | `String.t()` |  |
-| `description` | `String.t()` |  |
-| `email` | `String.t()` |  |
-| `first_name` | `String.t()` |  |
-| `gender` | `String.t()` |  |
-| `group_id` | `String.t()` | Object ID |
-| `groups` | `list()` |  |
-| `id` | `String.t()` | Object ID |
-| `idx` | `String.t()` | User provided resource id |
-| `last_name` | `String.t()` |  |
-| `name` | `String.t()` | Group name |
-| `permissions` | `list()` |  |
-| `phone_number` | `String.t()` |  |
-| `read` | `boolean()` | Has read permission |
-| `send` | `boolean()` | Has send permission |
-| `source` | `String.t()` |  |
-| `type` | `String.t()` |  |
-| `username` | `String.t()` |  |
-| `value` | `String.t()` |  |
-| `write` | `boolean()` | Has write permission |
-
 #### Example: List
 
 ```elixir
 contacts_field_option = Smsapi.contacts_field_option(sdk)
-records = Smsapi.Entity.ContactsFieldOption.list(contacts_field_option)
+contacts_field_options = Smsapi.Entity.ContactsFieldOption.list(contacts_field_option, Smsapi.Helpers.deep(%{"field_id" => "example"}))
 ```
 
 
@@ -1130,54 +980,25 @@ Create a handle: `contactsgroup = Smsapi.contactsgroup(sdk)`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String.t()` |  |
-| `city` | `String.t()` |  |
-| `contact_expire_after` | `integer()` | Contact expire after days |
-| `contacts_count` | `integer()` |  |
-| `country` | `String.t()` |  |
-| `created_by` | `String.t()` |  |
-| `date_created` | `String.t()` |  |
-| `date_updated` | `String.t()` |  |
-| `description` | `String.t()` |  |
-| `email` | `String.t()` |  |
-| `first_name` | `String.t()` |  |
-| `gender` | `String.t()` |  |
 | `group_id` | `String.t()` | Object ID |
-| `groups` | `list()` |  |
-| `id` | `String.t()` | Object ID |
-| `idx` | `String.t()` | User provided resource id |
-| `last_name` | `String.t()` |  |
-| `name` | `String.t()` | Group name |
-| `permissions` | `list()` |  |
-| `phone_number` | `String.t()` |  |
 | `read` | `boolean()` | Has read permission |
 | `send` | `boolean()` | Has send permission |
-| `source` | `String.t()` |  |
-| `type` | `String.t()` |  |
 | `username` | `String.t()` |  |
-| `value` | `String.t()` |  |
 | `write` | `boolean()` | Has write permission |
 
 #### Example: List
 
 ```elixir
 contactsgroup = Smsapi.contactsgroup(sdk)
-records = Smsapi.Entity.Contactsgroup.list(contactsgroup)
+contactsgroups = Smsapi.Entity.Contactsgroup.list(contactsgroup)
 ```
 
 #### Example: Create
 
 ```elixir
 contactsgroup = Smsapi.contactsgroup(sdk)
-record = Smsapi.Entity.Contactsgroup.create(contactsgroup, Smsapi.Helpers.deep(%{
-  "contact_expire_after" => 1,  # integer()
-  "created_by" => "example_created_by",  # String.t()
-  "date_created" => "example_date_created",  # String.t()
-  "date_updated" => "example_date_updated",  # String.t()
-  "gender" => "example_gender",  # String.t()
+contactsgroup = Smsapi.Entity.Contactsgroup.create(contactsgroup, Smsapi.Helpers.deep(%{
   "group_id" => "example_group_id",  # String.t()
-  "groups" => [],  # list()
-  "id" => "example_id",  # String.t()
   "read" => true,  # boolean()
   "send" => true,  # boolean()
   "username" => "example_username",  # String.t()
@@ -1222,7 +1043,7 @@ Create a handle: `field_available = Smsapi.field_available(sdk)`
 
 ```elixir
 field_available = Smsapi.field_available(sdk)
-records = Smsapi.Entity.FieldAvailable.list(field_available)
+field_availables = Smsapi.Entity.FieldAvailable.list(field_available)
 ```
 
 
@@ -1256,7 +1077,7 @@ Create a handle: `group = Smsapi.group(sdk)`
 
 ```elixir
 group = Smsapi.group(sdk)
-record = Smsapi.Entity.Group.load(group, Smsapi.Helpers.deep(%{"id" => "group_id"}))
+group = Smsapi.Entity.Group.load(group, Smsapi.Helpers.deep(%{"id" => "group_id"}))
 ```
 
 
@@ -1283,7 +1104,7 @@ Create a handle: `mfa_code = Smsapi.mfa_code(sdk)`
 
 ```elixir
 mfa_code = Smsapi.mfa_code(sdk)
-record = Smsapi.Entity.MfaCode.create(mfa_code, Smsapi.Helpers.deep(%{
+mfa_code = Smsapi.Entity.MfaCode.create(mfa_code, Smsapi.Helpers.deep(%{
   "phone_number" => "example_phone_number",  # String.t()
 }))
 ```
@@ -1313,7 +1134,7 @@ Create a handle: `opt_out = Smsapi.opt_out(sdk)`
 
 ```elixir
 opt_out = Smsapi.opt_out(sdk)
-records = Smsapi.Entity.OptOut.list(opt_out)
+opt_outs = Smsapi.Entity.OptOut.list(opt_out)
 ```
 
 
@@ -1338,7 +1159,7 @@ Create a handle: `opt_out_setting = Smsapi.opt_out_setting(sdk)`
 
 ```elixir
 opt_out_setting = Smsapi.opt_out_setting(sdk)
-record = Smsapi.Entity.OptOutSetting.load(opt_out_setting, Smsapi.Helpers.deep(%{}))
+opt_out_setting = Smsapi.Entity.OptOutSetting.load(opt_out_setting, Smsapi.Helpers.deep(%{}))
 ```
 
 
@@ -1368,14 +1189,14 @@ Create a handle: `permission = Smsapi.permission(sdk)`
 
 ```elixir
 permission = Smsapi.permission(sdk)
-record = Smsapi.Entity.Permission.load(permission, Smsapi.Helpers.deep(%{"id" => "permission_id", "group_id" => "group_id", "username" => "username"}))
+permission = Smsapi.Entity.Permission.load(permission, Smsapi.Helpers.deep(%{"id" => "permission_id", "group_id" => "group_id"}))
 ```
 
 #### Example: Create
 
 ```elixir
 permission = Smsapi.permission(sdk)
-record = Smsapi.Entity.Permission.create(permission, Smsapi.Helpers.deep(%{
+permission = Smsapi.Entity.Permission.create(permission, Smsapi.Helpers.deep(%{
   "group_id" => "example_group_id",  # String.t()
   "read" => true,  # boolean()
   "send" => true,  # boolean()
@@ -1406,7 +1227,7 @@ Create a handle: `ping = Smsapi.ping(sdk)`
 
 ```elixir
 ping = Smsapi.ping(sdk)
-records = Smsapi.Entity.Ping.list(ping)
+pings = Smsapi.Entity.Ping.list(ping)
 ```
 
 
@@ -1437,14 +1258,14 @@ Create a handle: `profile = Smsapi.profile(sdk)`
 
 ```elixir
 profile = Smsapi.profile(sdk)
-record = Smsapi.Entity.Profile.load(profile, Smsapi.Helpers.deep(%{}))
+profile = Smsapi.Entity.Profile.load(profile, Smsapi.Helpers.deep(%{}))
 ```
 
 #### Example: List
 
 ```elixir
 profile = Smsapi.profile(sdk)
-records = Smsapi.Entity.Profile.list(profile)
+profiles = Smsapi.Entity.Profile.list(profile)
 ```
 
 
@@ -1462,7 +1283,7 @@ Create a handle: `rcs = Smsapi.rcs(sdk)`
 
 ```elixir
 rcs = Smsapi.rcs(sdk)
-records = Smsapi.Entity.Rcs.list(rcs)
+rcss = Smsapi.Entity.Rcs.list(rcs)
 ```
 
 
@@ -1492,21 +1313,21 @@ Create a handle: `sendername = Smsapi.sendername(sdk)`
 
 ```elixir
 sendername = Smsapi.sendername(sdk)
-record = Smsapi.Entity.Sendername.load(sendername, Smsapi.Helpers.deep(%{"id" => "sendername_id"}))
+sendername = Smsapi.Entity.Sendername.load(sendername, Smsapi.Helpers.deep(%{"id" => "sendername_id"}))
 ```
 
 #### Example: List
 
 ```elixir
 sendername = Smsapi.sendername(sdk)
-records = Smsapi.Entity.Sendername.list(sendername)
+sendernames = Smsapi.Entity.Sendername.list(sendername)
 ```
 
 #### Example: Create
 
 ```elixir
 sendername = Smsapi.sendername(sdk)
-record = Smsapi.Entity.Sendername.create(sendername, Smsapi.Helpers.deep(%{
+sendername = Smsapi.Entity.Sendername.create(sendername, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -1533,7 +1354,7 @@ Create a handle: `sendername_statement = Smsapi.sendername_statement(sdk)`
 
 ```elixir
 sendername_statement = Smsapi.sendername_statement(sdk)
-records = Smsapi.Entity.SendernameStatement.list(sendername_statement)
+sendername_statements = Smsapi.Entity.SendernameStatement.list(sendername_statement)
 ```
 
 
@@ -1553,16 +1374,16 @@ Create a handle: `sent_rcs_message = Smsapi.sent_rcs_message(sdk)`
 | --- | --- | --- |
 | `content` | `map()` | RCS message content in RCS JSON format. |
 | `phone_number` | `String.t()` | Recipient phone number (e.g. |
-| `sender` | `any()` |  |
+| `sender` | `String.t()` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String.t()` | Plain text message content. |
 
 #### Example: Create
 
 ```elixir
 sent_rcs_message = Smsapi.sent_rcs_message(sdk)
-record = Smsapi.Entity.SentRcsMessage.create(sent_rcs_message, Smsapi.Helpers.deep(%{
+sent_rcs_message = Smsapi.Entity.SentRcsMessage.create(sent_rcs_message, Smsapi.Helpers.deep(%{
   "phone_number" => "example_phone_number",  # String.t()
-  "sender" => "example_sender",  # any()
+  "sender" => "example_sender",  # String.t()
 }))
 ```
 
@@ -1590,7 +1411,7 @@ Create a handle: `shipment_country_volume = Smsapi.shipment_country_volume(sdk)`
 
 ```elixir
 shipment_country_volume = Smsapi.shipment_country_volume(sdk)
-records = Smsapi.Entity.ShipmentCountryVolume.list(shipment_country_volume)
+shipment_country_volumes = Smsapi.Entity.ShipmentCountryVolume.list(shipment_country_volume)
 ```
 
 
@@ -1627,21 +1448,21 @@ Create a handle: `short_url = Smsapi.short_url(sdk)`
 
 ```elixir
 short_url = Smsapi.short_url(sdk)
-record = Smsapi.Entity.ShortUrl.load(short_url, Smsapi.Helpers.deep(%{"id" => "short_url_id"}))
+short_url = Smsapi.Entity.ShortUrl.load(short_url, Smsapi.Helpers.deep(%{"id" => "short_url_id"}))
 ```
 
 #### Example: List
 
 ```elixir
 short_url = Smsapi.short_url(sdk)
-records = Smsapi.Entity.ShortUrl.list(short_url)
+short_urls = Smsapi.Entity.ShortUrl.list(short_url)
 ```
 
 #### Example: Create
 
 ```elixir
 short_url = Smsapi.short_url(sdk)
-record = Smsapi.Entity.ShortUrl.create(short_url, Smsapi.Helpers.deep(%{
+short_url = Smsapi.Entity.ShortUrl.create(short_url, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -1686,7 +1507,7 @@ Create a handle: `smsdo = Smsapi.smsdo(sdk)`
 
 ```elixir
 smsdo = Smsapi.smsdo(sdk)
-record = Smsapi.Entity.Smsdo.create(smsdo, Smsapi.Helpers.deep(%{
+smsdo = Smsapi.Entity.Smsdo.create(smsdo, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -1706,8 +1527,8 @@ Create a handle: `smssendername = Smsapi.smssendername(sdk)`
 
 ```elixir
 smssendername = Smsapi.smssendername(sdk)
-record = Smsapi.Entity.Smssendername.create(smssendername, Smsapi.Helpers.deep(%{
-  "sendername_id" => "example_sendername_id",  # String.t()
+smssendername = Smsapi.Entity.Smssendername.create(smssendername, Smsapi.Helpers.deep(%{
+  "sender" => "example_sender",  # String.t()
 }))
 ```
 
@@ -1758,21 +1579,21 @@ Create a handle: `subuser = Smsapi.subuser(sdk)`
 
 ```elixir
 subuser = Smsapi.subuser(sdk)
-record = Smsapi.Entity.Subuser.load(subuser, Smsapi.Helpers.deep(%{"id" => "subuser_id"}))
+subuser = Smsapi.Entity.Subuser.load(subuser, Smsapi.Helpers.deep(%{"id" => "subuser_id"}))
 ```
 
 #### Example: List
 
 ```elixir
 subuser = Smsapi.subuser(sdk)
-records = Smsapi.Entity.Subuser.list(subuser)
+subusers = Smsapi.Entity.Subuser.list(subuser)
 ```
 
 #### Example: Create
 
 ```elixir
 subuser = Smsapi.subuser(sdk)
-record = Smsapi.Entity.Subuser.create(subuser, Smsapi.Helpers.deep(%{
+subuser = Smsapi.Entity.Subuser.create(subuser, Smsapi.Helpers.deep(%{
   "credentials" => %{},  # map()
 }))
 ```
@@ -1804,21 +1625,21 @@ Create a handle: `template = Smsapi.template(sdk)`
 
 ```elixir
 template = Smsapi.template(sdk)
-record = Smsapi.Entity.Template.load(template, Smsapi.Helpers.deep(%{"id" => "template_id"}))
+template = Smsapi.Entity.Template.load(template, Smsapi.Helpers.deep(%{"id" => "template_id"}))
 ```
 
 #### Example: List
 
 ```elixir
 template = Smsapi.template(sdk)
-records = Smsapi.Entity.Template.list(template)
+templates = Smsapi.Entity.Template.list(template)
 ```
 
 #### Example: Create
 
 ```elixir
 template = Smsapi.template(sdk)
-record = Smsapi.Entity.Template.create(template, Smsapi.Helpers.deep(%{
+template = Smsapi.Entity.Template.create(template, Smsapi.Helpers.deep(%{
 }))
 ```
 
@@ -1833,26 +1654,11 @@ Create a handle: `user_rcs_sender_collection = Smsapi.user_rcs_sender_collection
 | --- | --- |
 | `list(entity)` | List entities, optionally matching the given criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `String.t()` |  |
-| `expiredAt` | `String.t()` |  |
-| `id` | `String.t()` | Object ID |
-| `interface` | `String.t()` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String.t()` | RCS message type (basic, single, ...). |
-| `readAt` | `String.t()` |  |
-| `recipient` | `String.t()` | Recipient phone number (without +). |
-| `sender` | `String.t()` | Sender name |
-| `senderId` | `String.t()` | Sender id |
-| `sentAt` | `String.t()` |  |
-
 #### Example: List
 
 ```elixir
 user_rcs_sender_collection = Smsapi.user_rcs_sender_collection(sdk)
-records = Smsapi.Entity.UserRcsSenderCollection.list(user_rcs_sender_collection)
+user_rcs_sender_collections = Smsapi.Entity.UserRcsSenderCollection.list(user_rcs_sender_collection)
 ```
 
 ## Features
@@ -2275,7 +2081,8 @@ that every later pipeline stage observes — the immutable-Elixir way to honour
 the shared-mutable hook contract.
 
 Build inputs from native Elixir maps with `Smsapi.Helpers.deep/1`,
-and read fields off results with `Voxgig.Struct.getprop/2`.
+and read fields off a record, which an entity's `data_get/1` returns, with
+`Voxgig.Struct.getprop/2`.
 
 ### Module structure
 
@@ -2306,16 +2113,16 @@ factory function per entity. Call an operation on the matching
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally. Subsequent
 calls on the same instance can rely on this state.
 
 ```ts
-const permission = client.Permission()
-await permission.load({ group_id: "example", id: "example_id", username: "example" })
+const template = client.Template()
+await template.list()
 
-// permission.data() now returns the permission data from the last `load`
-// permission.match() returns { id: "example_id" }
+// template.data() now returns the template data from the last `list`
+// template.match() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

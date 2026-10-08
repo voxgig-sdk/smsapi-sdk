@@ -4,9 +4,16 @@
     .fingerprint = 0xddee264f66ca38d6,
     .dependencies = .{},
     .paths = .{
-        "src",
-        "test",
         "build.zig",
         "build.zig.zon",
+        "root.zig",
+        "core",
+        "entity",
+        "feature",
+        "utility",
+        "test",
+        "LICENSE",
+        "README.md",
+        "REFERENCE.md",
     },
 }

@@ -1,7 +1,7 @@
 # Smsapi SDK Smssendername entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Smssendername do
@@ -30,9 +30,10 @@ defmodule Smsapi.Entity.Smssendername do
   
 
   
-  # Returns the created smssendername entity map (Smsapi.Types.smssendername/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the created smssendername entity, whose data_get/1 reads its record
+  # (Smsapi.Types.smssendername/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec create(map(), Smsapi.Types.smssendername_create_data() | nil, map() | nil) :: term()
   def create(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -65,9 +66,12 @@ defmodule Smsapi.Entity.Smssendername do
   
 
   
-  # Returns the removed smssendername entity map (Smsapi.Types.smssendername/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed smssendername entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.smssendername/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.smssendername_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

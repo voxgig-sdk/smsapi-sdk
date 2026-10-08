@@ -251,6 +251,7 @@ let make_config () : value =
           ("ms", (Num (30000.))) ]));
         ("optspec", (jo [
           ("clearTimer", (Str "`$FUNCTION`"));
+          ("now", (Str "`$FUNCTION`"));
           ("setTimer", (Str "`$FUNCTION`")) ]));
         ("strict", (Bool false));
         ("transport", (Str "wrap")) ]));
@@ -349,7 +350,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("blacklist", (jo [
@@ -385,7 +389,22 @@ let make_config () : value =
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
                 ("select", (jo [
-                  ("$action", (Str "phone_number")) ])) ]);
+                  ("$action", (Str "phone_number")) ]));
+                ("body", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("fields", (ja [
+                        (jo [
+                          ("name", (Str "expire_at")) ]);
+                        (jo [
+                          ("name", (Str "phone_number")) ]) ]));
+                      ("kind", (Str "form"));
+                      ("media", (Str "application/x-www-form-urlencoded")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "POST"));
@@ -406,7 +425,17 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("kind", (Str "raw"));
+                      ("media", (Str "text/csv")) ]) ]));
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "import")) ]) ]));
+                  ("kind", (Str "multipart"));
+                  ("media", (Str "multipart/form-data")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -461,13 +490,14 @@ let make_config () : value =
                       ("kind", (Str "query"));
                       ("example", (Num (0.))) ]) ])) ]));
                 ("select", (jo [
-                  ("$action", (Str "phone_number"));
-                  ("exist", (ja [
-                    (Str "accept");
-                    (Str "limit");
-                    (Str "offset");
-                    (Str "q");
-                    (Str "x_async") ])) ])) ]) ])) ]));
+                  ("$action", (Str "phone_number")) ]));
+                ("response", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("kind", (Str "raw"));
+                      ("media", (Str "text/csv")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -527,9 +557,7 @@ let make_config () : value =
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "query")) ]) ])) ]));
                 ("select", (jo [
-                  ("$action", (Str "phone_number"));
-                  ("exist", (ja [
-                    (Str "phone_number") ])) ])) ]) ])) ])) ]));
+                  ("$action", (Str "phone_number")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("callback", (jo [
@@ -598,7 +626,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
@@ -617,7 +648,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -649,7 +683,10 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "GET"));
@@ -684,7 +721,10 @@ let make_config () : value =
                 ("select", (jo [
                   ("$action", (Str "command_test"));
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -748,7 +788,10 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "PUT"));
@@ -836,10 +879,7 @@ let make_config () : value =
             ("name", (Str "collection"));
             ("title", (Str "Collection"));
             ("type", (Str "`$ARRAY`"));
-            ("req", (Bool true));
-            ("op", (jo [
-              ("update", (jo [
-                ("type", (Str "`$ARRAY`")) ])) ])) ]);
+            ("req", (Bool true)) ]);
           (jo [
             ("name", (Str "contact_expire_after"));
             ("title", (Str "Contact Expire After"));
@@ -850,10 +890,7 @@ let make_config () : value =
             ("name", (Str "contacts_count"));
             ("title", (Str "Contacts Count"));
             ("type", (Str "`$INTEGER`"));
-            ("req", (Bool true));
-            ("op", (jo [
-              ("list", (jo [
-                ("type", (Str "`$INTEGER`")) ])) ])) ]);
+            ("req", (Bool true)) ]);
           (jo [
             ("name", (Str "country"));
             ("title", (Str "Country"));
@@ -898,12 +935,6 @@ let make_config () : value =
             ("type", (Str "`$STRING`"));
             ("req", (Bool true)) ]);
           (jo [
-            ("name", (Str "group_id"));
-            ("title", (Str "Group Id"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Object ID"));
-            ("format", (Str "oid")) ]);
-          (jo [
             ("name", (Str "groups"));
             ("title", (Str "Groups"));
             ("type", (Str "`$ARRAY`"));
@@ -929,9 +960,6 @@ let make_config () : value =
             ("title", (Str "Name"));
             ("type", (Str "`$STRING`"));
             ("req", (Bool true));
-            ("op", (jo [
-              ("list", (jo [
-                ("type", (Str "`$STRING`")) ])) ]));
             ("short", (Str "Group name")) ]);
           (jo [
             ("name", (Str "permissions"));
@@ -942,16 +970,6 @@ let make_config () : value =
             ("title", (Str "Phone Number"));
             ("type", (Str "`$STRING`")) ]);
           (jo [
-            ("name", (Str "read"));
-            ("title", (Str "Read"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has read permission")) ]);
-          (jo [
-            ("name", (Str "send"));
-            ("title", (Str "Send"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has send permission")) ]);
-          (jo [
             ("name", (Str "size"));
             ("title", (Str "Size"));
             ("type", (Str "`$INTEGER`"));
@@ -959,24 +977,7 @@ let make_config () : value =
           (jo [
             ("name", (Str "source"));
             ("title", (Str "Source"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "type"));
-            ("title", (Str "Type"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "username"));
-            ("title", (Str "Username"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "value"));
-            ("title", (Str "Value"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "write"));
-            ("title", (Str "Write"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has write permission")) ]) ]));
+            ("type", (Str "`$STRING`")) ]) ]));
         ("id", (jo [
           ("field", (Str "id"));
           ("name", (Str "id")) ]));
@@ -1019,7 +1020,13 @@ let make_config () : value =
                 ("select", (jo [
                   ("$action", (Str "group"));
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("body", (jo [
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "POST"));
@@ -1034,97 +1041,48 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "birthday_date")) ]);
+                    (jo [
+                      ("name", (Str "browser")) ]);
+                    (jo [
+                      ("name", (Str "city")) ]);
+                    (jo [
+                      ("name", (Str "country")) ]);
+                    (jo [
+                      ("name", (Str "description")) ]);
+                    (jo [
+                      ("name", (Str "device")) ]);
+                    (jo [
+                      ("name", (Str "email")) ]);
+                    (jo [
+                      ("name", (Str "first_name")) ]);
+                    (jo [
+                      ("name", (Str "gender")) ]);
+                    (jo [
+                      ("name", (Str "idx")) ]);
+                    (jo [
+                      ("name", (Str "last_name")) ]);
+                    (jo [
+                      ("name", (Str "operating_system")) ]);
+                    (jo [
+                      ("name", (Str "phone_number")) ]);
+                    (jo [
+                      ("name", (Str "source")) ]);
+                    (jo [
+                      ("name", (Str "undelivered_messages")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
             ("points", (ja [
-              (jo [
-                ("kind", (Str "http"));
-                ("method", (Str "GET"));
-                ("orig", (Str "/contacts"));
-                ("segments", (ja [
-                  (jo [
-                    ("lit", (Str "contacts")) ]) ]));
-                ("parts", (ja [
-                  (Str "contacts") ]));
-                ("rename", (empty_map ()));
-                ("transform", (jo [
-                  ("req", (Str "`reqdata`"));
-                  ("res", (Str "`body.collection`")) ]));
-                ("args", (jo [
-                  ("query", (ja [
-                    (jo [
-                      ("name", (Str "birthday_date"));
-                      ("orig", (Str "birthday_date"));
-                      ("type", (Str "`$ARRAY`"));
-                      ("kind", (Str "query"));
-                      ("example", (Str "2022-06-24")) ]);
-                    (jo [
-                      ("name", (Str "email"));
-                      ("orig", (Str "email"));
-                      ("type", (Str "`$ARRAY`"));
-                      ("kind", (Str "query")) ]);
-                    (jo [
-                      ("name", (Str "first_name"));
-                      ("orig", (Str "first_name"));
-                      ("type", (Str "`$ARRAY`"));
-                      ("kind", (Str "query")) ]);
-                    (jo [
-                      ("name", (Str "gender"));
-                      ("orig", (Str "gender"));
-                      ("type", (Str "`$STRING`"));
-                      ("kind", (Str "query")) ]);
-                    (jo [
-                      ("name", (Str "group_id"));
-                      ("orig", (Str "group_id"));
-                      ("type", (Str "`$ARRAY`"));
-                      ("kind", (Str "query")) ]);
-                    (jo [
-                      ("name", (Str "last_name"));
-                      ("orig", (Str "last_name"));
-                      ("type", (Str "`$ARRAY`"));
-                      ("kind", (Str "query")) ]);
-                    (jo [
-                      ("name", (Str "limit"));
-                      ("orig", (Str "limit"));
-                      ("type", (Str "`$INTEGER`"));
-                      ("kind", (Str "query"));
-                      ("example", (Num (5.))) ]);
-                    (jo [
-                      ("name", (Str "offset"));
-                      ("orig", (Str "offset"));
-                      ("type", (Str "`$INTEGER`"));
-                      ("kind", (Str "query"));
-                      ("example", (Num (0.))) ]);
-                    (jo [
-                      ("name", (Str "order_by"));
-                      ("orig", (Str "order_by"));
-                      ("type", (Str "`$STRING`"));
-                      ("kind", (Str "query")) ]);
-                    (jo [
-                      ("name", (Str "phone_number"));
-                      ("orig", (Str "phone_number"));
-                      ("type", (Str "`$ARRAY`"));
-                      ("kind", (Str "query")) ]);
-                    (jo [
-                      ("name", (Str "q"));
-                      ("orig", (Str "q"));
-                      ("type", (Str "`$STRING`"));
-                      ("kind", (Str "query")) ]) ])) ]));
-                ("select", (jo [
-                  ("exist", (ja [
-                    (Str "birthday_date");
-                    (Str "email");
-                    (Str "first_name");
-                    (Str "gender");
-                    (Str "group_id");
-                    (Str "last_name");
-                    (Str "limit");
-                    (Str "offset");
-                    (Str "order_by");
-                    (Str "phone_number");
-                    (Str "q") ])) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "GET"));
@@ -1158,7 +1116,93 @@ let make_config () : value =
                 ("select", (jo [
                   ("$action", (Str "group"));
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
+              (jo [
+                ("kind", (Str "http"));
+                ("method", (Str "GET"));
+                ("orig", (Str "/contacts"));
+                ("segments", (ja [
+                  (jo [
+                    ("lit", (Str "contacts")) ]) ]));
+                ("parts", (ja [
+                  (Str "contacts") ]));
+                ("rename", (empty_map ()));
+                ("transform", (jo [
+                  ("req", (Str "`reqdata`"));
+                  ("res", (Str "`body.collection`")) ]));
+                ("args", (jo [
+                  ("query", (ja [
+                    (jo [
+                      ("name", (Str "birthday_date"));
+                      ("orig", (Str "birthday_date"));
+                      ("type", (Str "`$ARRAY`"));
+                      ("kind", (Str "query"));
+                      ("example", (Str "2022-06-24"));
+                      ("field", (Bool true)) ]);
+                    (jo [
+                      ("name", (Str "email"));
+                      ("orig", (Str "email"));
+                      ("type", (Str "`$ARRAY`"));
+                      ("kind", (Str "query"));
+                      ("field", (Bool true)) ]);
+                    (jo [
+                      ("name", (Str "first_name"));
+                      ("orig", (Str "first_name"));
+                      ("type", (Str "`$ARRAY`"));
+                      ("kind", (Str "query"));
+                      ("field", (Bool true)) ]);
+                    (jo [
+                      ("name", (Str "gender"));
+                      ("orig", (Str "gender"));
+                      ("type", (Str "`$STRING`"));
+                      ("kind", (Str "query"));
+                      ("field", (Bool true)) ]);
+                    (jo [
+                      ("name", (Str "group_id"));
+                      ("orig", (Str "group_id"));
+                      ("type", (Str "`$ARRAY`"));
+                      ("kind", (Str "query")) ]);
+                    (jo [
+                      ("name", (Str "last_name"));
+                      ("orig", (Str "last_name"));
+                      ("type", (Str "`$ARRAY`"));
+                      ("kind", (Str "query"));
+                      ("field", (Bool true)) ]);
+                    (jo [
+                      ("name", (Str "limit"));
+                      ("orig", (Str "limit"));
+                      ("type", (Str "`$INTEGER`"));
+                      ("kind", (Str "query"));
+                      ("example", (Num (5.))) ]);
+                    (jo [
+                      ("name", (Str "offset"));
+                      ("orig", (Str "offset"));
+                      ("type", (Str "`$INTEGER`"));
+                      ("kind", (Str "query"));
+                      ("example", (Num (0.))) ]);
+                    (jo [
+                      ("name", (Str "order_by"));
+                      ("orig", (Str "order_by"));
+                      ("type", (Str "`$STRING`"));
+                      ("kind", (Str "query")) ]);
+                    (jo [
+                      ("name", (Str "phone_number"));
+                      ("orig", (Str "phone_number"));
+                      ("type", (Str "`$ARRAY`"));
+                      ("kind", (Str "query"));
+                      ("field", (Bool true)) ]);
+                    (jo [
+                      ("name", (Str "q"));
+                      ("orig", (Str "q"));
+                      ("type", (Str "`$STRING`"));
+                      ("kind", (Str "query")) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -1210,7 +1254,10 @@ let make_config () : value =
                 ("select", (jo [
                   ("exist", (ja [
                     (Str "contact_id");
-                    (Str "group_id") ])) ])) ]);
+                    (Str "group_id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "GET"));
@@ -1255,7 +1302,10 @@ let make_config () : value =
                 ("select", (jo [
                   ("exist", (ja [
                     (Str "group_id");
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "GET"));
@@ -1285,7 +1335,10 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -1431,7 +1484,10 @@ let make_config () : value =
                 ("select", (jo [
                   ("exist", (ja [
                     (Str "contact_id");
-                    (Str "group_id") ])) ])) ]);
+                    (Str "group_id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "PUT"));
@@ -1476,7 +1532,10 @@ let make_config () : value =
                 ("select", (jo [
                   ("exist", (ja [
                     (Str "group_id");
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "PUT"));
@@ -1506,7 +1565,32 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ])) ]));
+                    (Str "id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "birthday_date")) ]);
+                    (jo [
+                      ("name", (Str "city")) ]);
+                    (jo [
+                      ("name", (Str "description")) ]);
+                    (jo [
+                      ("name", (Str "email")) ]);
+                    (jo [
+                      ("name", (Str "first_name")) ]);
+                    (jo [
+                      ("name", (Str "gender")) ]);
+                    (jo [
+                      ("name", (Str "last_name")) ]);
+                    (jo [
+                      ("name", (Str "phone_number")) ]);
+                    (jo [
+                      ("name", (Str "source")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (ja [
             (ja [
@@ -1516,137 +1600,19 @@ let make_config () : value =
       ("contacts_field", (jo [
         ("fields", (ja [
           (jo [
-            ("name", (Str "birthday_date"));
-            ("title", (Str "Birthday Date"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "date")) ]);
-          (jo [
-            ("name", (Str "city"));
-            ("title", (Str "City"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "contact_expire_after"));
-            ("title", (Str "Contact Expire After"));
-            ("type", (Str "`$INTEGER`"));
-            ("req", (Bool true));
-            ("short", (Str "Contact expire after days")) ]);
-          (jo [
-            ("name", (Str "contacts_count"));
-            ("title", (Str "Contacts Count"));
-            ("type", (Str "`$INTEGER`")) ]);
-          (jo [
-            ("name", (Str "country"));
-            ("title", (Str "Country"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "created_by"));
-            ("title", (Str "Created By"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true)) ]);
-          (jo [
-            ("name", (Str "date_created"));
-            ("title", (Str "Date Created"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "date_updated"));
-            ("title", (Str "Date Updated"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "description"));
-            ("title", (Str "Description"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "email"));
-            ("title", (Str "Email"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "email")) ]);
-          (jo [
-            ("name", (Str "first_name"));
-            ("title", (Str "First Name"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "gender"));
-            ("title", (Str "Gender"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true)) ]);
-          (jo [
-            ("name", (Str "group_id"));
-            ("title", (Str "Group Id"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Object ID"));
-            ("format", (Str "oid")) ]);
-          (jo [
-            ("name", (Str "groups"));
-            ("title", (Str "Groups"));
-            ("type", (Str "`$ARRAY`"));
-            ("req", (Bool true)) ]);
-          (jo [
             ("name", (Str "id"));
             ("title", (Str "Id"));
             ("type", (Str "`$STRING`"));
-            ("op", (jo [
-              ("list", (jo [
-                ("req", (Bool true));
-                ("type", (Str "`$STRING`")) ])) ]));
             ("short", (Str "Object ID"));
             ("format", (Str "oid")) ]);
           (jo [
-            ("name", (Str "idx"));
-            ("title", (Str "Idx"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "User provided resource id")) ]);
-          (jo [
-            ("name", (Str "last_name"));
-            ("title", (Str "Last Name"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
             ("name", (Str "name"));
             ("title", (Str "Name"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Group name")) ]);
-          (jo [
-            ("name", (Str "permissions"));
-            ("title", (Str "Permissions"));
-            ("type", (Str "`$ARRAY`")) ]);
-          (jo [
-            ("name", (Str "phone_number"));
-            ("title", (Str "Phone Number"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "read"));
-            ("title", (Str "Read"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has read permission")) ]);
-          (jo [
-            ("name", (Str "send"));
-            ("title", (Str "Send"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has send permission")) ]);
-          (jo [
-            ("name", (Str "source"));
-            ("title", (Str "Source"));
             ("type", (Str "`$STRING`")) ]);
           (jo [
             ("name", (Str "type"));
             ("title", (Str "Type"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "username"));
-            ("title", (Str "Username"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "value"));
-            ("title", (Str "Value"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "write"));
-            ("title", (Str "Write"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has write permission")) ]) ]));
+            ("type", (Str "`$STRING`")) ]) ]));
         ("id", (jo [
           ("field", (Str "id"));
           ("name", (Str "id")) ]));
@@ -1673,7 +1639,18 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "name")) ]);
+                    (jo [
+                      ("name", (Str "type")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
@@ -1695,7 +1672,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -1769,143 +1749,20 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ])) ]));
+                    (Str "id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "name")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("contacts_field_option", (jo [
-        ("fields", (ja [
-          (jo [
-            ("name", (Str "birthday_date"));
-            ("title", (Str "Birthday Date"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "date")) ]);
-          (jo [
-            ("name", (Str "city"));
-            ("title", (Str "City"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "contact_expire_after"));
-            ("title", (Str "Contact Expire After"));
-            ("type", (Str "`$INTEGER`"));
-            ("req", (Bool true));
-            ("short", (Str "Contact expire after days")) ]);
-          (jo [
-            ("name", (Str "contacts_count"));
-            ("title", (Str "Contacts Count"));
-            ("type", (Str "`$INTEGER`")) ]);
-          (jo [
-            ("name", (Str "country"));
-            ("title", (Str "Country"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "created_by"));
-            ("title", (Str "Created By"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true)) ]);
-          (jo [
-            ("name", (Str "date_created"));
-            ("title", (Str "Date Created"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "date_updated"));
-            ("title", (Str "Date Updated"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "description"));
-            ("title", (Str "Description"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "email"));
-            ("title", (Str "Email"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "email")) ]);
-          (jo [
-            ("name", (Str "first_name"));
-            ("title", (Str "First Name"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "gender"));
-            ("title", (Str "Gender"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true)) ]);
-          (jo [
-            ("name", (Str "group_id"));
-            ("title", (Str "Group Id"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Object ID"));
-            ("format", (Str "oid")) ]);
-          (jo [
-            ("name", (Str "groups"));
-            ("title", (Str "Groups"));
-            ("type", (Str "`$ARRAY`"));
-            ("req", (Bool true)) ]);
-          (jo [
-            ("name", (Str "id"));
-            ("title", (Str "Id"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("short", (Str "Object ID"));
-            ("format", (Str "oid")) ]);
-          (jo [
-            ("name", (Str "idx"));
-            ("title", (Str "Idx"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "User provided resource id")) ]);
-          (jo [
-            ("name", (Str "last_name"));
-            ("title", (Str "Last Name"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "name"));
-            ("title", (Str "Name"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Group name")) ]);
-          (jo [
-            ("name", (Str "permissions"));
-            ("title", (Str "Permissions"));
-            ("type", (Str "`$ARRAY`")) ]);
-          (jo [
-            ("name", (Str "phone_number"));
-            ("title", (Str "Phone Number"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "read"));
-            ("title", (Str "Read"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has read permission")) ]);
-          (jo [
-            ("name", (Str "send"));
-            ("title", (Str "Send"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has send permission")) ]);
-          (jo [
-            ("name", (Str "source"));
-            ("title", (Str "Source"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "type"));
-            ("title", (Str "Type"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "username"));
-            ("title", (Str "Username"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "value"));
-            ("title", (Str "Value"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "write"));
-            ("title", (Str "Write"));
-            ("type", (Str "`$BOOLEAN`"));
-            ("short", (Str "Has write permission")) ]) ]));
-        ("id", (jo [
-          ("field", (Str "id"));
-          ("name", (Str "id")) ]));
+        ("fields", (empty_list ()));
         ("name", (Str "contacts_field_option"));
         ("op", (jo [
           ("list", (jo [
@@ -1947,163 +1804,44 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "field_id") ])) ])) ]) ])) ])) ]));
+                    (Str "field_id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("contactsgroup", (jo [
         ("fields", (ja [
           (jo [
-            ("name", (Str "birthday_date"));
-            ("title", (Str "Birthday Date"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "date")) ]);
-          (jo [
-            ("name", (Str "city"));
-            ("title", (Str "City"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "contact_expire_after"));
-            ("title", (Str "Contact Expire After"));
-            ("type", (Str "`$INTEGER`"));
-            ("req", (Bool true));
-            ("short", (Str "Contact expire after days")) ]);
-          (jo [
-            ("name", (Str "contacts_count"));
-            ("title", (Str "Contacts Count"));
-            ("type", (Str "`$INTEGER`")) ]);
-          (jo [
-            ("name", (Str "country"));
-            ("title", (Str "Country"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "created_by"));
-            ("title", (Str "Created By"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true)) ]);
-          (jo [
-            ("name", (Str "date_created"));
-            ("title", (Str "Date Created"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "date_updated"));
-            ("title", (Str "Date Updated"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "description"));
-            ("title", (Str "Description"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "email"));
-            ("title", (Str "Email"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "email")) ]);
-          (jo [
-            ("name", (Str "first_name"));
-            ("title", (Str "First Name"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "gender"));
-            ("title", (Str "Gender"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true)) ]);
-          (jo [
             ("name", (Str "group_id"));
             ("title", (Str "Group Id"));
             ("type", (Str "`$STRING`"));
             ("req", (Bool true));
-            ("op", (jo [
-              ("list", (jo [
-                ("type", (Str "`$STRING`")) ])) ]));
             ("short", (Str "Object ID"));
             ("format", (Str "oid")) ]);
-          (jo [
-            ("name", (Str "groups"));
-            ("title", (Str "Groups"));
-            ("type", (Str "`$ARRAY`"));
-            ("req", (Bool true)) ]);
-          (jo [
-            ("name", (Str "id"));
-            ("title", (Str "Id"));
-            ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("short", (Str "Object ID"));
-            ("format", (Str "oid")) ]);
-          (jo [
-            ("name", (Str "idx"));
-            ("title", (Str "Idx"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "User provided resource id")) ]);
-          (jo [
-            ("name", (Str "last_name"));
-            ("title", (Str "Last Name"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "name"));
-            ("title", (Str "Name"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Group name")) ]);
-          (jo [
-            ("name", (Str "permissions"));
-            ("title", (Str "Permissions"));
-            ("type", (Str "`$ARRAY`")) ]);
-          (jo [
-            ("name", (Str "phone_number"));
-            ("title", (Str "Phone Number"));
-            ("type", (Str "`$STRING`")) ]);
           (jo [
             ("name", (Str "read"));
             ("title", (Str "Read"));
             ("type", (Str "`$BOOLEAN`"));
             ("req", (Bool true));
-            ("op", (jo [
-              ("list", (jo [
-                ("type", (Str "`$BOOLEAN`")) ])) ]));
             ("short", (Str "Has read permission")) ]);
           (jo [
             ("name", (Str "send"));
             ("title", (Str "Send"));
             ("type", (Str "`$BOOLEAN`"));
             ("req", (Bool true));
-            ("op", (jo [
-              ("list", (jo [
-                ("type", (Str "`$BOOLEAN`")) ])) ]));
             ("short", (Str "Has send permission")) ]);
-          (jo [
-            ("name", (Str "source"));
-            ("title", (Str "Source"));
-            ("type", (Str "`$STRING`")) ]);
-          (jo [
-            ("name", (Str "type"));
-            ("title", (Str "Type"));
-            ("type", (Str "`$STRING`")) ]);
           (jo [
             ("name", (Str "username"));
             ("title", (Str "Username"));
             ("type", (Str "`$STRING`"));
-            ("req", (Bool true));
-            ("op", (jo [
-              ("list", (jo [
-                ("type", (Str "`$STRING`")) ])) ])) ]);
-          (jo [
-            ("name", (Str "value"));
-            ("title", (Str "Value"));
-            ("type", (Str "`$STRING`")) ]);
+            ("req", (Bool true)) ]);
           (jo [
             ("name", (Str "write"));
             ("title", (Str "Write"));
             ("type", (Str "`$BOOLEAN`"));
             ("req", (Bool true));
-            ("op", (jo [
-              ("list", (jo [
-                ("type", (Str "`$BOOLEAN`")) ])) ]));
             ("short", (Str "Has write permission")) ]) ]));
-        ("id", (jo [
-          ("field", (Str "id"));
-          ("name", (Str "id")) ]));
         ("name", (Str "contactsgroup"));
         ("op", (jo [
           ("create", (jo [
@@ -2145,7 +1883,33 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "group_id") ])) ])) ]);
+                    (Str "group_id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "birthday_date")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "email")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "first_name")) ]);
+                    (jo [
+                      ("name", (Str "gender")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "group_id")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "last_name")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "phone_number")) ]);
+                    (jo [
+                      ("name", (Str "q")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "POST"));
@@ -2163,44 +1927,26 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "contact_expire_after")) ]);
+                    (jo [
+                      ("name", (Str "description")) ]);
+                    (jo [
+                      ("name", (Str "idx")) ]);
+                    (jo [
+                      ("name", (Str "name")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
             ("points", (ja [
-              (jo [
-                ("kind", (Str "http"));
-                ("method", (Str "GET"));
-                ("orig", (Str "/contacts/groups"));
-                ("segments", (ja [
-                  (jo [
-                    ("lit", (Str "contacts")) ]);
-                  (jo [
-                    ("lit", (Str "groups")) ]) ]));
-                ("parts", (ja [
-                  (Str "contacts");
-                  (Str "groups") ]));
-                ("rename", (empty_map ()));
-                ("transform", (jo [
-                  ("req", (Str "`reqdata`"));
-                  ("res", (Str "`body.collection`")) ]));
-                ("args", (jo [
-                  ("query", (ja [
-                    (jo [
-                      ("name", (Str "name"));
-                      ("orig", (Str "name"));
-                      ("type", (Str "`$OBJECT`"));
-                      ("kind", (Str "query"));
-                      ("example", (Str "{\"name\" : \"group name\"}")) ]);
-                    (jo [
-                      ("name", (Str "with"));
-                      ("orig", (Str "with"));
-                      ("type", (Str "`$ARRAY`"));
-                      ("kind", (Str "query")) ]) ])) ]));
-                ("select", (jo [
-                  ("exist", (ja [
-                    (Str "name");
-                    (Str "with") ])) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "GET"));
@@ -2236,7 +1982,43 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "group_id") ])) ])) ]) ])) ]));
+                    (Str "group_id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
+              (jo [
+                ("kind", (Str "http"));
+                ("method", (Str "GET"));
+                ("orig", (Str "/contacts/groups"));
+                ("segments", (ja [
+                  (jo [
+                    ("lit", (Str "contacts")) ]);
+                  (jo [
+                    ("lit", (Str "groups")) ]) ]));
+                ("parts", (ja [
+                  (Str "contacts");
+                  (Str "groups") ]));
+                ("rename", (empty_map ()));
+                ("transform", (jo [
+                  ("req", (Str "`reqdata`"));
+                  ("res", (Str "`body.collection`")) ]));
+                ("args", (jo [
+                  ("query", (ja [
+                    (jo [
+                      ("name", (Str "name"));
+                      ("orig", (Str "name"));
+                      ("type", (Str "`$OBJECT`"));
+                      ("kind", (Str "query"));
+                      ("example", (Str "{\"name\" : \"group name\"}")) ]);
+                    (jo [
+                      ("name", (Str "with"));
+                      ("orig", (Str "with"));
+                      ("type", (Str "`$ARRAY`"));
+                      ("kind", (Str "query")) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -2330,13 +2112,6 @@ let make_config () : value =
                       ("orig", (Str "username"));
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "param"));
-                      ("reqd", (Bool true)) ]) ]));
-                  ("query", (ja [
-                    (jo [
-                      ("name", (Str "username"));
-                      ("orig", (Str "username"));
-                      ("type", (Str "`$STRING`"));
-                      ("kind", (Str "query"));
                       ("reqd", (Bool true));
                       ("example", (Str "example_username")) ]) ])) ]));
                 ("select", (jo [
@@ -2375,7 +2150,13 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "group_id") ])) ])) ]);
+                    (Str "group_id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "delete_contacts")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "DELETE"));
@@ -2411,7 +2192,33 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "group_id") ])) ])) ]);
+                    (Str "group_id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "birthday_date")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "email")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "first_name")) ]);
+                    (jo [
+                      ("name", (Str "gender")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "group_id")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "last_name")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "phone_number")) ]);
+                    (jo [
+                      ("name", (Str "q")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "DELETE"));
@@ -2475,19 +2282,25 @@ let make_config () : value =
                       ("orig", (Str "username"));
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "param"));
-                      ("reqd", (Bool true)) ]) ]));
-                  ("query", (ja [
-                    (jo [
-                      ("name", (Str "username"));
-                      ("orig", (Str "username"));
-                      ("type", (Str "`$STRING`"));
-                      ("kind", (Str "query"));
                       ("reqd", (Bool true));
                       ("example", (Str "example_username")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
                     (Str "group_id");
-                    (Str "username") ])) ])) ]);
+                    (Str "username") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "read")) ]);
+                    (jo [
+                      ("name", (Str "send")) ]);
+                    (jo [
+                      ("name", (Str "write")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "PUT"));
@@ -2523,7 +2336,33 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "group_id") ])) ])) ]) ])) ])) ]));
+                    (Str "group_id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "birthday_date")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "email")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "first_name")) ]);
+                    (jo [
+                      ("name", (Str "gender")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "group_id")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "last_name")) ]);
+                    (jo [
+                      ("list", (Bool true));
+                      ("name", (Str "phone_number")) ]);
+                    (jo [
+                      ("name", (Str "q")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (ja [
             (ja [
@@ -2639,7 +2478,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("group", (jo [
@@ -2740,7 +2582,10 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("update", (jo [
             ("input", (Str "data"));
             ("name", (Str "update"));
@@ -2777,7 +2622,22 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ])) ]));
+                    (Str "id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "contact_expire_after")) ]);
+                    (jo [
+                      ("name", (Str "description")) ]);
+                    (jo [
+                      ("name", (Str "idx")) ]);
+                    (jo [
+                      ("name", (Str "name")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("mfa_code", (jo [
@@ -2824,7 +2684,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]);
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "POST"));
@@ -2846,7 +2709,15 @@ let make_config () : value =
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
                 ("select", (jo [
-                  ("$action", (Str "verification")) ])) ]) ])) ])) ]));
+                  ("$action", (Str "verification")) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "code")) ]);
+                    (jo [
+                      ("name", (Str "phone_number")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("opt_out", (jo [
@@ -2922,13 +2793,14 @@ let make_config () : value =
                       ("orig", (Str "phone_number"));
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "query")) ]) ])) ]));
-                ("select", (jo [
-                  ("exist", (ja [
-                    (Str "accept");
-                    (Str "limit");
-                    (Str "offset");
-                    (Str "phone_number");
-                    (Str "x_async") ])) ])) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("kind", (Str "raw"));
+                      ("media", (Str "text/csv")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -2993,7 +2865,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("update", (jo [
             ("input", (Str "data"));
             ("name", (Str "update"));
@@ -3015,7 +2890,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("permission", (jo [
@@ -3098,7 +2976,22 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "group_id") ])) ])) ]) ])) ]));
+                    (Str "group_id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "read")) ]);
+                    (jo [
+                      ("name", (Str "send")) ]);
+                    (jo [
+                      ("name", (Str "username")) ]);
+                    (jo [
+                      ("name", (Str "write")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -3145,20 +3038,15 @@ let make_config () : value =
                       ("orig", (Str "username"));
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "param"));
-                      ("reqd", (Bool true)) ]) ]));
-                  ("query", (ja [
-                    (jo [
-                      ("name", (Str "username"));
-                      ("orig", (Str "username"));
-                      ("type", (Str "`$STRING`"));
-                      ("kind", (Str "query"));
                       ("reqd", (Bool true));
                       ("example", (Str "example_username")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
                     (Str "group_id");
-                    (Str "id");
-                    (Str "username") ])) ])) ]) ])) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (ja [
             (ja [
@@ -3195,7 +3083,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.unavailable`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("profile", (jo [
@@ -3266,9 +3157,10 @@ let make_config () : value =
                       ("kind", (Str "query"));
                       ("example", (Str "eco")) ]) ])) ]));
                 ("select", (jo [
-                  ("$action", (Str "price"));
-                  ("exist", (ja [
-                    (Str "type") ])) ])) ]) ])) ]));
+                  ("$action", (Str "price")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -3287,7 +3179,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("rcs", (jo [
@@ -3316,7 +3211,10 @@ let make_config () : value =
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
                 ("select", (jo [
-                  ("$action", (Str "message")) ])) ]) ])) ])) ]));
+                  ("$action", (Str "message")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("sendername", (jo [
@@ -3369,7 +3267,16 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "sender")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
@@ -3391,7 +3298,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -3427,7 +3337,10 @@ let make_config () : value =
                       ("reqd", (Bool true)) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("sendername_statement", (jo [
@@ -3470,7 +3383,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.sections`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("sent_rcs_message", (jo [
@@ -3489,8 +3405,10 @@ let make_config () : value =
           (jo [
             ("name", (Str "sender"));
             ("title", (Str "Sender"));
-            ("type", (Str "`$ANY`"));
-            ("req", (Bool true)) ]);
+            ("type", (Str "`$STRING`"));
+            ("req", (Bool true));
+            ("short", (Str "RCS sender ID (object ID of the agent/sender the user has access to)."));
+            ("format", (Str "oid")) ]);
           (jo [
             ("name", (Str "text"));
             ("title", (Str "Text"));
@@ -3519,7 +3437,26 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("fields", (ja [
+                        (jo [
+                          ("name", (Str "content")) ]);
+                        (jo [
+                          ("name", (Str "phone_number")) ]);
+                        (jo [
+                          ("name", (Str "sender")) ]);
+                        (jo [
+                          ("name", (Str "text")) ]) ]));
+                      ("kind", (Str "form"));
+                      ("media", (Str "application/x-www-form-urlencoded")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("shipment_country_volume", (jo [
@@ -3581,11 +3518,14 @@ let make_config () : value =
                       ("orig", (Str "year"));
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "query")) ]) ])) ]));
-                ("select", (jo [
-                  ("exist", (ja [
-                    (Str "accept");
-                    (Str "month");
-                    (Str "year") ])) ])) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("kind", (Str "raw"));
+                      ("media", (Str "text/csv")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("short_url", (jo [
@@ -3662,7 +3602,17 @@ let make_config () : value =
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
                 ("select", (jo [
-                  ("$action", (Str "link")) ])) ]) ])) ]));
+                  ("$action", (Str "link")) ]));
+                ("body", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("kind", (Str "form"));
+                      ("media", (Str "application/x-www-form-urlencoded")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
@@ -3685,7 +3635,10 @@ let make_config () : value =
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
                 ("select", (jo [
-                  ("$action", (Str "link")) ])) ]) ])) ]));
+                  ("$action", (Str "link")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -3720,7 +3673,10 @@ let make_config () : value =
                       ("example", (Str "123")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -3790,7 +3746,20 @@ let make_config () : value =
                       ("example", (Str "123")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ])) ]));
+                    (Str "id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "description")) ]);
+                    (jo [
+                      ("name", (Str "name")) ]);
+                    (jo [
+                      ("name", (Str "url")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("smsdo", (jo [
@@ -3920,7 +3889,65 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("fields", (ja [
+                        (jo [
+                          ("name", (Str "allow_duplicates")) ]);
+                        (jo [
+                          ("name", (Str "check_idx")) ]);
+                        (jo [
+                          ("name", (Str "date")) ]);
+                        (jo [
+                          ("name", (Str "date_validate")) ]);
+                        (jo [
+                          ("name", (Str "details")) ]);
+                        (jo [
+                          ("name", (Str "encoding")) ]);
+                        (jo [
+                          ("name", (Str "expiration_date")) ]);
+                        (jo [
+                          ("list", (Bool true));
+                          ("name", (Str "fallback")) ]);
+                        (jo [
+                          ("name", (Str "fast")) ]);
+                        (jo [
+                          ("name", (Str "flash")) ]);
+                        (jo [
+                          ("name", (Str "format")) ]);
+                        (jo [
+                          ("name", (Str "from")) ]);
+                        (jo [
+                          ("name", (Str "group")) ]);
+                        (jo [
+                          ("name", (Str "idx")) ]);
+                        (jo [
+                          ("name", (Str "max_parts")) ]);
+                        (jo [
+                          ("name", (Str "message")) ]);
+                        (jo [
+                          ("name", (Str "normalize")) ]);
+                        (jo [
+                          ("name", (Str "notify_url")) ]);
+                        (jo [
+                          ("name", (Str "test")) ]);
+                        (jo [
+                          ("name", (Str "time_restriction")) ]);
+                        (jo [
+                          ("name", (Str "to")) ]) ]));
+                      ("kind", (Str "form"));
+                      ("media", (Str "application/x-www-form-urlencoded")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ]));
+                ("response", (jo [
+                  ("alternatives", (ja [
+                    (jo [
+                      ("kind", (Str "raw"));
+                      ("media", (Str "text/plain")) ]) ]));
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("smssendername", (jo [
@@ -3941,7 +3968,7 @@ let make_config () : value =
                   (jo [
                     ("lit", (Str "sendernames")) ]);
                   (jo [
-                    ("var", (Str "sendername_id")) ]);
+                    ("var", (Str "sender")) ]);
                   (jo [
                     ("lit", (Str "commands")) ]);
                   (jo [
@@ -3949,26 +3976,24 @@ let make_config () : value =
                 ("parts", (ja [
                   (Str "sms");
                   (Str "sendernames");
-                  (Str "{sendername_id}");
+                  (Str "{sender}");
                   (Str "commands");
                   (Str "make_default") ]));
-                ("rename", (jo [
-                  ("param", (jo [
-                    ("sender", (Str "sendername_id")) ])) ]));
+                ("rename", (empty_map ()));
                 ("transform", (jo [
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (jo [
                   ("params", (ja [
                     (jo [
-                      ("name", (Str "sendername_id"));
+                      ("name", (Str "sender"));
                       ("orig", (Str "sender"));
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "param"));
                       ("reqd", (Bool true)) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "sendername_id") ])) ])) ]) ])) ]));
+                    (Str "sender") ])) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -4109,7 +4134,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
@@ -4148,7 +4176,10 @@ let make_config () : value =
                 ("select", (jo [
                   ("$action", (Str "share_sendername"));
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "GET"));
@@ -4183,7 +4214,10 @@ let make_config () : value =
                 ("select", (jo [
                   ("$action", (Str "share_template"));
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "GET"));
@@ -4204,9 +4238,10 @@ let make_config () : value =
                       ("orig", (Str "q"));
                       ("type", (Str "`$STRING`"));
                       ("kind", (Str "query")) ]) ])) ]));
-                ("select", (jo [
-                  ("exist", (ja [
-                    (Str "q") ])) ])) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -4238,7 +4273,10 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("remove", (jo [
             ("input", (Str "data"));
             ("name", (Str "remove"));
@@ -4302,7 +4340,10 @@ let make_config () : value =
                       ("example", (Str "0f0f0f0f0f0f0f0f0f0f0f0f")) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]);
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]);
               (jo [
                 ("kind", (Str "http"));
                 ("method", (Str "PUT"));
@@ -4419,7 +4460,20 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "name")) ]);
+                    (jo [
+                      ("name", (Str "normalize")) ]);
+                    (jo [
+                      ("name", (Str "template")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("list", (jo [
             ("input", (Str "data"));
             ("name", (Str "list"));
@@ -4441,7 +4495,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("load", (jo [
             ("input", (Str "data"));
             ("name", (Str "load"));
@@ -4475,7 +4532,10 @@ let make_config () : value =
                       ("reqd", (Bool true)) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ]));
+                    (Str "id") ])) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ]));
           ("update", (jo [
             ("input", (Str "data"));
             ("name", (Str "update"));
@@ -4509,65 +4569,24 @@ let make_config () : value =
                       ("reqd", (Bool true)) ]) ])) ]));
                 ("select", (jo [
                   ("exist", (ja [
-                    (Str "id") ])) ])) ]) ])) ])) ]));
+                    (Str "id") ])) ]));
+                ("body", (jo [
+                  ("fields", (ja [
+                    (jo [
+                      ("name", (Str "name")) ]);
+                    (jo [
+                      ("name", (Str "normalize")) ]);
+                    (jo [
+                      ("name", (Str "template")) ]) ]));
+                  ("kind", (Str "form"));
+                  ("media", (Str "application/x-www-form-urlencoded")) ]));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ]));
       ("user_rcs_sender_collection", (jo [
-        ("fields", (ja [
-          (jo [
-            ("name", (Str "deliveredAt"));
-            ("title", (Str "Delivered At"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "expiredAt"));
-            ("title", (Str "Expired At"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "id"));
-            ("title", (Str "Id"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Object ID"));
-            ("format", (Str "oid")) ]);
-          (jo [
-            ("name", (Str "interface"));
-            ("title", (Str "Interface"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Interface through which the message was sent (www, api, ...).")) ]);
-          (jo [
-            ("name", (Str "messageType"));
-            ("title", (Str "Message Type"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "RCS message type (basic, single, ...).")) ]);
-          (jo [
-            ("name", (Str "readAt"));
-            ("title", (Str "Read At"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "date-time")) ]);
-          (jo [
-            ("name", (Str "recipient"));
-            ("title", (Str "Recipient"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Recipient phone number (without +).")) ]);
-          (jo [
-            ("name", (Str "sender"));
-            ("title", (Str "Sender"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Sender name")) ]);
-          (jo [
-            ("name", (Str "senderId"));
-            ("title", (Str "Sender Id"));
-            ("type", (Str "`$STRING`"));
-            ("short", (Str "Sender id")) ]);
-          (jo [
-            ("name", (Str "sentAt"));
-            ("title", (Str "Sent At"));
-            ("type", (Str "`$STRING`"));
-            ("format", (Str "date-time")) ]) ]));
-        ("id", (jo [
-          ("field", (Str "id"));
-          ("name", (Str "id")) ]));
+        ("fields", (empty_list ()));
         ("name", (Str "user_rcs_sender_collection"));
         ("op", (jo [
           ("list", (jo [
@@ -4591,7 +4610,10 @@ let make_config () : value =
                   ("req", (Str "`reqdata`"));
                   ("res", (Str "`body.collection`")) ]));
                 ("args", (empty_map ()));
-                ("select", (empty_map ())) ]) ])) ])) ]));
+                ("select", (empty_map ()));
+                ("response", (jo [
+                  ("kind", (Str "json"));
+                  ("media", (Str "application/json")) ])) ]) ])) ])) ]));
         ("relations", (jo [
           ("ancestors", (empty_list ())) ])) ])) ])) ])
 

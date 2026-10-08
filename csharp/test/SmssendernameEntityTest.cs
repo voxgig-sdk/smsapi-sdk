@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 
+using SmsapiSdk.Feature;
 using Voxgig.Struct;
 using Xunit;
 
@@ -9,6 +10,12 @@ namespace SmsapiSdk.Test;
 
 public class SmssendernameEntityTest
 {
+    // main.kit.test.live.strict is true (the default is true): a live
+    // request that fails, or a live test missing an input it needs,
+    // fails the test.
+    // An account with no record for a test to read skips it either way.
+    private const bool LIVE_STRICT = true;
+
     [Fact]
     public void Instance()
     {
@@ -33,12 +40,16 @@ public class SmssendernameEntityTest
                 return; // skipped via sdk-test-control.json
             }
         }
-        // The basic flow consumes synthetic IDs from the fixture. In live
-        // mode without an *_ENTID env override, those IDs hit the live API
-        // and 4xx; set SMSAPI_TEST_SMSSENDERNAME_ENTID JSON to run live.
-        if (setup.SyntheticOnly)
+        if (setup.Live)
         {
-            return;
+            foreach (var liveKey in new[] { "sender01" })
+            {
+                if (setup.SyntheticOnly || StructUtils.GetProp(setup.Idmap, liveKey) == null)
+                {
+                    TestRunner.LiveMiss(LIVE_STRICT, "Live entity test blocked: needs " + liveKey + " via SMSAPI_TEST_SMSSENDERNAME_ENTID");
+                    return;
+                }
+            }
         }
         var client = setup.Client;
 
@@ -47,7 +58,7 @@ public class SmssendernameEntityTest
         var smssendernameRef01Data = Helpers.ToMapAny(StructUtils.GetProp(
             StructUtils.GetPath(setup.Data, StructUtils.Jt("new", "smssendername")),
             "smssendername_ref01"));
-        smssendernameRef01Data!["sendername_id"] = setup.Idmap["sendername01"];
+        smssendernameRef01Data!["sender"] = setup.Idmap["sender01"];
 
         var smssendernameRef01DataResult = smssendernameRef01Ent.Create(smssendernameRef01Data, null);
         smssendernameRef01Data = Helpers.ToMapAny(smssendernameRef01DataResult is IEntity ce ? ce.Data() : smssendernameRef01DataResult);
@@ -60,6 +71,21 @@ public class SmssendernameEntityTest
         };
         smssendernameRef01Ent.Remove(smssendernameRef01MatchRm0, null);
 
+    }
+
+    [Fact]
+    public void Validate()
+    {
+        if (!Fh.HasFeature("validate"))
+        {
+            Console.WriteLine("skip: feature not present in this SDK: validate");
+            return;
+        }
+        var client = SmsapiSDK.TestSDK(null,
+            new Dictionary<string, object?> { ["feature"] = new Dictionary<string, object?> { ["validate"] = new Dictionary<string, object?> { ["active"] = true } } });
+        var err = Assert.ThrowsAny<SmsapiError>(() => client.Smssendername().Create(
+            new Dictionary<string, object?> { ["sender"] = 1 }, null));
+        Assert.Equal("validate_failed", err.Code);
     }
 
     private static EntityTestSetup SmssendernameBasicSetup(
@@ -87,7 +113,7 @@ public class SmssendernameEntityTest
 
         // Generate idmap via transform, matching the TS pattern.
         var idmap = StructUtils.Transform(
-            new List<object?> { "smssendername01", "smssendername02", "smssendername03", "sendername01", "sendername02", "sendername03" },
+            new List<object?> { "smssendername01", "smssendername02", "smssendername03", "sendername01", "sendername02", "sendername03", "sender01" },
             new Dictionary<string, object?>
             {
                 ["`$PACK`"] = new List<object?>
@@ -101,9 +127,8 @@ public class SmssendernameEntityTest
                 },
             });
 
-        // Detect ENTID env override before EnvOverride consumes it. When
-        // live mode is on without a real override, the basic test runs
-        // against synthetic IDs from the fixture and 4xx's.
+        // Whether *_ENTID supplied the idmap, read before EnvOverride consumes
+        // it: without it, the ids a live flow binds are the fixture's synthetic ones.
         var entidEnvRaw = Environment.GetEnvironmentVariable(
             "SMSAPI_TEST_SMSSENDERNAME_ENTID") ?? "";
         var idmapOverridden = entidEnvRaw != "" &&

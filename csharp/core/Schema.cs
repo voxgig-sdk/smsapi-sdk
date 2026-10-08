@@ -24,7 +24,7 @@ public static class SdkSchema
             ["allow"] = new Dictionary<string, object?>
             {
                 ["method"] = "GET,PUT,POST,PATCH,DELETE,OPTIONS",
-                ["op"] = "create,update,load,list,remove,command,direct,graphql",
+                ["op"] = "create,update,patch,load,list,remove,command,direct,graphql",
             },
             ["apikey"] = "",
             ["auth"] = new Dictionary<string, object?>
@@ -950,6 +950,12 @@ public static class SdkSchema
                             "`$FUNCTION`",
                             "`$NIL`",
                         },
+                        ["now"] = new List<object?>
+                        {
+                            "`$ONE`",
+                            "`$FUNCTION`",
+                            "`$NIL`",
+                        },
                         ["setTimer"] = new List<object?>
                         {
                             "`$ONE`",
@@ -1597,17 +1603,6 @@ public static class SdkSchema
                             "",
                         },
                     },
-                    ["group_id"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
                     ["groups"] = "`$LIST`",
                     ["id"] = new List<object?>
                     {
@@ -1668,18 +1663,6 @@ public static class SdkSchema
                         },
                         "`$NIL`",
                     },
-                    ["read"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
-                    ["send"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
                     ["size"] = "`$INTEGER`",
                     ["source"] = new List<object?>
                     {
@@ -1690,45 +1673,6 @@ public static class SdkSchema
                             "`$EXACT`",
                             "",
                         },
-                        "`$NIL`",
-                    },
-                    ["type"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["username"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["value"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["write"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
                         "`$NIL`",
                     },
                 },
@@ -1846,17 +1790,6 @@ public static class SdkSchema
                                 "",
                             },
                         },
-                        ["group_id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["groups"] = "`$LIST`",
                         ["id"] = new List<object?>
                         {
@@ -1917,18 +1850,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["read"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["send"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
                         ["size"] = "`$INTEGER`",
                         ["source"] = new List<object?>
                         {
@@ -1939,45 +1860,6 @@ public static class SdkSchema
                                 "`$EXACT`",
                                 "",
                             },
-                            "`$NIL`",
-                        },
-                        ["type"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["username"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["value"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["write"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
                             "`$NIL`",
                         },
                     },
@@ -2235,17 +2117,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["group_id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["groups"] = new List<object?>
                         {
                             "`$ONE`",
@@ -2302,18 +2173,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["read"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["send"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
                         ["size"] = new List<object?>
                         {
                             "`$ONE`",
@@ -2331,45 +2190,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["type"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["username"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["value"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["write"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
                     },
                 },
             },
@@ -2378,154 +2198,7 @@ public static class SdkSchema
                 ["data"] = new Dictionary<string, object?>
                 {
                     ["`$OPEN`"] = true,
-                    ["birthday_date"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["city"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["contact_expire_after"] = "`$INTEGER`",
-                    ["contacts_count"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$INTEGER`",
-                        "`$NIL`",
-                    },
-                    ["country"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["created_by"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["date_created"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["date_updated"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["description"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["email"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["first_name"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["gender"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["group_id"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["groups"] = "`$LIST`",
                     ["id"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["idx"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["last_name"] = new List<object?>
                     {
                         "`$ONE`",
                         "`$STRING`",
@@ -2547,46 +2220,6 @@ public static class SdkSchema
                         },
                         "`$NIL`",
                     },
-                    ["permissions"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$LIST`",
-                        "`$NIL`",
-                    },
-                    ["phone_number"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["read"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
-                    ["send"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
-                    ["source"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
                     ["type"] = new List<object?>
                     {
                         "`$ONE`",
@@ -2598,188 +2231,13 @@ public static class SdkSchema
                         },
                         "`$NIL`",
                     },
-                    ["username"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["value"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["write"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
                 },
                 ["op"] = new Dictionary<string, object?>
                 {
                     ["create"] = new Dictionary<string, object?>
                     {
                         ["`$OPEN`"] = true,
-                        ["birthday_date"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["city"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["contact_expire_after"] = "`$INTEGER`",
-                        ["contacts_count"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["country"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["created_by"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["date_created"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["date_updated"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["description"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["email"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["first_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["gender"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["group_id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["groups"] = "`$LIST`",
                         ["id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["idx"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["last_name"] = new List<object?>
                         {
                             "`$ONE`",
                             "`$STRING`",
@@ -2801,46 +2259,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["permissions"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
-                        ["phone_number"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["read"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["send"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["source"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["type"] = new List<object?>
                         {
                             "`$ONE`",
@@ -2850,202 +2268,13 @@ public static class SdkSchema
                                 "`$EXACT`",
                                 "",
                             },
-                            "`$NIL`",
-                        },
-                        ["username"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["value"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["write"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
                             "`$NIL`",
                         },
                     },
                     ["list"] = new Dictionary<string, object?>
                     {
                         ["`$OPEN`"] = true,
-                        ["birthday_date"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["city"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["contact_expire_after"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["contacts_count"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["country"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["created_by"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["date_created"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["date_updated"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["description"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["email"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["first_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["gender"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["group_id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["groups"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
                         ["id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["idx"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["last_name"] = new List<object?>
                         {
                             "`$ONE`",
                             "`$STRING`",
@@ -3067,46 +2296,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["permissions"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
-                        ["phone_number"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["read"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["send"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["source"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["type"] = new List<object?>
                         {
                             "`$ONE`",
@@ -3116,34 +2305,6 @@ public static class SdkSchema
                                 "`$EXACT`",
                                 "",
                             },
-                            "`$NIL`",
-                        },
-                        ["username"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["value"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["write"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
                             "`$NIL`",
                         },
                     },
@@ -3174,208 +2335,7 @@ public static class SdkSchema
                                 "",
                             },
                         },
-                        ["birthday_date"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["city"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["contact_expire_after"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["contacts_count"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["country"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["created_by"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["date_created"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["date_updated"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["description"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["email"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["first_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["gender"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["group_id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["groups"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
-                        ["idx"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["last_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["permissions"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
-                        ["phone_number"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["read"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["send"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["source"] = new List<object?>
                         {
                             "`$ONE`",
                             "`$STRING`",
@@ -3397,34 +2357,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["username"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["value"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["write"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
                     },
                 },
             },
@@ -3433,253 +2365,6 @@ public static class SdkSchema
                 ["data"] = new Dictionary<string, object?>
                 {
                     ["`$OPEN`"] = true,
-                    ["birthday_date"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["city"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["contact_expire_after"] = "`$INTEGER`",
-                    ["contacts_count"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$INTEGER`",
-                        "`$NIL`",
-                    },
-                    ["country"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["created_by"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["date_created"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["date_updated"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["description"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["email"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["first_name"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["gender"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["group_id"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["groups"] = "`$LIST`",
-                    ["id"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["idx"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["last_name"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["name"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["permissions"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$LIST`",
-                        "`$NIL`",
-                    },
-                    ["phone_number"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["read"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
-                    ["send"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
-                    ["source"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["type"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["username"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["value"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["write"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$BOOLEAN`",
-                        "`$NIL`",
-                    },
                 },
                 ["op"] = new Dictionary<string, object?>
                 {
@@ -3704,119 +2389,6 @@ public static class SdkSchema
                 ["data"] = new Dictionary<string, object?>
                 {
                     ["`$OPEN`"] = true,
-                    ["birthday_date"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["city"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["contact_expire_after"] = "`$INTEGER`",
-                    ["contacts_count"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$INTEGER`",
-                        "`$NIL`",
-                    },
-                    ["country"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["created_by"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["date_created"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["date_updated"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["description"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["email"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["first_name"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["gender"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
                     ["group_id"] = new List<object?>
                     {
                         "`$ONE`",
@@ -3827,91 +2399,8 @@ public static class SdkSchema
                             "",
                         },
                     },
-                    ["groups"] = "`$LIST`",
-                    ["id"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                    },
-                    ["idx"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["last_name"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["name"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["permissions"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$LIST`",
-                        "`$NIL`",
-                    },
-                    ["phone_number"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
                     ["read"] = "`$BOOLEAN`",
                     ["send"] = "`$BOOLEAN`",
-                    ["source"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["type"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
                     ["username"] = new List<object?>
                     {
                         "`$ONE`",
@@ -3922,17 +2411,6 @@ public static class SdkSchema
                             "",
                         },
                     },
-                    ["value"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
                     ["write"] = "`$BOOLEAN`",
                 },
                 ["op"] = new Dictionary<string, object?>
@@ -3940,119 +2418,6 @@ public static class SdkSchema
                     ["create"] = new Dictionary<string, object?>
                     {
                         ["`$OPEN`"] = true,
-                        ["birthday_date"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["city"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["contact_expire_after"] = "`$INTEGER`",
-                        ["contacts_count"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["country"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["created_by"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["date_created"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["date_updated"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["description"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["email"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["first_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["gender"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
                         ["group_id"] = new List<object?>
                         {
                             "`$ONE`",
@@ -4063,91 +2428,8 @@ public static class SdkSchema
                                 "",
                             },
                         },
-                        ["groups"] = "`$LIST`",
-                        ["id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
-                        ["idx"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["last_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["permissions"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
-                        ["phone_number"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["read"] = "`$BOOLEAN`",
                         ["send"] = "`$BOOLEAN`",
-                        ["source"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["type"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["username"] = new List<object?>
                         {
                             "`$ONE`",
@@ -4157,17 +2439,6 @@ public static class SdkSchema
                                 "`$EXACT`",
                                 "",
                             },
-                        },
-                        ["value"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
                         },
                         ["write"] = "`$BOOLEAN`",
                     },
@@ -4225,195 +2496,6 @@ public static class SdkSchema
                             },
                             "`$NIL`",
                         },
-                        ["birthday_date"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["city"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["contact_expire_after"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["contacts_count"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$INTEGER`",
-                            "`$NIL`",
-                        },
-                        ["country"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["created_by"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["date_created"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["date_updated"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["description"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["email"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["first_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["gender"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["groups"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
-                        ["id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["idx"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["last_name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["name"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["permissions"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$LIST`",
-                            "`$NIL`",
-                        },
-                        ["phone_number"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
                         ["read"] = new List<object?>
                         {
                             "`$ONE`",
@@ -4424,39 +2506,6 @@ public static class SdkSchema
                         {
                             "`$ONE`",
                             "`$BOOLEAN`",
-                            "`$NIL`",
-                        },
-                        ["source"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["type"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["value"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
                             "`$NIL`",
                         },
                         ["write"] = new List<object?>
@@ -5100,16 +3149,6 @@ public static class SdkSchema
                                 "",
                             },
                         },
-                        ["username"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                        },
                     },
                 },
             },
@@ -5575,7 +3614,16 @@ public static class SdkSchema
                             "",
                         },
                     },
-                    ["sender"] = "`$ANY`",
+                    ["sender"] = new List<object?>
+                    {
+                        "`$ONE`",
+                        "`$STRING`",
+                        new List<object?>
+                        {
+                            "`$EXACT`",
+                            "",
+                        },
+                    },
                     ["text"] = new List<object?>
                     {
                         "`$ONE`",
@@ -5609,7 +3657,16 @@ public static class SdkSchema
                                 "",
                             },
                         },
-                        ["sender"] = "`$ANY`",
+                        ["sender"] = new List<object?>
+                        {
+                            "`$ONE`",
+                            "`$STRING`",
+                            new List<object?>
+                            {
+                                "`$EXACT`",
+                                "",
+                            },
+                        },
                         ["text"] = new List<object?>
                         {
                             "`$ONE`",
@@ -6460,7 +4517,7 @@ public static class SdkSchema
                     ["create"] = new Dictionary<string, object?>
                     {
                         ["`$OPEN`"] = true,
-                        ["sendername_id"] = new List<object?>
+                        ["sender"] = new List<object?>
                         {
                             "`$ONE`",
                             "`$STRING`",
@@ -6921,234 +4978,8 @@ public static class SdkSchema
                 ["data"] = new Dictionary<string, object?>
                 {
                     ["`$OPEN`"] = true,
-                    ["deliveredAt"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["expiredAt"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["id"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["interface"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["messageType"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["readAt"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["recipient"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["sender"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["senderId"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
-                    ["sentAt"] = new List<object?>
-                    {
-                        "`$ONE`",
-                        "`$STRING`",
-                        new List<object?>
-                        {
-                            "`$EXACT`",
-                            "",
-                        },
-                        "`$NIL`",
-                    },
                 },
-                ["op"] = new Dictionary<string, object?>
-                {
-                    ["list"] = new Dictionary<string, object?>
-                    {
-                        ["`$OPEN`"] = true,
-                        ["deliveredAt"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["expiredAt"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["id"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["interface"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["messageType"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["readAt"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["recipient"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["sender"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["senderId"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                        ["sentAt"] = new List<object?>
-                        {
-                            "`$ONE`",
-                            "`$STRING`",
-                            new List<object?>
-                            {
-                                "`$EXACT`",
-                                "",
-                            },
-                            "`$NIL`",
-                        },
-                    },
-                },
+                ["op"] = new Dictionary<string, object?>(),
             },
         };
 }

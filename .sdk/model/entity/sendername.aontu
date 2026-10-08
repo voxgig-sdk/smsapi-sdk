@@ -57,6 +57,19 @@ main: kit: entity: sendername: {
           }
           m: "POST"
           o: "/sms/sendernames"
+          rb: {
+            fields: [
+              {
+                name: "sender"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "sms"
@@ -83,6 +96,10 @@ main: kit: entity: sendername: {
           }
           m: "GET"
           o: "/sms/sendernames"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "sms"
@@ -129,6 +146,10 @@ main: kit: entity: sendername: {
             param: {
               sender: "id"
             }
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

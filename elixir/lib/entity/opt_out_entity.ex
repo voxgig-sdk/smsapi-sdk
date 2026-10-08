@@ -1,7 +1,7 @@
 # Smsapi SDK OptOut entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.OptOut do
@@ -28,9 +28,10 @@ defmodule Smsapi.Entity.OptOut do
   
 
   
-  # Returns a list of opt_out entity maps (Smsapi.Types.opt_out/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of opt_out entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.opt_out/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.opt_out_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -67,9 +68,12 @@ defmodule Smsapi.Entity.OptOut do
   
 
   
-  # Returns the removed opt_out entity map (Smsapi.Types.opt_out/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed opt_out entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.opt_out/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.opt_out_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

@@ -17,7 +17,7 @@ keeps the cognitive load low.
 This package is not yet published to a SwiftPM registry. The generated SDK
 is a dependency-free SwiftPM package (Foundation only, plus the vendored
 Voxgig Struct port). Depend on it from the GitHub release tag
-(`swift/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)) by adding it to
+(`swift/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)) by adding it to
 your `Package.swift`:
 
 ```swift
@@ -52,14 +52,17 @@ let client = SmsapiSDK(options)
 
 ### 2. List available records
 
-`list(nil, nil)` returns a `Value` list of records and throws on error —
-iterate its items.
+`list(nil, nil)` returns a `Value` list of entities, one per record, and
+throws on error; `asNative as? Entity` unwraps an item, and its `data()`
+reads the record.
 
 ```swift
 do {
     let availableList = try client.Available().list(nil, nil)
-    for available in availableList.asList?.items ?? [] {
-        print(available)
+    for availableItem in availableList.asList?.items ?? [] {
+        if let availableEntity = availableItem.asNative as? Entity {
+            print(availableEntity.data())
+        }
     }
 }
 catch {
@@ -74,8 +77,10 @@ Permission is nested under group, so provide the `group_id`.
 
 ```swift
 do {
-    let permission = try client.Permission().load(VMap([("group_id", .string("example_group_id")), ("username", .string("example_username")), ("id", .string("example_id"))]), nil)
-    print(permission)
+    let permission = try client.Permission().load(VMap([("group_id", .string("example_group_id")), ("id", .string("example_id"))]), nil)
+    if let permissionEntity = permission.asNative as? Entity {
+        print(permissionEntity.data())
+    }
 }
 catch {
     print("load failed: \(error)")
@@ -89,15 +94,16 @@ Entity operations reject on failure, so wrap them in `try` / `catch`:
 
 ```ts
 try {
-  const permission = await client.Permission().load({ group_id: "example", id: "example_id", username: "example" })
-  console.log(permission)
+  const templates = await client.Template().list()
+  console.log(templates.map((item) => item.data()))
 } catch (err) {
-  console.error('load failed:', err)
+  console.error('list failed:', err)
 }
 ```
 
 The low-level `direct()` method does **not** throw — it returns the
-value or an `Error`, so check the result before using it:
+result envelope. Branch on `ok`; on failure `status` holds the HTTP status
+(for error responses) and `err` holds the error:
 
 ```ts
 const result = await client.direct({
@@ -106,8 +112,8 @@ const result = await client.direct({
   params: { id: 'example_id' },
 })
 
-if (result instanceof Error) {
-  throw result
+if (!result.ok) {
+  console.error('request failed:', result.status, result.err)
 }
 ```
 
@@ -159,11 +165,13 @@ Create a mock client for unit testing — no server required:
 ```swift
 let client = SmsapiSDK.testSDK(nil, nil)
 
-// Entity ops return the ENTITY and throws on error;
-// call data() for the record.
-let permission = try client.Permission().load(VMap([("id", .string("test01"))]), nil)
-// permission holds the mock response record
-print(permission)
+// list returns a Value list of entities, one per mock record; it throws on error.
+let templateList = try client.Template().list(nil, nil)
+for templateItem in templateList.asList?.items ?? [] {
+    if let templateEntity = templateItem.asNative as? Entity {
+        print(templateEntity.data())
+    }
+}
 ```
 
 ### Use a custom fetch function
@@ -275,11 +283,11 @@ All entities share the same interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `load` | `(reqmatch, ctrl) throws -> Value` | Load a single entity by match criteria. Throws on error. |
-| `list` | `(reqmatch, ctrl) throws -> Value` | List entities matching the criteria (a Value list). Throws on error. |
-| `create` | `(reqdata, ctrl) throws -> Value` | Create a new entity. Throws on error. |
-| `update` | `(reqdata, ctrl) throws -> Value` | Update an existing entity. Throws on error. |
-| `remove` | `(reqmatch, ctrl) throws -> Value` | Remove an entity. Throws on error. |
+| `load` | `(reqmatch, ctrl) throws -> Value` | Load a single entity by match criteria, and return it. Throws on error. |
+| `list` | `(reqmatch, ctrl) throws -> Value` | List entities matching the criteria, one per record. Throws on error. |
+| `create` | `(reqdata, ctrl) throws -> Value` | Create a new entity, and return it. Throws on error. |
+| `update` | `(reqdata, ctrl) throws -> Value` | Update an existing entity, and return it. Throws on error. |
+| `remove` | `(reqmatch, ctrl) throws -> Value` | Remove an entity, and return it marked as deleted. Throws on error. |
 | `data` | `(newdata?) -> Value` | Get or set entity data. |
 | `matchv` | `(newmatch?) -> Value` | Get or set entity match criteria. |
 | `make` | `() -> Entity` | Create a new instance with the same options. |
@@ -287,9 +295,10 @@ All entities share the same interface.
 
 ### Result shape
 
-Entity operations return the ENTITY (call data() for the record) (a `Value` map for
-single-entity ops, a `Value` list for `list`) and throw on error. Wrap
-calls in `do`/`catch` to handle failures.
+Entity operations return the entity, and `list` a `Value` list of entities,
+one per record; each entity comes wrapped in a native `Value`, which
+`asNative as? Entity` unwraps, and its `data()` reads the record. They
+throw on error, so wrap calls in `do`/`catch` to handle failures.
 
 The `direct()` escape hatch never throws — it returns a result `VMap` you
 branch on via `result.entries["ok"]`:
@@ -361,7 +370,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -369,14 +377,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -386,33 +388,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -422,33 +400,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -458,32 +409,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -651,7 +580,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -771,16 +700,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -926,7 +845,6 @@ Create an instance: `let contact = client.Contact()`
 | `email` | `String` |  |
 | `first_name` | `String` |  |
 | `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
 | `groups` | `[Value]` |  |
 | `id` | `String` | Object ID |
 | `idx` | `String` | User provided resource id |
@@ -934,14 +852,8 @@ Create an instance: `let contact = client.Contact()`
 | `name` | `String` | Group name |
 | `permissions` | `[Value]` |  |
 | `phone_number` | `String` |  |
-| `read` | `Bool` | Has read permission |
-| `send` | `Bool` | Has send permission |
 | `size` | `Int` |  |
 | `source` | `String` |  |
-| `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Bool` | Has write permission |
 
 #### Example: Load
 
@@ -991,33 +903,9 @@ Create an instance: `let contactsField = client.ContactsField()`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Int` | Contact expire after days |
-| `contacts_count` | `Int` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
-| `groups` | `[Value]` |  |
 | `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `[Value]` |  |
-| `phone_number` | `String` |  |
-| `read` | `Bool` | Has read permission |
-| `send` | `Bool` | Has send permission |
-| `source` | `String` |  |
+| `name` | `String` |  |
 | `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Bool` | Has write permission |
 
 #### Example: List
 
@@ -1029,12 +917,6 @@ let contactsFieldList = try client.ContactsField().list(nil, nil)
 
 ```swift
 let contactsField = try client.ContactsField().create(VMap([
-    ("contact_expire_after", .int(1)),  // Int
-    ("created_by", .string("example_created_by")),  // String
-    ("date_created", .string("example_date_created")),  // String
-    ("date_updated", .string("example_date_updated")),  // String
-    ("gender", .string("example_gender")),  // String
-    ("groups", .list([]))  // [Value]
 ]), nil)
 ```
 
@@ -1049,42 +931,10 @@ Create an instance: `let contactsFieldOption = client.ContactsFieldOption()`
 | --- | --- |
 | `list(nil, nil)` | List entities, optionally matching the given criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Int` | Contact expire after days |
-| `contacts_count` | `Int` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
-| `groups` | `[Value]` |  |
-| `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `[Value]` |  |
-| `phone_number` | `String` |  |
-| `read` | `Bool` | Has read permission |
-| `send` | `Bool` | Has send permission |
-| `source` | `String` |  |
-| `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Bool` | Has write permission |
-
 #### Example: List
 
 ```swift
-let contactsFieldOptionList = try client.ContactsFieldOption().list(nil, nil)
+let contactsFieldOptionList = try client.ContactsFieldOption().list(VMap([("field_id", .string("example"))]), nil)
 ```
 
 
@@ -1105,32 +955,10 @@ Create an instance: `let contactsgroup = client.Contactsgroup()`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Int` | Contact expire after days |
-| `contacts_count` | `Int` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
 | `group_id` | `String` | Object ID |
-| `groups` | `[Value]` |  |
-| `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `[Value]` |  |
-| `phone_number` | `String` |  |
 | `read` | `Bool` | Has read permission |
 | `send` | `Bool` | Has send permission |
-| `source` | `String` |  |
-| `type` | `String` |  |
 | `username` | `String` |  |
-| `value` | `String` |  |
 | `write` | `Bool` | Has write permission |
 
 #### Example: List
@@ -1143,14 +971,7 @@ let contactsgroupList = try client.Contactsgroup().list(nil, nil)
 
 ```swift
 let contactsgroup = try client.Contactsgroup().create(VMap([
-    ("contact_expire_after", .int(1)),  // Int
-    ("created_by", .string("example_created_by")),  // String
-    ("date_created", .string("example_date_created")),  // String
-    ("date_updated", .string("example_date_updated")),  // String
-    ("gender", .string("example_gender")),  // String
     ("group_id", .string("example_group_id")),  // String
-    ("groups", .list([])),  // [Value]
-    ("id", .string("example_id")),  // String
     ("read", .bool(true)),  // Bool
     ("send", .bool(true)),  // Bool
     ("username", .string("example_username")),  // String
@@ -1335,7 +1156,7 @@ Create an instance: `let permission = client.Permission()`
 #### Example: Load
 
 ```swift
-let permission = try client.Permission().load(VMap([("id", .string("permission_id")), ("group_id", .string("group_id")), ("username", .string("username"))]), nil)
+let permission = try client.Permission().load(VMap([("id", .string("permission_id")), ("group_id", .string("group_id"))]), nil)
 ```
 
 #### Example: Create
@@ -1511,7 +1332,7 @@ Create an instance: `let sentRcsMessage = client.SentRcsMessage()`
 | --- | --- | --- |
 | `content` | `VMap` | RCS message content in RCS JSON format. |
 | `phone_number` | `String` | Recipient phone number (e.g. |
-| `sender` | `Value` |  |
+| `sender` | `String` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String` | Plain text message content. |
 
 #### Example: Create
@@ -1519,7 +1340,7 @@ Create an instance: `let sentRcsMessage = client.SentRcsMessage()`
 ```swift
 let sentRcsMessage = try client.SentRcsMessage().create(VMap([
     ("phone_number", .string("example_phone_number")),  // String
-    ("sender", .string("example_sender"))  // Value
+    ("sender", .string("example_sender"))  // String
 ]), nil)
 ```
 
@@ -1658,7 +1479,7 @@ Create an instance: `let smssendername = client.Smssendername()`
 
 ```swift
 let smssendername = try client.Smssendername().create(VMap([
-    ("sendername_id", .string("example_sendername_id"))  // String
+    ("sender", .string("example_sender"))  // String
 ]), nil)
 ```
 
@@ -1777,21 +1598,6 @@ Create an instance: `let userRcsSenderCollection = client.UserRcsSenderCollectio
 | Method | Description |
 | --- | --- |
 | `list(nil, nil)` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `String` |  |
-| `expiredAt` | `String` |  |
-| `id` | `String` | Object ID |
-| `interface` | `String` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String` | RCS message type (basic, single, ...). |
-| `readAt` | `String` |  |
-| `recipient` | `String` | Recipient phone number (without +). |
-| `sender` | `String` | Sender name |
-| `senderId` | `String` | Sender id |
-| `sentAt` | `String` |  |
 
 #### Example: List
 
@@ -2243,16 +2049,16 @@ struct library is inlined under `Struct/`.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally. Subsequent
 calls on the same instance can rely on this state.
 
 ```ts
-const permission = client.Permission()
-await permission.load({ group_id: "example", id: "example_id", username: "example" })
+const template = client.Template()
+await template.list()
 
-// permission.data() now returns the permission data from the last `load`
-// permission.match() returns { id: "example_id" }
+// template.data() now returns the template data from the last `list`
+// template.match() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

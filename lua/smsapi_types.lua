@@ -90,7 +90,6 @@
 ---@field email? string
 ---@field first_name? string
 ---@field gender string
----@field group_id? string
 ---@field groups table
 ---@field id string
 ---@field idx? string
@@ -98,14 +97,8 @@
 ---@field name string
 ---@field permissions? table
 ---@field phone_number? string
----@field read? boolean
----@field send? boolean
 ---@field size number
 ---@field source? string
----@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactLoadMatch
 ---@field id string
@@ -137,7 +130,6 @@
 ---@field email? string
 ---@field first_name? string
 ---@field gender string
----@field group_id? string
 ---@field groups table
 ---@field id string
 ---@field idx? string
@@ -145,14 +137,8 @@
 ---@field name string
 ---@field permissions? table
 ---@field phone_number? string
----@field read? boolean
----@field send? boolean
 ---@field size number
 ---@field source? string
----@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactUpdateData
 ---@field id string
@@ -169,203 +155,51 @@
 ---@field email? string
 ---@field first_name? string
 ---@field gender? string
----@field group_id? string
 ---@field groups? table
 ---@field idx? string
 ---@field last_name? string
 ---@field name? string
 ---@field permissions? table
 ---@field phone_number? string
----@field read? boolean
----@field send? boolean
 ---@field size? number
 ---@field source? string
----@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactRemoveMatch
 ---@field id string
 
 ---@class ContactsField
----@field birthday_date? string
----@field city? string
----@field contact_expire_after number
----@field contacts_count? number
----@field country? string
----@field created_by string
----@field date_created string
----@field date_updated string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender string
----@field group_id? string
----@field groups table
 ---@field id? string
----@field idx? string
----@field last_name? string
 ---@field name? string
----@field permissions? table
----@field phone_number? string
----@field read? boolean
----@field send? boolean
----@field source? string
 ---@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactsFieldListMatch
----@field birthday_date? string
----@field city? string
----@field contact_expire_after? number
----@field contacts_count? number
----@field country? string
----@field created_by? string
----@field date_created? string
----@field date_updated? string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender? string
----@field group_id? string
----@field groups? table
 ---@field id? string
----@field idx? string
----@field last_name? string
 ---@field name? string
----@field permissions? table
----@field phone_number? string
----@field read? boolean
----@field send? boolean
----@field source? string
 ---@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactsFieldCreateData
----@field birthday_date? string
----@field city? string
----@field contact_expire_after number
----@field contacts_count? number
----@field country? string
----@field created_by string
----@field date_created string
----@field date_updated string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender string
----@field group_id? string
----@field groups table
 ---@field id? string
----@field idx? string
----@field last_name? string
 ---@field name? string
----@field permissions? table
----@field phone_number? string
----@field read? boolean
----@field send? boolean
----@field source? string
 ---@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactsFieldUpdateData
 ---@field id string
----@field birthday_date? string
----@field city? string
----@field contact_expire_after? number
----@field contacts_count? number
----@field country? string
----@field created_by? string
----@field date_created? string
----@field date_updated? string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender? string
----@field group_id? string
----@field groups? table
----@field idx? string
----@field last_name? string
 ---@field name? string
----@field permissions? table
----@field phone_number? string
----@field read? boolean
----@field send? boolean
----@field source? string
 ---@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactsFieldRemoveMatch
 ---@field id string
 
 ---@class ContactsFieldOption
----@field birthday_date? string
----@field city? string
----@field contact_expire_after number
----@field contacts_count? number
----@field country? string
----@field created_by string
----@field date_created string
----@field date_updated string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender string
----@field group_id? string
----@field groups table
----@field id string
----@field idx? string
----@field last_name? string
----@field name? string
----@field permissions? table
----@field phone_number? string
----@field read? boolean
----@field send? boolean
----@field source? string
----@field type? string
----@field username? string
----@field value? string
----@field write? boolean
 
 ---@class ContactsFieldOptionListMatch
 ---@field field_id string
 
 ---@class Contactsgroup
----@field birthday_date? string
----@field city? string
----@field contact_expire_after number
----@field contacts_count? number
----@field country? string
----@field created_by string
----@field date_created string
----@field date_updated string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender string
 ---@field group_id string
----@field groups table
----@field id string
----@field idx? string
----@field last_name? string
----@field name? string
----@field permissions? table
----@field phone_number? string
 ---@field read boolean
 ---@field send boolean
----@field source? string
----@field type? string
 ---@field username string
----@field value? string
 ---@field write boolean
 
 ---@class ContactsgroupListMatch
@@ -373,61 +207,17 @@
 ---@field with? table
 
 ---@class ContactsgroupCreateData
----@field birthday_date? string
----@field city? string
----@field contact_expire_after number
----@field contacts_count? number
----@field country? string
----@field created_by string
----@field date_created string
----@field date_updated string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender string
 ---@field group_id string
----@field groups table
----@field id string
----@field idx? string
----@field last_name? string
----@field name? string
----@field permissions? table
----@field phone_number? string
 ---@field read boolean
 ---@field send boolean
----@field source? string
----@field type? string
 ---@field username string
----@field value? string
 ---@field write boolean
 
 ---@class ContactsgroupUpdateData
 ---@field group_id string
 ---@field username? string
----@field birthday_date? string
----@field city? string
----@field contact_expire_after? number
----@field contacts_count? number
----@field country? string
----@field created_by? string
----@field date_created? string
----@field date_updated? string
----@field description? string
----@field email? string
----@field first_name? string
----@field gender? string
----@field groups? table
----@field id? string
----@field idx? string
----@field last_name? string
----@field name? string
----@field permissions? table
----@field phone_number? string
 ---@field read? boolean
 ---@field send? boolean
----@field source? string
----@field type? string
----@field value? string
 ---@field write? boolean
 
 ---@class ContactsgroupRemoveMatch
@@ -526,7 +316,6 @@
 ---@class PermissionLoadMatch
 ---@field group_id string
 ---@field id string
----@field username string
 
 ---@class PermissionCreateData
 ---@field group_id string
@@ -606,13 +395,13 @@
 ---@class SentRcsMessage
 ---@field content? table
 ---@field phone_number string
----@field sender any
+---@field sender string
 ---@field text? string
 
 ---@class SentRcsMessageCreateData
 ---@field content? table
 ---@field phone_number string
----@field sender any
+---@field sender string
 ---@field text? string
 
 ---@class ShipmentCountryVolume
@@ -728,7 +517,7 @@
 ---@class Smssendername
 
 ---@class SmssendernameCreateData
----@field sendername_id string
+---@field sender string
 
 ---@class SmssendernameRemoveMatch
 ---@field sender string
@@ -800,28 +589,8 @@
 ---@field template? string
 
 ---@class UserRcsSenderCollection
----@field deliveredAt? string
----@field expiredAt? string
----@field id? string
----@field interface? string
----@field messageType? string
----@field readAt? string
----@field recipient? string
----@field sender? string
----@field senderId? string
----@field sentAt? string
 
 ---@class UserRcsSenderCollectionListMatch
----@field deliveredAt? string
----@field expiredAt? string
----@field id? string
----@field interface? string
----@field messageType? string
----@field readAt? string
----@field recipient? string
----@field sender? string
----@field senderId? string
----@field sentAt? string
 
 local M = {}
 

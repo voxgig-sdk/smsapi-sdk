@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 
+using SmsapiSdk.Feature;
 using Voxgig.Struct;
 using Xunit;
 
@@ -9,6 +10,12 @@ namespace SmsapiSdk.Test;
 
 public class ContactsgroupEntityTest
 {
+    // main.kit.test.live.strict is true (the default is true): a live
+    // request that fails, or a live test missing an input it needs,
+    // fails the test.
+    // An account with no record for a test to read skips it either way.
+    private const bool LIVE_STRICT = true;
+
     [Fact]
     public void Instance()
     {
@@ -33,12 +40,16 @@ public class ContactsgroupEntityTest
                 return; // skipped via sdk-test-control.json
             }
         }
-        // The basic flow consumes synthetic IDs from the fixture. In live
-        // mode without an *_ENTID env override, those IDs hit the live API
-        // and 4xx; set SMSAPI_TEST_CONTACTSGROUP_ENTID JSON to run live.
-        if (setup.SyntheticOnly)
+        if (setup.Live)
         {
-            return;
+            foreach (var liveKey in new[] { "group01" })
+            {
+                if (setup.SyntheticOnly || StructUtils.GetProp(setup.Idmap, liveKey) == null)
+                {
+                    TestRunner.LiveMiss(LIVE_STRICT, "Live entity test blocked: needs " + liveKey + " via SMSAPI_TEST_CONTACTSGROUP_ENTID");
+                    return;
+                }
+            }
         }
         var client = setup.Client;
 
@@ -52,13 +63,9 @@ public class ContactsgroupEntityTest
         var contactsgroupRef01DataResult = contactsgroupRef01Ent.Create(contactsgroupRef01Data, null);
         contactsgroupRef01Data = Helpers.ToMapAny(contactsgroupRef01DataResult is IEntity ce ? ce.Data() : contactsgroupRef01DataResult);
         Assert.True(contactsgroupRef01Data != null, "expected create result to be a map");
-        Assert.True(contactsgroupRef01Data!["id"] != null, "expected created entity to have an id");
 
         // LIST
-        var contactsgroupRef01Match = new Dictionary<string, object?>
-        {
-            ["group_id"] = setup.Idmap["group01"],
-        };
+        var contactsgroupRef01Match = new Dictionary<string, object?>();
 
         var contactsgroupRef01ListResult = contactsgroupRef01Ent.List(contactsgroupRef01Match, null);
         var contactsgroupRef01List = contactsgroupRef01ListResult as List<object?>;
@@ -74,20 +81,11 @@ public class ContactsgroupEntityTest
         // UPDATE
         var contactsgroupRef01DataUp0Up = new Dictionary<string, object?>
         {
-            ["id"] = contactsgroupRef01Data!["id"],
         };
-
-        var contactsgroupRef01MarkdefUp0Name = "birthday_date";
-        var contactsgroupRef01MarkdefUp0Value = $"Mark01-contactsgroup_ref01_{setup.Now}";
-        contactsgroupRef01DataUp0Up[contactsgroupRef01MarkdefUp0Name] = contactsgroupRef01MarkdefUp0Value;
 
         var contactsgroupRef01ResdataUp0Result = contactsgroupRef01Ent.Update(contactsgroupRef01DataUp0Up, null);
         var contactsgroupRef01ResdataUp0 = Helpers.ToMapAny(contactsgroupRef01ResdataUp0Result is IEntity ue ? ue.Data() : contactsgroupRef01ResdataUp0Result);
         Assert.True(contactsgroupRef01ResdataUp0 != null, "expected update result to be a map");
-        Assert.True(StructRunner.DeepEqual(contactsgroupRef01ResdataUp0!["id"], contactsgroupRef01DataUp0Up["id"]),
-            "expected update result id to match");
-        Assert.True(Equals(contactsgroupRef01ResdataUp0![contactsgroupRef01MarkdefUp0Name], contactsgroupRef01MarkdefUp0Value),
-            $"expected {contactsgroupRef01MarkdefUp0Name} to be updated, got {contactsgroupRef01ResdataUp0[contactsgroupRef01MarkdefUp0Name]}");
 
         // REMOVE
         var contactsgroupRef01MatchRm0 = new Dictionary<string, object?>
@@ -97,10 +95,7 @@ public class ContactsgroupEntityTest
         contactsgroupRef01Ent.Remove(contactsgroupRef01MatchRm0, null);
 
         // LIST
-        var contactsgroupRef01MatchRt0 = new Dictionary<string, object?>
-        {
-            ["group_id"] = setup.Idmap["group01"],
-        };
+        var contactsgroupRef01MatchRt0 = new Dictionary<string, object?>();
 
         var contactsgroupRef01ListRt0Result = contactsgroupRef01Ent.List(contactsgroupRef01MatchRt0, null);
         var contactsgroupRef01ListRt0 = contactsgroupRef01ListRt0Result as List<object?>;
@@ -157,6 +152,94 @@ public class ContactsgroupEntityTest
         Assert.Equal(listed.Count, streamed2.Count);
     }
 
+    private sealed class FailHook : BaseFeature
+    {
+        public int Unexpected;
+
+        public FailHook()
+        {
+            Name = "failhook";
+            Version = "0.0.1";
+            Active = true;
+        }
+
+        public override void PreSpec(Context ctx) =>
+            throw new Exception("contactsgroup hook failed");
+
+        public override void PreUnexpected(Context ctx) => Unexpected++;
+    }
+
+    [Fact]
+    public async Task StreamError()
+    {
+        var offline = new Dictionary<string, object?> { ["net"] = new Dictionary<string, object?> { ["offline"] = true } };
+        var err = await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            await foreach (var _ in SmsapiSDK.TestSDK(offline, null).Contactsgroup().Stream("list", null, null)) { }
+        });
+        Assert.Contains("offline", err.Message);
+
+        await foreach (var _ in SmsapiSDK.TestSDK(offline, null).Contactsgroup().Stream("list", null,
+            new Dictionary<string, object?> { ["ctrl"] = new Dictionary<string, object?> { ["throw"] = false } })) { }
+
+        if (Fh.HasFeature("rbac"))
+        {
+            var denied = SmsapiSDK.TestSDK(null,
+                new Dictionary<string, object?> { ["feature"] = new Dictionary<string, object?> { ["rbac"] = new Dictionary<string, object?> { ["active"] = true, ["deny"] = true } } });
+            var denyerr = await Assert.ThrowsAnyAsync<SmsapiError>(async () =>
+            {
+                await foreach (var _ in denied.Contactsgroup().Stream("list", null, null)) { }
+            });
+            Assert.Equal("rbac_denied", denyerr.Code);
+        }
+    }
+
+    [Fact]
+    public async Task StreamCtrl()
+    {
+        var explain = new Dictionary<string, object?>();
+        var ctrl = new Dictionary<string, object?> { ["explain"] = explain };
+        await foreach (var _ in SmsapiSDK.TestSDK(null, null).Contactsgroup().Stream("list", null,
+            new Dictionary<string, object?> { ["ctrl"] = ctrl })) { }
+        Assert.Equal(new[] { "explain" }, ctrl.Keys.ToArray());
+        Assert.Same(explain, ctrl["explain"]);
+        Assert.NotEmpty(explain);
+    }
+
+    [Fact]
+    public void Unexpected()
+    {
+        var hook = new FailHook();
+        var client = new SmsapiSDK(new Dictionary<string, object?>
+        {
+            ["feature"] = new Dictionary<string, object?> { ["test"] = new Dictionary<string, object?> { ["active"] = true } },
+            ["extend"] = new List<object?> { hook },
+        });
+
+        var err = Assert.ThrowsAny<Exception>(() => client.Contactsgroup().List(null, null));
+        Assert.Contains("hook failed", err.Message);
+        Assert.True(hook.Unexpected > 0);
+
+        var fired = hook.Unexpected;
+        client.Contactsgroup().List(null, new Dictionary<string, object?> { ["throw"] = false });
+        Assert.True(hook.Unexpected > fired);
+    }
+
+    [Fact]
+    public void Validate()
+    {
+        if (!Fh.HasFeature("validate"))
+        {
+            Console.WriteLine("skip: feature not present in this SDK: validate");
+            return;
+        }
+        var client = SmsapiSDK.TestSDK(null,
+            new Dictionary<string, object?> { ["feature"] = new Dictionary<string, object?> { ["validate"] = new Dictionary<string, object?> { ["active"] = true } } });
+        var err = Assert.ThrowsAny<SmsapiError>(() => client.Contactsgroup().Create(
+            new Dictionary<string, object?> { ["group_id"] = 1, ["read"] = true, ["send"] = true, ["username"] = "x", ["write"] = true }, null));
+        Assert.Equal("validate_failed", err.Code);
+    }
+
     private static EntityTestSetup ContactsgroupBasicSetup(
         Dictionary<string, object?>? extra)
     {
@@ -196,9 +279,8 @@ public class ContactsgroupEntityTest
                 },
             });
 
-        // Detect ENTID env override before EnvOverride consumes it. When
-        // live mode is on without a real override, the basic test runs
-        // against synthetic IDs from the fixture and 4xx's.
+        // Whether *_ENTID supplied the idmap, read before EnvOverride consumes
+        // it: without it, the ids a live flow binds are the fixture's synthetic ones.
         var entidEnvRaw = Environment.GetEnvironmentVariable(
             "SMSAPI_TEST_CONTACTSGROUP_ENTID") ?? "";
         var idmapOverridden = entidEnvRaw != "" &&

@@ -233,11 +233,13 @@ val available = client.available(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.available(null).list(null, null)
-println(results)
+val results = client.available(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -277,16 +279,18 @@ val blacklist = client.blacklist(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.blacklist(null).create(mutableMapOf<String, Any?>(
 ), null)
 ```
 
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.blacklist(null).load(null, null)
@@ -294,7 +298,7 @@ val result = client.blacklist(null).load(null, null)
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.blacklist(null).remove(mutableMapOf<String, Any?>("id" to "id"), null)
@@ -357,7 +361,7 @@ val callback = client.callback(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.callback(null).create(mutableMapOf<String, Any?>(
@@ -366,16 +370,18 @@ val result = client.callback(null).create(mutableMapOf<String, Any?>(
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.callback(null).list(null, null)
-println(results)
+val results = client.callback(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.callback(null).load(mutableMapOf<String, Any?>("id" to "callback_id"), null)
@@ -383,7 +389,7 @@ val result = client.callback(null).load(mutableMapOf<String, Any?>("id" to "call
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.callback(null).remove(mutableMapOf<String, Any?>("id" to "callback_id"), null)
@@ -391,7 +397,7 @@ val result = client.callback(null).remove(mutableMapOf<String, Any?>("id" to "ca
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.callback(null).update(mutableMapOf<String, Any?>(
@@ -443,7 +449,6 @@ val contact = client.contact(null)
 | `email` | `String?` | No |  |
 | `first_name` | `String?` | No |  |
 | `gender` | `String?` | Yes |  |
-| `group_id` | `String?` | No | Object ID |
 | `groups` | `List<Any?>?` | Yes |  |
 | `id` | `String?` | Yes | Object ID |
 | `idx` | `String?` | No | User provided resource id |
@@ -451,14 +456,8 @@ val contact = client.contact(null)
 | `name` | `String?` | Yes | Group name |
 | `permissions` | `List<Any?>?` | No |  |
 | `phone_number` | `String?` | No |  |
-| `read` | `Boolean?` | No | Has read permission |
-| `send` | `Boolean?` | No | Has send permission |
 | `size` | `Long?` | Yes |  |
 | `source` | `String?` | No |  |
-| `type` | `String?` | No |  |
-| `username` | `String?` | No |  |
-| `value` | `String?` | No |  |
-| `write` | `Boolean?` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -466,9 +465,9 @@ val contact = client.contact(null)
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -477,28 +476,21 @@ val contact = client.contact(null)
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.contact(null).create(mutableMapOf<String, Any?>(
@@ -516,18 +508,22 @@ val result = client.contact(null).create(mutableMapOf<String, Any?>(
 ), null)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.contact(null).list(null, null)
-println(results)
+val results = client.contact(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.contact(null).load(mutableMapOf<String, Any?>("id" to "contact_id"), null)
@@ -535,7 +531,7 @@ val result = client.contact(null).load(mutableMapOf<String, Any?>("id" to "conta
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.contact(null).remove(mutableMapOf<String, Any?>("id" to "contact_id"), null)
@@ -543,13 +539,15 @@ val result = client.contact(null).remove(mutableMapOf<String, Any?>("id" to "con
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.contact(null).update(mutableMapOf<String, Any?>(
     "id" to "contact_id"
 ), null)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -582,95 +580,37 @@ val contactsField = client.contactsField(null)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String?` | No |  |
-| `city` | `String?` | No |  |
-| `contact_expire_after` | `Long?` | Yes | Contact expire after days |
-| `contacts_count` | `Long?` | No |  |
-| `country` | `String?` | No |  |
-| `created_by` | `String?` | Yes |  |
-| `date_created` | `String?` | Yes |  |
-| `date_updated` | `String?` | Yes |  |
-| `description` | `String?` | No |  |
-| `email` | `String?` | No |  |
-| `first_name` | `String?` | No |  |
-| `gender` | `String?` | Yes |  |
-| `group_id` | `String?` | No | Object ID |
-| `groups` | `List<Any?>?` | Yes |  |
 | `id` | `String?` | No | Object ID |
-| `idx` | `String?` | No | User provided resource id |
-| `last_name` | `String?` | No |  |
-| `name` | `String?` | No | Group name |
-| `permissions` | `List<Any?>?` | No |  |
-| `phone_number` | `String?` | No |  |
-| `read` | `Boolean?` | No | Has read permission |
-| `send` | `Boolean?` | No | Has send permission |
-| `source` | `String?` | No |  |
+| `name` | `String?` | No |  |
 | `type` | `String?` | No |  |
-| `username` | `String?` | No |  |
-| `value` | `String?` | No |  |
-| `write` | `Boolean?` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.contactsField(null).create(mutableMapOf<String, Any?>(
-    "contact_expire_after" to 1L,  // Long?
-    "created_by" to "example_created_by",  // String?
-    "date_created" to "example_date_created",  // String?
-    "date_updated" to "example_date_updated",  // String?
-    "gender" to "example_gender",  // String?
-    "groups" to listOf<Any?>()  // List<Any?>?
 ), null)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.contactsField(null).list(null, null)
-println(results)
+val results = client.contactsField(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.contactsField(null).remove(mutableMapOf<String, Any?>("id" to "id"), null)
@@ -678,13 +618,15 @@ val result = client.contactsField(null).remove(mutableMapOf<String, Any?>("id" t
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.contactsField(null).update(mutableMapOf<String, Any?>(
     "id" to "id"
 ), null)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -713,47 +655,17 @@ The entity name (read-only property).
 val contactsFieldOption = client.contactsFieldOption(null)
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `String?` | No |  |
-| `city` | `String?` | No |  |
-| `contact_expire_after` | `Long?` | Yes | Contact expire after days |
-| `contacts_count` | `Long?` | No |  |
-| `country` | `String?` | No |  |
-| `created_by` | `String?` | Yes |  |
-| `date_created` | `String?` | Yes |  |
-| `date_updated` | `String?` | Yes |  |
-| `description` | `String?` | No |  |
-| `email` | `String?` | No |  |
-| `first_name` | `String?` | No |  |
-| `gender` | `String?` | Yes |  |
-| `group_id` | `String?` | No | Object ID |
-| `groups` | `List<Any?>?` | Yes |  |
-| `id` | `String?` | Yes | Object ID |
-| `idx` | `String?` | No | User provided resource id |
-| `last_name` | `String?` | No |  |
-| `name` | `String?` | No | Group name |
-| `permissions` | `List<Any?>?` | No |  |
-| `phone_number` | `String?` | No |  |
-| `read` | `Boolean?` | No | Has read permission |
-| `send` | `Boolean?` | No | Has send permission |
-| `source` | `String?` | No |  |
-| `type` | `String?` | No |  |
-| `username` | `String?` | No |  |
-| `value` | `String?` | No |  |
-| `write` | `Boolean?` | No | Has write permission |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.contactsFieldOption(null).list(null, null)
-println(results)
+val results = client.contactsFieldOption(null).list(mutableMapOf<String, Any?>("field_id" to "example"), null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -787,82 +699,21 @@ val contactsgroup = client.contactsgroup(null)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String?` | No |  |
-| `city` | `String?` | No |  |
-| `contact_expire_after` | `Long?` | Yes | Contact expire after days |
-| `contacts_count` | `Long?` | No |  |
-| `country` | `String?` | No |  |
-| `created_by` | `String?` | Yes |  |
-| `date_created` | `String?` | Yes |  |
-| `date_updated` | `String?` | Yes |  |
-| `description` | `String?` | No |  |
-| `email` | `String?` | No |  |
-| `first_name` | `String?` | No |  |
-| `gender` | `String?` | Yes |  |
 | `group_id` | `String?` | Yes | Object ID |
-| `groups` | `List<Any?>?` | Yes |  |
-| `id` | `String?` | Yes | Object ID |
-| `idx` | `String?` | No | User provided resource id |
-| `last_name` | `String?` | No |  |
-| `name` | `String?` | No | Group name |
-| `permissions` | `List<Any?>?` | No |  |
-| `phone_number` | `String?` | No |  |
 | `read` | `Boolean?` | Yes | Has read permission |
 | `send` | `Boolean?` | Yes | Has send permission |
-| `source` | `String?` | No |  |
-| `type` | `String?` | No |  |
 | `username` | `String?` | Yes |  |
-| `value` | `String?` | No |  |
 | `write` | `Boolean?` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.contactsgroup(null).create(mutableMapOf<String, Any?>(
-    "contact_expire_after" to 1L,  // Long?
-    "created_by" to "example_created_by",  // String?
-    "date_created" to "example_date_created",  // String?
-    "date_updated" to "example_date_updated",  // String?
-    "gender" to "example_gender",  // String?
     "group_id" to "example_group_id",  // String?
-    "groups" to listOf<Any?>(),  // List<Any?>?
-    "id" to "example_id",  // String?
     "read" to true,  // Boolean?
     "send" to true,  // Boolean?
     "username" to "example_username",  // String?
@@ -870,18 +721,22 @@ val result = client.contactsgroup(null).create(mutableMapOf<String, Any?>(
 ), null)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.contactsgroup(null).list(null, null)
-println(results)
+val results = client.contactsgroup(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.contactsgroup(null).remove(mutableMapOf<String, Any?>("group_id" to "group_id"), null)
@@ -889,13 +744,15 @@ val result = client.contactsgroup(null).remove(mutableMapOf<String, Any?>("group
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.contactsgroup(null).update(mutableMapOf<String, Any?>(
     "group_id" to "group_id"
 ), null)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -928,7 +785,7 @@ val contactstrash = client.contactstrash(null)
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.contactstrash(null).remove(null, null)
@@ -936,7 +793,7 @@ val result = client.contactstrash(null).remove(null, null)
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.contactstrash(null).update(mutableMapOf<String, Any?>(
@@ -984,11 +841,13 @@ val fieldAvailable = client.fieldAvailable(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.fieldAvailable(null).list(null, null)
-println(results)
+val results = client.fieldAvailable(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -1037,7 +896,7 @@ val group = client.group(null)
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.group(null).load(mutableMapOf<String, Any?>("id" to "group_id"), null)
@@ -1045,13 +904,15 @@ val result = client.group(null).load(mutableMapOf<String, Any?>("id" to "group_i
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.group(null).update(mutableMapOf<String, Any?>(
     "id" to "group_id"
 ), null)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1093,13 +954,15 @@ val mfaCode = client.mfaCode(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.mfaCode(null).create(mutableMapOf<String, Any?>(
     "phone_number" to "example_phone_number"  // String?
 ), null)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1141,16 +1004,18 @@ val optOut = client.optOut(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.optOut(null).list(null, null)
-println(results)
+val results = client.optOut(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.optOut(null).remove(mutableMapOf<String, Any?>("id" to "id"), null)
@@ -1193,7 +1058,7 @@ val optOutSetting = client.optOutSetting(null)
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.optOutSetting(null).load(null, null)
@@ -1201,7 +1066,7 @@ val result = client.optOutSetting(null).load(null, null)
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.optOutSetting(null).update(mutableMapOf<String, Any?>(
@@ -1250,7 +1115,7 @@ val permission = client.permission(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.permission(null).create(mutableMapOf<String, Any?>(
@@ -1262,12 +1127,14 @@ val result = client.permission(null).create(mutableMapOf<String, Any?>(
 ), null)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
-val result = client.permission(null).load(mutableMapOf<String, Any?>("id" to "permission_id", "group_id" to "group_id", "username" to "username"), null)
+val result = client.permission(null).load(mutableMapOf<String, Any?>("id" to "permission_id", "group_id" to "group_id"), null)
 ```
 
 ### Common Methods
@@ -1308,11 +1175,13 @@ val ping = client.ping(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.ping(null).list(null, null)
-println(results)
+val results = client.ping(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -1358,16 +1227,18 @@ val profile = client.profile(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.profile(null).list(null, null)
-println(results)
+val results = client.profile(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.profile(null).load(null, null)
@@ -1404,11 +1275,13 @@ val rcs = client.rcs(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.rcs(null).list(null, null)
-println(results)
+val results = client.rcs(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -1452,25 +1325,29 @@ val sendername = client.sendername(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.sendername(null).create(mutableMapOf<String, Any?>(
 ), null)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.sendername(null).list(null, null)
-println(results)
+val results = client.sendername(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.sendername(null).load(mutableMapOf<String, Any?>("id" to "sendername_id"), null)
@@ -1515,11 +1392,13 @@ val sendernameStatement = client.sendernameStatement(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.sendernameStatement(null).list(null, null)
-println(results)
+val results = client.sendernameStatement(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -1555,19 +1434,19 @@ val sentRcsMessage = client.sentRcsMessage(null)
 | --- | --- | --- | --- |
 | `content` | `Map<String, Any?>?` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `String?` | Yes | Recipient phone number (e.g. |
-| `sender` | `Any?` | Yes |  |
+| `sender` | `String?` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String?` | No | Plain text message content. |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.sentRcsMessage(null).create(mutableMapOf<String, Any?>(
     "phone_number" to "example_phone_number",  // String?
-    "sender" to "example_sender"  // Any?
+    "sender" to "example_sender"  // String?
 ), null)
 ```
 
@@ -1611,11 +1490,13 @@ val shipmentCountryVolume = client.shipmentCountryVolume(null)
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.shipmentCountryVolume(null).list(null, null)
-println(results)
+val results = client.shipmentCountryVolume(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -1664,7 +1545,7 @@ val shortUrl = client.shortUrl(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.shortUrl(null).create(mutableMapOf<String, Any?>(
@@ -1673,16 +1554,18 @@ val result = client.shortUrl(null).create(mutableMapOf<String, Any?>(
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.shortUrl(null).list(null, null)
-println(results)
+val results = client.shortUrl(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.shortUrl(null).load(mutableMapOf<String, Any?>("id" to "short_url_id"), null)
@@ -1690,7 +1573,7 @@ val result = client.shortUrl(null).load(mutableMapOf<String, Any?>("id" to "shor
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.shortUrl(null).remove(mutableMapOf<String, Any?>("id" to "short_url_id"), null)
@@ -1698,13 +1581,15 @@ val result = client.shortUrl(null).remove(mutableMapOf<String, Any?>("id" to "sh
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.shortUrl(null).update(mutableMapOf<String, Any?>(
     "id" to "short_url_id"
 ), null)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1763,7 +1648,7 @@ val smsdo = client.smsdo(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.smsdo(null).create(mutableMapOf<String, Any?>(
@@ -1801,17 +1686,17 @@ val smssendername = client.smssendername(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.smssendername(null).create(mutableMapOf<String, Any?>(
-    "sendername_id" to "example_sendername_id"  // String?
+    "sender" to "example_sender"  // String?
 ), null)
 ```
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.smssendername(null).remove(mutableMapOf<String, Any?>("sender" to "sender"), null)
@@ -1854,7 +1739,7 @@ val smstemplate = client.smstemplate(null)
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.smstemplate(null).remove(mutableMapOf<String, Any?>("id" to "id"), null)
@@ -1913,7 +1798,7 @@ val subuser = client.subuser(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.subuser(null).create(mutableMapOf<String, Any?>(
@@ -1923,16 +1808,18 @@ val result = client.subuser(null).create(mutableMapOf<String, Any?>(
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.subuser(null).list(null, null)
-println(results)
+val results = client.subuser(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.subuser(null).load(mutableMapOf<String, Any?>("id" to "subuser_id"), null)
@@ -1940,7 +1827,7 @@ val result = client.subuser(null).load(mutableMapOf<String, Any?>("id" to "subus
 
 #### `remove(reqmatch, ctrl) -> Any?`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```kotlin
 val result = client.subuser(null).remove(mutableMapOf<String, Any?>("id" to "subuser_id"), null)
@@ -1948,7 +1835,7 @@ val result = client.subuser(null).remove(mutableMapOf<String, Any?>("id" to "sub
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.subuser(null).update(mutableMapOf<String, Any?>(
@@ -1996,25 +1883,29 @@ val template = client.template(null)
 
 #### `create(reqdata, ctrl) -> Any?`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```kotlin
 val result = client.template(null).create(mutableMapOf<String, Any?>(
 ), null)
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.template(null).list(null, null)
-println(results)
+val results = client.template(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 #### `load(reqmatch, ctrl) -> Any?`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and raises on error.
 
 ```kotlin
 val result = client.template(null).load(mutableMapOf<String, Any?>("id" to "template_id"), null)
@@ -2022,13 +1913,15 @@ val result = client.template(null).load(mutableMapOf<String, Any?>("id" to "temp
 
 #### `update(reqdata, ctrl) -> Any?`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```kotlin
 val result = client.template(null).update(mutableMapOf<String, Any?>(
     "id" to "template_id"
 ), null)
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2057,30 +1950,17 @@ The entity name (read-only property).
 val userRcsSenderCollection = client.userRcsSenderCollection(null)
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `String?` | No |  |
-| `expiredAt` | `String?` | No |  |
-| `id` | `String?` | No | Object ID |
-| `interface` | `String?` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String?` | No | RCS message type (basic, single, ...). |
-| `readAt` | `String?` | No |  |
-| `recipient` | `String?` | No | Recipient phone number (without +). |
-| `sender` | `String?` | No | Sender name |
-| `senderId` | `String?` | No | Sender id |
-| `sentAt` | `String?` | No |  |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) -> Any?`
 
-List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns an aggregate list and raises on error.
+List entities matching the given criteria. The match is optional — call `list(null, null)` to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```kotlin
-val results = client.userRcsSenderCollection(null).list(null, null)
-println(results)
+val results = client.userRcsSenderCollection(null).list(null, null) as List<*>
+for (item in results) {
+    println((item as SdkEntity).data())
+}
 ```
 
 ### Common Methods
@@ -2758,6 +2638,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

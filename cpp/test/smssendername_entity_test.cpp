@@ -27,7 +27,7 @@ static SmssendernameSetup smssendername_basic_setup(const Value& extra) {
 
   // idmap via transform (upper-cased id name synthetics), matching the donors.
   Value idmap = Struct::transform(
-      vlist({Value("smssendername01"), Value("smssendername02"), Value("smssendername03"), Value("sendername01"), Value("sendername02"), Value("sendername03")}),
+      vlist({Value("smssendername01"), Value("smssendername02"), Value("smssendername03"), Value("sendername01"), Value("sendername02"), Value("sendername03"), Value("sender01")}),
       vmap({{"`$PACK`", vlist({
         Value(""),
         vmap({
@@ -66,6 +66,27 @@ static void smssendername_entity_instance() {
 }
 
 
+static bool smssendername_has_feature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
+
+static void smssendername_entity_validate() {
+  if (!smssendername_has_feature("validate")) {
+    std::cerr << "skip: feature not present in this SDK: validate\n";
+    return;
+  }
+  auto vsdk = SmsapiSDK::testSDK(Value::undef(), vmap({{"feature",
+      vmap({{"validate", vmap({{"active", Value(true)}})}})}}));
+  std::string code;
+  try {
+    vsdk->smssendername()->create(vmap({{"sender", Value(1)}}), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    code = err->code;
+  }
+  ASSERT_EQ(code, std::string("validate_failed"), "an invalid request fails with validate_failed");
+}
+
 static void smssendername_entity_basic() {
   auto setup = smssendername_basic_setup(Value::undef());
   std::string mode = setup.live ? "live" : "unit";
@@ -78,7 +99,7 @@ static void smssendername_entity_basic() {
   auto smssendername_ref01_ent = client->smssendername();
   Value smssendername_ref01_data = Helpers::toMapAny(getp(Struct::getpath(setup.data, {"new", "smssendername"}), "smssendername_ref01"));
   if (!smssendername_ref01_data.is_map()) smssendername_ref01_data = vmap();
-  setp(smssendername_ref01_data, "sendername_id", getp(setup.idmap, "sendername01"));
+  setp(smssendername_ref01_data, "sender", getp(setup.idmap, "sender01"));
   {
     Value smssendername_ref01_data_result = smssendername_ref01_ent->create(Struct::clone(smssendername_ref01_data), Value::undef())->data();
     smssendername_ref01_data = Helpers::toMapAny(smssendername_ref01_data_result);
@@ -96,6 +117,7 @@ static void smssendername_entity_basic() {
 
 int main() {
   T_RUN(smssendername_entity_instance);
+  T_RUN(smssendername_entity_validate);
   T_RUN(smssendername_entity_basic);
   return sdktest::summary("smssendername_entity_test");
 }

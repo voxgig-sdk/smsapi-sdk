@@ -311,6 +311,7 @@ pub fn make_config() Value {
                 }) },
                 .{ "optspec", h.jo(&.{
                     .{ "clearTimer", h.vstr("`$FUNCTION`") },
+                    .{ "now", h.vstr("`$FUNCTION`") },
                     .{ "setTimer", h.vstr("`$FUNCTION`") },
                 }) },
                 .{ "strict", h.vbool(false) },
@@ -433,6 +434,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -484,6 +489,28 @@ pub fn make_config() Value {
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("phone_number") },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "fields", h.ja(&.{
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("expire_at") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("phone_number") },
+                                                }),
+                                            }) },
+                                            .{ "kind", h.vstr("form") },
+                                            .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -512,6 +539,21 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "kind", h.vstr("raw") },
+                                            .{ "media", h.vstr("text/csv") },
+                                        }),
+                                    }) },
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("import") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("multipart") },
+                                    .{ "media", h.vstr("multipart/form-data") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -583,13 +625,16 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("phone_number") },
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("accept"),
-                                        h.vstr("limit"),
-                                        h.vstr("offset"),
-                                        h.vstr("q"),
-                                        h.vstr("x_async"),
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "kind", h.vstr("raw") },
+                                            .{ "media", h.vstr("text/csv") },
+                                        }),
                                     }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -674,9 +719,6 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("phone_number") },
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("phone_number"),
-                                    }) },
                                 }) },
                             }),
                         }) },
@@ -769,6 +811,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -795,6 +841,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -839,6 +889,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                             h.jo(&.{
@@ -887,6 +941,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -977,6 +1035,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                             h.jo(&.{
@@ -1100,11 +1162,6 @@ pub fn make_config() Value {
                         .{ "title", h.vstr("Collection") },
                         .{ "type", h.vstr("`$ARRAY`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "update", h.jo(&.{
-                                .{ "type", h.vstr("`$ARRAY`") },
-                            }) },
-                        }) },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("contact_expire_after") },
@@ -1118,11 +1175,6 @@ pub fn make_config() Value {
                         .{ "title", h.vstr("Contacts Count") },
                         .{ "type", h.vstr("`$INTEGER`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "type", h.vstr("`$INTEGER`") },
-                            }) },
-                        }) },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("country") },
@@ -1178,13 +1230,6 @@ pub fn make_config() Value {
                         .{ "req", h.vbool(true) },
                     }),
                     h.jo(&.{
-                        .{ "name", h.vstr("group_id") },
-                        .{ "title", h.vstr("Group Id") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Object ID") },
-                        .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
                         .{ "name", h.vstr("groups") },
                         .{ "title", h.vstr("Groups") },
                         .{ "type", h.vstr("`$ARRAY`") },
@@ -1214,11 +1259,6 @@ pub fn make_config() Value {
                         .{ "title", h.vstr("Name") },
                         .{ "type", h.vstr("`$STRING`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "type", h.vstr("`$STRING`") },
-                            }) },
-                        }) },
                         .{ "short", h.vstr("Group name") },
                     }),
                     h.jo(&.{
@@ -1232,18 +1272,6 @@ pub fn make_config() Value {
                         .{ "type", h.vstr("`$STRING`") },
                     }),
                     h.jo(&.{
-                        .{ "name", h.vstr("read") },
-                        .{ "title", h.vstr("Read") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has read permission") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("send") },
-                        .{ "title", h.vstr("Send") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has send permission") },
-                    }),
-                    h.jo(&.{
                         .{ "name", h.vstr("size") },
                         .{ "title", h.vstr("Size") },
                         .{ "type", h.vstr("`$INTEGER`") },
@@ -1253,27 +1281,6 @@ pub fn make_config() Value {
                         .{ "name", h.vstr("source") },
                         .{ "title", h.vstr("Source") },
                         .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("type") },
-                        .{ "title", h.vstr("Type") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("username") },
-                        .{ "title", h.vstr("Username") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("value") },
-                        .{ "title", h.vstr("Value") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("write") },
-                        .{ "title", h.vstr("Write") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has write permission") },
                     }),
                 }) },
                 .{ "id", h.jo(&.{
@@ -1333,6 +1340,14 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -1353,6 +1368,61 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("birthday_date") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("browser") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("city") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("country") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("description") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("device") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("email") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("first_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("gender") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("idx") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("last_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("operating_system") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("phone_number") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("source") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("undelivered_messages") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -1360,112 +1430,6 @@ pub fn make_config() Value {
                         .{ "input", h.vstr("data") },
                         .{ "name", h.vstr("list") },
                         .{ "points", h.ja(&.{
-                            h.jo(&.{
-                                .{ "kind", h.vstr("http") },
-                                .{ "method", h.vstr("GET") },
-                                .{ "orig", h.vstr("/contacts") },
-                                .{ "segments", h.ja(&.{
-                                    h.jo(&.{
-                                        .{ "lit", h.vstr("contacts") },
-                                    }),
-                                }) },
-                                .{ "parts", h.ja(&.{
-                                    h.vstr("contacts"),
-                                }) },
-                                .{ "rename", h.omap() },
-                                .{ "transform", h.jo(&.{
-                                    .{ "req", h.vstr("`reqdata`") },
-                                    .{ "res", h.vstr("`body.collection`") },
-                                }) },
-                                .{ "args", h.jo(&.{
-                                    .{ "query", h.ja(&.{
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("birthday_date") },
-                                            .{ "orig", h.vstr("birthday_date") },
-                                            .{ "type", h.vstr("`$ARRAY`") },
-                                            .{ "kind", h.vstr("query") },
-                                            .{ "example", h.vstr("2022-06-24") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("email") },
-                                            .{ "orig", h.vstr("email") },
-                                            .{ "type", h.vstr("`$ARRAY`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("first_name") },
-                                            .{ "orig", h.vstr("first_name") },
-                                            .{ "type", h.vstr("`$ARRAY`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("gender") },
-                                            .{ "orig", h.vstr("gender") },
-                                            .{ "type", h.vstr("`$STRING`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("group_id") },
-                                            .{ "orig", h.vstr("group_id") },
-                                            .{ "type", h.vstr("`$ARRAY`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("last_name") },
-                                            .{ "orig", h.vstr("last_name") },
-                                            .{ "type", h.vstr("`$ARRAY`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("limit") },
-                                            .{ "orig", h.vstr("limit") },
-                                            .{ "type", h.vstr("`$INTEGER`") },
-                                            .{ "kind", h.vstr("query") },
-                                            .{ "example", h.vnum(5) },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("offset") },
-                                            .{ "orig", h.vstr("offset") },
-                                            .{ "type", h.vstr("`$INTEGER`") },
-                                            .{ "kind", h.vstr("query") },
-                                            .{ "example", h.vnum(0) },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("order_by") },
-                                            .{ "orig", h.vstr("order_by") },
-                                            .{ "type", h.vstr("`$STRING`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("phone_number") },
-                                            .{ "orig", h.vstr("phone_number") },
-                                            .{ "type", h.vstr("`$ARRAY`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("q") },
-                                            .{ "orig", h.vstr("q") },
-                                            .{ "type", h.vstr("`$STRING`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                    }) },
-                                }) },
-                                .{ "select", h.jo(&.{
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("birthday_date"),
-                                        h.vstr("email"),
-                                        h.vstr("first_name"),
-                                        h.vstr("gender"),
-                                        h.vstr("group_id"),
-                                        h.vstr("last_name"),
-                                        h.vstr("limit"),
-                                        h.vstr("offset"),
-                                        h.vstr("order_by"),
-                                        h.vstr("phone_number"),
-                                        h.vstr("q"),
-                                    }) },
-                                }) },
-                            }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
                                 .{ "method", h.vstr("GET") },
@@ -1512,6 +1476,112 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
+                            }),
+                            h.jo(&.{
+                                .{ "kind", h.vstr("http") },
+                                .{ "method", h.vstr("GET") },
+                                .{ "orig", h.vstr("/contacts") },
+                                .{ "segments", h.ja(&.{
+                                    h.jo(&.{
+                                        .{ "lit", h.vstr("contacts") },
+                                    }),
+                                }) },
+                                .{ "parts", h.ja(&.{
+                                    h.vstr("contacts"),
+                                }) },
+                                .{ "rename", h.omap() },
+                                .{ "transform", h.jo(&.{
+                                    .{ "req", h.vstr("`reqdata`") },
+                                    .{ "res", h.vstr("`body.collection`") },
+                                }) },
+                                .{ "args", h.jo(&.{
+                                    .{ "query", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("birthday_date") },
+                                            .{ "orig", h.vstr("birthday_date") },
+                                            .{ "type", h.vstr("`$ARRAY`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "example", h.vstr("2022-06-24") },
+                                            .{ "field", h.vbool(true) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("email") },
+                                            .{ "orig", h.vstr("email") },
+                                            .{ "type", h.vstr("`$ARRAY`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "field", h.vbool(true) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("first_name") },
+                                            .{ "orig", h.vstr("first_name") },
+                                            .{ "type", h.vstr("`$ARRAY`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "field", h.vbool(true) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("gender") },
+                                            .{ "orig", h.vstr("gender") },
+                                            .{ "type", h.vstr("`$STRING`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "field", h.vbool(true) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("group_id") },
+                                            .{ "orig", h.vstr("group_id") },
+                                            .{ "type", h.vstr("`$ARRAY`") },
+                                            .{ "kind", h.vstr("query") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("last_name") },
+                                            .{ "orig", h.vstr("last_name") },
+                                            .{ "type", h.vstr("`$ARRAY`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "field", h.vbool(true) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("limit") },
+                                            .{ "orig", h.vstr("limit") },
+                                            .{ "type", h.vstr("`$INTEGER`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "example", h.vnum(5) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("offset") },
+                                            .{ "orig", h.vstr("offset") },
+                                            .{ "type", h.vstr("`$INTEGER`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "example", h.vnum(0) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("order_by") },
+                                            .{ "orig", h.vstr("order_by") },
+                                            .{ "type", h.vstr("`$STRING`") },
+                                            .{ "kind", h.vstr("query") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("phone_number") },
+                                            .{ "orig", h.vstr("phone_number") },
+                                            .{ "type", h.vstr("`$ARRAY`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "field", h.vbool(true) },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("q") },
+                                            .{ "orig", h.vstr("q") },
+                                            .{ "type", h.vstr("`$STRING`") },
+                                            .{ "kind", h.vstr("query") },
+                                        }),
+                                    }) },
+                                }) },
+                                .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -1584,6 +1654,10 @@ pub fn make_config() Value {
                                         h.vstr("group_id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -1645,6 +1719,10 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -1687,6 +1765,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -1889,6 +1971,10 @@ pub fn make_config() Value {
                                         h.vstr("group_id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -1950,6 +2036,10 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -1993,6 +2083,43 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("birthday_date") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("city") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("description") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("email") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("first_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("gender") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("last_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("phone_number") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("source") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -2011,165 +2138,21 @@ pub fn make_config() Value {
             .{ "contacts_field", h.jo(&.{
                 .{ "fields", h.ja(&.{
                     h.jo(&.{
-                        .{ "name", h.vstr("birthday_date") },
-                        .{ "title", h.vstr("Birthday Date") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("date") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("city") },
-                        .{ "title", h.vstr("City") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("contact_expire_after") },
-                        .{ "title", h.vstr("Contact Expire After") },
-                        .{ "type", h.vstr("`$INTEGER`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "short", h.vstr("Contact expire after days") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("contacts_count") },
-                        .{ "title", h.vstr("Contacts Count") },
-                        .{ "type", h.vstr("`$INTEGER`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("country") },
-                        .{ "title", h.vstr("Country") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("created_by") },
-                        .{ "title", h.vstr("Created By") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("date_created") },
-                        .{ "title", h.vstr("Date Created") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("date_updated") },
-                        .{ "title", h.vstr("Date Updated") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("description") },
-                        .{ "title", h.vstr("Description") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("email") },
-                        .{ "title", h.vstr("Email") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("email") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("first_name") },
-                        .{ "title", h.vstr("First Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("gender") },
-                        .{ "title", h.vstr("Gender") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("group_id") },
-                        .{ "title", h.vstr("Group Id") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Object ID") },
-                        .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("groups") },
-                        .{ "title", h.vstr("Groups") },
-                        .{ "type", h.vstr("`$ARRAY`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
                         .{ "name", h.vstr("id") },
                         .{ "title", h.vstr("Id") },
                         .{ "type", h.vstr("`$STRING`") },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "req", h.vbool(true) },
-                                .{ "type", h.vstr("`$STRING`") },
-                            }) },
-                        }) },
                         .{ "short", h.vstr("Object ID") },
                         .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("idx") },
-                        .{ "title", h.vstr("Idx") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("User provided resource id") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("last_name") },
-                        .{ "title", h.vstr("Last Name") },
-                        .{ "type", h.vstr("`$STRING`") },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("name") },
                         .{ "title", h.vstr("Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Group name") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("permissions") },
-                        .{ "title", h.vstr("Permissions") },
-                        .{ "type", h.vstr("`$ARRAY`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("phone_number") },
-                        .{ "title", h.vstr("Phone Number") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("read") },
-                        .{ "title", h.vstr("Read") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has read permission") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("send") },
-                        .{ "title", h.vstr("Send") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has send permission") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("source") },
-                        .{ "title", h.vstr("Source") },
                         .{ "type", h.vstr("`$STRING`") },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("type") },
                         .{ "title", h.vstr("Type") },
                         .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("username") },
-                        .{ "title", h.vstr("Username") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("value") },
-                        .{ "title", h.vstr("Value") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("write") },
-                        .{ "title", h.vstr("Write") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has write permission") },
                     }),
                 }) },
                 .{ "id", h.jo(&.{
@@ -2205,6 +2188,22 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("type") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -2235,6 +2234,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -2341,6 +2344,19 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -2350,168 +2366,7 @@ pub fn make_config() Value {
                 }) },
             }) },
             .{ "contacts_field_option", h.jo(&.{
-                .{ "fields", h.ja(&.{
-                    h.jo(&.{
-                        .{ "name", h.vstr("birthday_date") },
-                        .{ "title", h.vstr("Birthday Date") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("date") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("city") },
-                        .{ "title", h.vstr("City") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("contact_expire_after") },
-                        .{ "title", h.vstr("Contact Expire After") },
-                        .{ "type", h.vstr("`$INTEGER`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "short", h.vstr("Contact expire after days") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("contacts_count") },
-                        .{ "title", h.vstr("Contacts Count") },
-                        .{ "type", h.vstr("`$INTEGER`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("country") },
-                        .{ "title", h.vstr("Country") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("created_by") },
-                        .{ "title", h.vstr("Created By") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("date_created") },
-                        .{ "title", h.vstr("Date Created") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("date_updated") },
-                        .{ "title", h.vstr("Date Updated") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("description") },
-                        .{ "title", h.vstr("Description") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("email") },
-                        .{ "title", h.vstr("Email") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("email") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("first_name") },
-                        .{ "title", h.vstr("First Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("gender") },
-                        .{ "title", h.vstr("Gender") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("group_id") },
-                        .{ "title", h.vstr("Group Id") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Object ID") },
-                        .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("groups") },
-                        .{ "title", h.vstr("Groups") },
-                        .{ "type", h.vstr("`$ARRAY`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("id") },
-                        .{ "title", h.vstr("Id") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "short", h.vstr("Object ID") },
-                        .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("idx") },
-                        .{ "title", h.vstr("Idx") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("User provided resource id") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("last_name") },
-                        .{ "title", h.vstr("Last Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("name") },
-                        .{ "title", h.vstr("Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Group name") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("permissions") },
-                        .{ "title", h.vstr("Permissions") },
-                        .{ "type", h.vstr("`$ARRAY`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("phone_number") },
-                        .{ "title", h.vstr("Phone Number") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("read") },
-                        .{ "title", h.vstr("Read") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has read permission") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("send") },
-                        .{ "title", h.vstr("Send") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has send permission") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("source") },
-                        .{ "title", h.vstr("Source") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("type") },
-                        .{ "title", h.vstr("Type") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("username") },
-                        .{ "title", h.vstr("Username") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("value") },
-                        .{ "title", h.vstr("Value") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("write") },
-                        .{ "title", h.vstr("Write") },
-                        .{ "type", h.vstr("`$BOOLEAN`") },
-                        .{ "short", h.vstr("Has write permission") },
-                    }),
-                }) },
-                .{ "id", h.jo(&.{
-                    .{ "field", h.vstr("id") },
-                    .{ "name", h.vstr("id") },
-                }) },
+                .{ "fields", h.olist() },
                 .{ "name", h.vstr("contacts_field_option") },
                 .{ "op", h.jo(&.{
                     .{ "list", h.jo(&.{
@@ -2568,6 +2423,10 @@ pub fn make_config() Value {
                                         h.vstr("field_id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -2579,139 +2438,18 @@ pub fn make_config() Value {
             .{ "contactsgroup", h.jo(&.{
                 .{ "fields", h.ja(&.{
                     h.jo(&.{
-                        .{ "name", h.vstr("birthday_date") },
-                        .{ "title", h.vstr("Birthday Date") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("date") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("city") },
-                        .{ "title", h.vstr("City") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("contact_expire_after") },
-                        .{ "title", h.vstr("Contact Expire After") },
-                        .{ "type", h.vstr("`$INTEGER`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "short", h.vstr("Contact expire after days") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("contacts_count") },
-                        .{ "title", h.vstr("Contacts Count") },
-                        .{ "type", h.vstr("`$INTEGER`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("country") },
-                        .{ "title", h.vstr("Country") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("created_by") },
-                        .{ "title", h.vstr("Created By") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("date_created") },
-                        .{ "title", h.vstr("Date Created") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("date_updated") },
-                        .{ "title", h.vstr("Date Updated") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("description") },
-                        .{ "title", h.vstr("Description") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("email") },
-                        .{ "title", h.vstr("Email") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("email") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("first_name") },
-                        .{ "title", h.vstr("First Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("gender") },
-                        .{ "title", h.vstr("Gender") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
                         .{ "name", h.vstr("group_id") },
                         .{ "title", h.vstr("Group Id") },
                         .{ "type", h.vstr("`$STRING`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "type", h.vstr("`$STRING`") },
-                            }) },
-                        }) },
                         .{ "short", h.vstr("Object ID") },
                         .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("groups") },
-                        .{ "title", h.vstr("Groups") },
-                        .{ "type", h.vstr("`$ARRAY`") },
-                        .{ "req", h.vbool(true) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("id") },
-                        .{ "title", h.vstr("Id") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "req", h.vbool(true) },
-                        .{ "short", h.vstr("Object ID") },
-                        .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("idx") },
-                        .{ "title", h.vstr("Idx") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("User provided resource id") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("last_name") },
-                        .{ "title", h.vstr("Last Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("name") },
-                        .{ "title", h.vstr("Name") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Group name") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("permissions") },
-                        .{ "title", h.vstr("Permissions") },
-                        .{ "type", h.vstr("`$ARRAY`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("phone_number") },
-                        .{ "title", h.vstr("Phone Number") },
-                        .{ "type", h.vstr("`$STRING`") },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("read") },
                         .{ "title", h.vstr("Read") },
                         .{ "type", h.vstr("`$BOOLEAN`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "type", h.vstr("`$BOOLEAN`") },
-                            }) },
-                        }) },
                         .{ "short", h.vstr("Has read permission") },
                     }),
                     h.jo(&.{
@@ -2719,55 +2457,21 @@ pub fn make_config() Value {
                         .{ "title", h.vstr("Send") },
                         .{ "type", h.vstr("`$BOOLEAN`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "type", h.vstr("`$BOOLEAN`") },
-                            }) },
-                        }) },
                         .{ "short", h.vstr("Has send permission") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("source") },
-                        .{ "title", h.vstr("Source") },
-                        .{ "type", h.vstr("`$STRING`") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("type") },
-                        .{ "title", h.vstr("Type") },
-                        .{ "type", h.vstr("`$STRING`") },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("username") },
                         .{ "title", h.vstr("Username") },
                         .{ "type", h.vstr("`$STRING`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "type", h.vstr("`$STRING`") },
-                            }) },
-                        }) },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("value") },
-                        .{ "title", h.vstr("Value") },
-                        .{ "type", h.vstr("`$STRING`") },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("write") },
                         .{ "title", h.vstr("Write") },
                         .{ "type", h.vstr("`$BOOLEAN`") },
                         .{ "req", h.vbool(true) },
-                        .{ "op", h.jo(&.{
-                            .{ "list", h.jo(&.{
-                                .{ "type", h.vstr("`$BOOLEAN`") },
-                            }) },
-                        }) },
                         .{ "short", h.vstr("Has write permission") },
                     }),
-                }) },
-                .{ "id", h.jo(&.{
-                    .{ "field", h.vstr("id") },
-                    .{ "name", h.vstr("id") },
                 }) },
                 .{ "name", h.vstr("contactsgroup") },
                 .{ "op", h.jo(&.{
@@ -2825,6 +2529,42 @@ pub fn make_config() Value {
                                         h.vstr("group_id"),
                                     }) },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("birthday_date") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("email") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("first_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("gender") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("group_id") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("last_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("phone_number") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("q") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -2849,6 +2589,28 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("contact_expire_after") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("description") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("idx") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -2856,51 +2618,6 @@ pub fn make_config() Value {
                         .{ "input", h.vstr("data") },
                         .{ "name", h.vstr("list") },
                         .{ "points", h.ja(&.{
-                            h.jo(&.{
-                                .{ "kind", h.vstr("http") },
-                                .{ "method", h.vstr("GET") },
-                                .{ "orig", h.vstr("/contacts/groups") },
-                                .{ "segments", h.ja(&.{
-                                    h.jo(&.{
-                                        .{ "lit", h.vstr("contacts") },
-                                    }),
-                                    h.jo(&.{
-                                        .{ "lit", h.vstr("groups") },
-                                    }),
-                                }) },
-                                .{ "parts", h.ja(&.{
-                                    h.vstr("contacts"),
-                                    h.vstr("groups"),
-                                }) },
-                                .{ "rename", h.omap() },
-                                .{ "transform", h.jo(&.{
-                                    .{ "req", h.vstr("`reqdata`") },
-                                    .{ "res", h.vstr("`body.collection`") },
-                                }) },
-                                .{ "args", h.jo(&.{
-                                    .{ "query", h.ja(&.{
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("name") },
-                                            .{ "orig", h.vstr("name") },
-                                            .{ "type", h.vstr("`$OBJECT`") },
-                                            .{ "kind", h.vstr("query") },
-                                            .{ "example", h.vstr("{\"name\" : \"group name\"}") },
-                                        }),
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("with") },
-                                            .{ "orig", h.vstr("with") },
-                                            .{ "type", h.vstr("`$ARRAY`") },
-                                            .{ "kind", h.vstr("query") },
-                                        }),
-                                    }) },
-                                }) },
-                                .{ "select", h.jo(&.{
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("name"),
-                                        h.vstr("with"),
-                                    }) },
-                                }) },
-                            }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
                                 .{ "method", h.vstr("GET") },
@@ -2950,6 +2667,54 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("group_id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
+                            }),
+                            h.jo(&.{
+                                .{ "kind", h.vstr("http") },
+                                .{ "method", h.vstr("GET") },
+                                .{ "orig", h.vstr("/contacts/groups") },
+                                .{ "segments", h.ja(&.{
+                                    h.jo(&.{
+                                        .{ "lit", h.vstr("contacts") },
+                                    }),
+                                    h.jo(&.{
+                                        .{ "lit", h.vstr("groups") },
+                                    }),
+                                }) },
+                                .{ "parts", h.ja(&.{
+                                    h.vstr("contacts"),
+                                    h.vstr("groups"),
+                                }) },
+                                .{ "rename", h.omap() },
+                                .{ "transform", h.jo(&.{
+                                    .{ "req", h.vstr("`reqdata`") },
+                                    .{ "res", h.vstr("`body.collection`") },
+                                }) },
+                                .{ "args", h.jo(&.{
+                                    .{ "query", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                            .{ "orig", h.vstr("name") },
+                                            .{ "type", h.vstr("`$OBJECT`") },
+                                            .{ "kind", h.vstr("query") },
+                                            .{ "example", h.vstr("{\"name\" : \"group name\"}") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("with") },
+                                            .{ "orig", h.vstr("with") },
+                                            .{ "type", h.vstr("`$ARRAY`") },
+                                            .{ "kind", h.vstr("query") },
+                                        }),
+                                    }) },
+                                }) },
+                                .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -3076,15 +2841,6 @@ pub fn make_config() Value {
                                             .{ "type", h.vstr("`$STRING`") },
                                             .{ "kind", h.vstr("param") },
                                             .{ "reqd", h.vbool(true) },
-                                        }),
-                                    }) },
-                                    .{ "query", h.ja(&.{
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("username") },
-                                            .{ "orig", h.vstr("username") },
-                                            .{ "type", h.vstr("`$STRING`") },
-                                            .{ "kind", h.vstr("query") },
-                                            .{ "reqd", h.vbool(true) },
                                             .{ "example", h.vstr("example_username") },
                                         }),
                                     }) },
@@ -3142,6 +2898,15 @@ pub fn make_config() Value {
                                         h.vstr("group_id"),
                                     }) },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("delete_contacts") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -3192,6 +2957,42 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("group_id"),
                                     }) },
+                                }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("birthday_date") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("email") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("first_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("gender") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("group_id") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("last_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("phone_number") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("q") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
                                 }) },
                             }),
                             h.jo(&.{
@@ -3277,15 +3078,6 @@ pub fn make_config() Value {
                                             .{ "type", h.vstr("`$STRING`") },
                                             .{ "kind", h.vstr("param") },
                                             .{ "reqd", h.vbool(true) },
-                                        }),
-                                    }) },
-                                    .{ "query", h.ja(&.{
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("username") },
-                                            .{ "orig", h.vstr("username") },
-                                            .{ "type", h.vstr("`$STRING`") },
-                                            .{ "kind", h.vstr("query") },
-                                            .{ "reqd", h.vbool(true) },
                                             .{ "example", h.vstr("example_username") },
                                         }),
                                     }) },
@@ -3295,6 +3087,25 @@ pub fn make_config() Value {
                                         h.vstr("group_id"),
                                         h.vstr("username"),
                                     }) },
+                                }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("read") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("send") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("write") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                             h.jo(&.{
@@ -3346,6 +3157,42 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("group_id"),
                                     }) },
+                                }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("birthday_date") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("email") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("first_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("gender") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("group_id") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("last_name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "list", h.vbool(true) },
+                                            .{ "name", h.vstr("phone_number") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("q") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
                                 }) },
                             }),
                         }) },
@@ -3506,6 +3353,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -3638,6 +3489,10 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -3690,6 +3545,28 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("contact_expire_after") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("description") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("idx") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -3754,6 +3631,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -3783,6 +3664,18 @@ pub fn make_config() Value {
                                 .{ "args", h.omap() },
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("verification") },
+                                }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("code") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("phone_number") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
                                 }) },
                             }),
                         }) },
@@ -3883,14 +3776,16 @@ pub fn make_config() Value {
                                         }),
                                     }) },
                                 }) },
-                                .{ "select", h.jo(&.{
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("accept"),
-                                        h.vstr("limit"),
-                                        h.vstr("offset"),
-                                        h.vstr("phone_number"),
-                                        h.vstr("x_async"),
+                                .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "kind", h.vstr("raw") },
+                                            .{ "media", h.vstr("text/csv") },
+                                        }),
                                     }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -3985,6 +3880,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4015,6 +3914,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4126,6 +4029,28 @@ pub fn make_config() Value {
                                         h.vstr("group_id"),
                                     }) },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("read") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("send") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("username") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("write") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4187,15 +4112,6 @@ pub fn make_config() Value {
                                             .{ "type", h.vstr("`$STRING`") },
                                             .{ "kind", h.vstr("param") },
                                             .{ "reqd", h.vbool(true) },
-                                        }),
-                                    }) },
-                                    .{ "query", h.ja(&.{
-                                        h.jo(&.{
-                                            .{ "name", h.vstr("username") },
-                                            .{ "orig", h.vstr("username") },
-                                            .{ "type", h.vstr("`$STRING`") },
-                                            .{ "kind", h.vstr("query") },
-                                            .{ "reqd", h.vbool(true) },
                                             .{ "example", h.vstr("example_username") },
                                         }),
                                     }) },
@@ -4204,8 +4120,11 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("group_id"),
                                         h.vstr("id"),
-                                        h.vstr("username"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -4259,6 +4178,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4352,9 +4275,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("price") },
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("type"),
-                                    }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -4382,6 +4306,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4422,6 +4350,10 @@ pub fn make_config() Value {
                                 .{ "args", h.omap() },
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("message") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -4494,6 +4426,19 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("sender") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4524,6 +4469,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4575,6 +4524,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -4635,6 +4588,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4661,8 +4618,10 @@ pub fn make_config() Value {
                     h.jo(&.{
                         .{ "name", h.vstr("sender") },
                         .{ "title", h.vstr("Sender") },
-                        .{ "type", h.vstr("`$ANY`") },
+                        .{ "type", h.vstr("`$STRING`") },
                         .{ "req", h.vbool(true) },
+                        .{ "short", h.vstr("RCS sender ID (object ID of the agent/sender the user has access to).") },
+                        .{ "format", h.vstr("oid") },
                     }),
                     h.jo(&.{
                         .{ "name", h.vstr("text") },
@@ -4700,6 +4659,34 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "fields", h.ja(&.{
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("content") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("phone_number") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("sender") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("text") },
+                                                }),
+                                            }) },
+                                            .{ "kind", h.vstr("form") },
+                                            .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4783,12 +4770,16 @@ pub fn make_config() Value {
                                         }),
                                     }) },
                                 }) },
-                                .{ "select", h.jo(&.{
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("accept"),
-                                        h.vstr("month"),
-                                        h.vstr("year"),
+                                .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "kind", h.vstr("raw") },
+                                            .{ "media", h.vstr("text/csv") },
+                                        }),
                                     }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -4891,6 +4882,20 @@ pub fn make_config() Value {
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("link") },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "kind", h.vstr("form") },
+                                            .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -4922,6 +4927,10 @@ pub fn make_config() Value {
                                 .{ "args", h.omap() },
                                 .{ "select", h.jo(&.{
                                     .{ "$action", h.vstr("link") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -4971,6 +4980,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -5069,6 +5082,25 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("description") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("url") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -5232,6 +5264,92 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "fields", h.ja(&.{
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("allow_duplicates") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("check_idx") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("date") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("date_validate") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("details") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("encoding") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("expiration_date") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "list", h.vbool(true) },
+                                                    .{ "name", h.vstr("fallback") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("fast") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("flash") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("format") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("from") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("group") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("idx") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("max_parts") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("message") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("normalize") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("notify_url") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("test") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("time_restriction") },
+                                                }),
+                                                h.jo(&.{
+                                                    .{ "name", h.vstr("to") },
+                                                }),
+                                            }) },
+                                            .{ "kind", h.vstr("form") },
+                                            .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "alternatives", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "kind", h.vstr("raw") },
+                                            .{ "media", h.vstr("text/plain") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -5260,7 +5378,7 @@ pub fn make_config() Value {
                                         .{ "lit", h.vstr("sendernames") },
                                     }),
                                     h.jo(&.{
-                                        .{ "var", h.vstr("sendername_id") },
+                                        .{ "var", h.vstr("sender") },
                                     }),
                                     h.jo(&.{
                                         .{ "lit", h.vstr("commands") },
@@ -5272,15 +5390,11 @@ pub fn make_config() Value {
                                 .{ "parts", h.ja(&.{
                                     h.vstr("sms"),
                                     h.vstr("sendernames"),
-                                    h.vstr("{sendername_id}"),
+                                    h.vstr("{sender}"),
                                     h.vstr("commands"),
                                     h.vstr("make_default"),
                                 }) },
-                                .{ "rename", h.jo(&.{
-                                    .{ "param", h.jo(&.{
-                                        .{ "sender", h.vstr("sendername_id") },
-                                    }) },
-                                }) },
+                                .{ "rename", h.omap() },
                                 .{ "transform", h.jo(&.{
                                     .{ "req", h.vstr("`reqdata`") },
                                     .{ "res", h.vstr("`body`") },
@@ -5288,7 +5402,7 @@ pub fn make_config() Value {
                                 .{ "args", h.jo(&.{
                                     .{ "params", h.ja(&.{
                                         h.jo(&.{
-                                            .{ "name", h.vstr("sendername_id") },
+                                            .{ "name", h.vstr("sender") },
                                             .{ "orig", h.vstr("sender") },
                                             .{ "type", h.vstr("`$STRING`") },
                                             .{ "kind", h.vstr("param") },
@@ -5298,7 +5412,7 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "select", h.jo(&.{
                                     .{ "exist", h.ja(&.{
-                                        h.vstr("sendername_id"),
+                                        h.vstr("sender"),
                                     }) },
                                 }) },
                             }),
@@ -5498,6 +5612,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -5552,6 +5670,10 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -5600,6 +5722,10 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                             h.jo(&.{
                                 .{ "kind", h.vstr("http") },
@@ -5628,10 +5754,10 @@ pub fn make_config() Value {
                                         }),
                                     }) },
                                 }) },
-                                .{ "select", h.jo(&.{
-                                    .{ "exist", h.ja(&.{
-                                        h.vstr("q"),
-                                    }) },
+                                .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -5677,6 +5803,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -5767,6 +5897,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                             h.jo(&.{
@@ -5928,6 +6062,25 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("normalize") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("template") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -5958,6 +6111,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -6005,6 +6162,10 @@ pub fn make_config() Value {
                                     .{ "exist", h.ja(&.{
                                         h.vstr("id"),
                                     }) },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
                                 }) },
                             }),
                         }) },
@@ -6054,6 +6215,25 @@ pub fn make_config() Value {
                                         h.vstr("id"),
                                     }) },
                                 }) },
+                                .{ "body", h.jo(&.{
+                                    .{ "fields", h.ja(&.{
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("name") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("normalize") },
+                                        }),
+                                        h.jo(&.{
+                                            .{ "name", h.vstr("template") },
+                                        }),
+                                    }) },
+                                    .{ "kind", h.vstr("form") },
+                                    .{ "media", h.vstr("application/x-www-form-urlencoded") },
+                                }) },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },
@@ -6063,73 +6243,7 @@ pub fn make_config() Value {
                 }) },
             }) },
             .{ "user_rcs_sender_collection", h.jo(&.{
-                .{ "fields", h.ja(&.{
-                    h.jo(&.{
-                        .{ "name", h.vstr("deliveredAt") },
-                        .{ "title", h.vstr("Delivered At") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("expiredAt") },
-                        .{ "title", h.vstr("Expired At") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("id") },
-                        .{ "title", h.vstr("Id") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Object ID") },
-                        .{ "format", h.vstr("oid") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("interface") },
-                        .{ "title", h.vstr("Interface") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Interface through which the message was sent (www, api, ...).") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("messageType") },
-                        .{ "title", h.vstr("Message Type") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("RCS message type (basic, single, ...).") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("readAt") },
-                        .{ "title", h.vstr("Read At") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("recipient") },
-                        .{ "title", h.vstr("Recipient") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Recipient phone number (without +).") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("sender") },
-                        .{ "title", h.vstr("Sender") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Sender name") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("senderId") },
-                        .{ "title", h.vstr("Sender Id") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "short", h.vstr("Sender id") },
-                    }),
-                    h.jo(&.{
-                        .{ "name", h.vstr("sentAt") },
-                        .{ "title", h.vstr("Sent At") },
-                        .{ "type", h.vstr("`$STRING`") },
-                        .{ "format", h.vstr("date-time") },
-                    }),
-                }) },
-                .{ "id", h.jo(&.{
-                    .{ "field", h.vstr("id") },
-                    .{ "name", h.vstr("id") },
-                }) },
+                .{ "fields", h.olist() },
                 .{ "name", h.vstr("user_rcs_sender_collection") },
                 .{ "op", h.jo(&.{
                     .{ "list", h.jo(&.{
@@ -6159,6 +6273,10 @@ pub fn make_config() Value {
                                 }) },
                                 .{ "args", h.omap() },
                                 .{ "select", h.omap() },
+                                .{ "response", h.jo(&.{
+                                    .{ "kind", h.vstr("json") },
+                                    .{ "media", h.vstr("application/json") },
+                                }) },
                             }),
                         }) },
                     }) },

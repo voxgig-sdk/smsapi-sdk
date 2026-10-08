@@ -95,14 +95,15 @@ main: kit: entity: opt_out: {
           }
           m: "GET"
           o: "/opt_outs"
-          q: {
-            exist: [
-              "accept"
-              "limit"
-              "offset"
-              "phone_number"
-              "x_async"
+          rs: {
+            alternatives: [
+              {
+                kind: "raw"
+                media: "text/csv"
+              }
             ]
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

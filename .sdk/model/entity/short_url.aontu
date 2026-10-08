@@ -83,6 +83,14 @@ main: kit: entity: short_url: {
       name: "create"
       points: [
         {
+          bf: [
+            "description"
+            "expire_time"
+            "expire_unit"
+            "file"
+            "name"
+            "url"
+          ]
           co: {
             id: "POST /short_url/links"
             source: "openapi3"
@@ -92,6 +100,20 @@ main: kit: entity: short_url: {
           o: "/short_url/links"
           q: {
             "$action": "link"
+          }
+          rb: {
+            alternatives: [
+              {
+                kind: "form"
+                media: "application/x-www-form-urlencoded"
+              }
+            ]
+            kind: "json"
+            media: "application/json"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -121,6 +143,10 @@ main: kit: entity: short_url: {
           o: "/short_url/links"
           q: {
             "$action": "link"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -164,6 +190,10 @@ main: kit: entity: short_url: {
             exist: [
               "id"
             ]
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -256,6 +286,25 @@ main: kit: entity: short_url: {
             exist: [
               "id"
             ]
+          }
+          rb: {
+            fields: [
+              {
+                name: "description"
+              }
+              {
+                name: "name"
+              }
+              {
+                name: "url"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

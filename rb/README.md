@@ -12,7 +12,7 @@ The SDK exposes the API as capitalised, semantic **Entities** — for example `c
 
 ## Install
 This package is not yet published to RubyGems. Install it from the
-GitHub release tag (`rb/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)), or
+GitHub release tag (`rb/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)), or
 from a clone:
 
 ```bash
@@ -45,10 +45,11 @@ client = SmsapiSDK.new({
 
 ```ruby
 begin
-  # list returns an Array of Available records — iterate directly.
+  # list returns an Array of Available entities, one per record; data_get reads the record.
   availables = client.Available.list
   availables.each do |item|
-    puts "#{item["name"]}"
+    record = item.data_get
+    puts "#{record["name"]}"
   end
 rescue => err
   warn "list failed: #{err}"
@@ -62,8 +63,8 @@ Permission is nested under group, so provide the `group_id`.
 ```ruby
 begin
   # load returns the ENTITY — call data_get for the Permission record (raises on error).
-  permission = client.Permission.load({ "group_id" => "example_group_id", "username" => "example_username", "id" => "example_id" })
-  puts permission
+  permission = client.Permission.load({ "group_id" => "example_group_id", "id" => "example_id" })
+  puts permission.data_get
 rescue => err
   warn "load failed: #{err}"
 end
@@ -76,9 +77,9 @@ Entity operations raise on failure, so rescue them:
 
 ```ruby
 begin
-  permission = client.Permission.load({ "group_id" => "example", "id" => "example_id", "username" => "example" })
+  templates = client.Template.list()
 rescue => err
-  warn "load failed: #{err}"
+  warn "list failed: #{err}"
 end
 ```
 
@@ -144,13 +145,13 @@ data via the `entity` option so offline calls resolve without a live server:
 
 ```ruby
 client = SmsapiSDK.test({
-  "entity" => { "permission" => { "test01" => { "id" => "test01" } } },
+  "entity" => { "template" => { "test01" => { "id" => "test01" } } },
 })
 
-# Entity ops return the ENTITY (raises on error);
-# call data_get for the mock record.
-permission = client.Permission.load({ "id" => "test01", "group_id" => "example", "username" => "example" })
-puts permission
+# list returns an Array of Template entities, one per mock record (raises on
+# error); data_get reads each record.
+templates = client.Template.list()
+templates.each { |item| puts item.data_get }
 ```
 
 ### Use a custom fetch function
@@ -263,11 +264,11 @@ All entities share the same interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `load` | `(reqmatch, ctrl) -> any` | Load a single entity by match criteria. Raises on error. |
-| `list` | `(reqmatch = nil, ctrl) -> Array` | List entities matching the criteria (call with no argument to list all). Raises on error. |
-| `create` | `(reqdata, ctrl) -> any` | Create a new entity. Raises on error. |
-| `update` | `(reqdata, ctrl) -> any` | Update an existing entity. Raises on error. |
-| `remove` | `(reqmatch, ctrl) -> any` | Remove an entity. Raises on error. |
+| `load` | `(reqmatch, ctrl) -> any` | Load a single entity by match criteria, and return it. Raises on error. |
+| `list` | `(reqmatch = nil, ctrl) -> Array` | List entities matching the criteria (call with no argument to list all), one per record. Raises on error. |
+| `create` | `(reqdata, ctrl) -> any` | Create a new entity, and return it. Raises on error. |
+| `update` | `(reqdata, ctrl) -> any` | Update an existing entity, and return it. Raises on error. |
+| `remove` | `(reqmatch, ctrl) -> any` | Remove an entity, and return it marked as deleted. Raises on error. |
 | `data_get` | `() -> Hash` | Get entity data. |
 | `data_set` | `(data)` | Set entity data. |
 | `match_get` | `() -> Hash` | Get entity match criteria. |
@@ -277,9 +278,10 @@ All entities share the same interface.
 
 ### Result shape
 
-Entity operations return the result data directly. On failure they
-raise a `SmsapiError` (a `StandardError` subclass), so wrap
-calls in `begin`/`rescue` where you need to handle errors.
+Entity operations return the entity, and `list` an `Array` of entities, one
+per record; an entity's `data_get` reads its record. On failure they raise a
+`SmsapiError` (a `StandardError` subclass), so wrap calls in
+`begin`/`rescue` where you need to handle errors.
 
 The `direct` escape hatch is the exception: it never raises and instead
 returns a result `Hash` with these keys:
@@ -350,7 +352,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -358,14 +359,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -375,33 +370,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -411,33 +382,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -447,32 +391,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -640,7 +562,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -760,16 +682,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -801,8 +713,9 @@ Create an instance: `available = client.Available`
 #### Example: List
 
 ```ruby
-# list returns an Array of Available records (raises on error).
+# list returns an Array of Available entities, one per record (raises on error).
 availables = client.Available.list
+availables.each { |item| puts item.data_get }
 ```
 
 
@@ -876,8 +789,9 @@ callback = client.Callback.load({ "id" => "callback_id" })
 #### Example: List
 
 ```ruby
-# list returns an Array of Callback records (raises on error).
+# list returns an Array of Callback entities, one per record (raises on error).
 callbacks = client.Callback.list
+callbacks.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
@@ -919,7 +833,6 @@ Create an instance: `contact = client.Contact`
 | `email` | `String` |  |
 | `first_name` | `String` |  |
 | `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
 | `groups` | `Array` |  |
 | `id` | `String` | Object ID |
 | `idx` | `String` | User provided resource id |
@@ -927,14 +840,8 @@ Create an instance: `contact = client.Contact`
 | `name` | `String` | Group name |
 | `permissions` | `Array` |  |
 | `phone_number` | `String` |  |
-| `read` | `Boolean` | Has read permission |
-| `send` | `Boolean` | Has send permission |
 | `size` | `Integer` |  |
 | `source` | `String` |  |
-| `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Boolean` | Has write permission |
 
 #### Example: Load
 
@@ -946,8 +853,9 @@ contact = client.Contact.load({ "id" => "contact_id" })
 #### Example: List
 
 ```ruby
-# list returns an Array of Contact records (raises on error).
+# list returns an Array of Contact entities, one per record (raises on error).
 contacts = client.Contact.list
+contacts.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
@@ -986,51 +894,22 @@ Create an instance: `contacts_field = client.ContactsField`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Integer` | Contact expire after days |
-| `contacts_count` | `Integer` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
-| `groups` | `Array` |  |
 | `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `Array` |  |
-| `phone_number` | `String` |  |
-| `read` | `Boolean` | Has read permission |
-| `send` | `Boolean` | Has send permission |
-| `source` | `String` |  |
+| `name` | `String` |  |
 | `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Boolean` | Has write permission |
 
 #### Example: List
 
 ```ruby
-# list returns an Array of ContactsField records (raises on error).
+# list returns an Array of ContactsField entities, one per record (raises on error).
 contacts_fields = client.ContactsField.list
+contacts_fields.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
 
 ```ruby
 contacts_field = client.ContactsField.create({
-  "contact_expire_after" => 1, # Integer
-  "created_by" => "example_created_by", # String
-  "date_created" => "example_date_created", # String
-  "date_updated" => "example_date_updated", # String
-  "gender" => "example_gender", # String
-  "groups" => [], # Array
 })
 ```
 
@@ -1045,43 +924,12 @@ Create an instance: `contacts_field_option = client.ContactsFieldOption`
 | --- | --- |
 | `list(match)` | List entities matching the criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Integer` | Contact expire after days |
-| `contacts_count` | `Integer` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
-| `group_id` | `String` | Object ID |
-| `groups` | `Array` |  |
-| `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `Array` |  |
-| `phone_number` | `String` |  |
-| `read` | `Boolean` | Has read permission |
-| `send` | `Boolean` | Has send permission |
-| `source` | `String` |  |
-| `type` | `String` |  |
-| `username` | `String` |  |
-| `value` | `String` |  |
-| `write` | `Boolean` | Has write permission |
-
 #### Example: List
 
 ```ruby
-# list returns an Array of ContactsFieldOption records (raises on error).
-contacts_field_options = client.ContactsFieldOption.list
+# list returns an Array of ContactsFieldOption entities, one per record (raises on error).
+contacts_field_options = client.ContactsFieldOption.list({ "field_id" => "example" })
+contacts_field_options.each { |item| puts item.data_get }
 ```
 
 
@@ -1102,53 +950,25 @@ Create an instance: `contactsgroup = client.Contactsgroup`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `String` |  |
-| `city` | `String` |  |
-| `contact_expire_after` | `Integer` | Contact expire after days |
-| `contacts_count` | `Integer` |  |
-| `country` | `String` |  |
-| `created_by` | `String` |  |
-| `date_created` | `String` |  |
-| `date_updated` | `String` |  |
-| `description` | `String` |  |
-| `email` | `String` |  |
-| `first_name` | `String` |  |
-| `gender` | `String` |  |
 | `group_id` | `String` | Object ID |
-| `groups` | `Array` |  |
-| `id` | `String` | Object ID |
-| `idx` | `String` | User provided resource id |
-| `last_name` | `String` |  |
-| `name` | `String` | Group name |
-| `permissions` | `Array` |  |
-| `phone_number` | `String` |  |
 | `read` | `Boolean` | Has read permission |
 | `send` | `Boolean` | Has send permission |
-| `source` | `String` |  |
-| `type` | `String` |  |
 | `username` | `String` |  |
-| `value` | `String` |  |
 | `write` | `Boolean` | Has write permission |
 
 #### Example: List
 
 ```ruby
-# list returns an Array of Contactsgroup records (raises on error).
+# list returns an Array of Contactsgroup entities, one per record (raises on error).
 contactsgroups = client.Contactsgroup.list
+contactsgroups.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
 
 ```ruby
 contactsgroup = client.Contactsgroup.create({
-  "contact_expire_after" => 1, # Integer
-  "created_by" => "example_created_by", # String
-  "date_created" => "example_date_created", # String
-  "date_updated" => "example_date_updated", # String
-  "gender" => "example_gender", # String
   "group_id" => "example_group_id", # String
-  "groups" => [], # Array
-  "id" => "example_id", # String
   "read" => true, # Boolean
   "send" => true, # Boolean
   "username" => "example_username", # String
@@ -1192,8 +1012,9 @@ Create an instance: `field_available = client.FieldAvailable`
 #### Example: List
 
 ```ruby
-# list returns an Array of FieldAvailable records (raises on error).
+# list returns an Array of FieldAvailable entities, one per record (raises on error).
 field_availables = client.FieldAvailable.list
+field_availables.each { |item| puts item.data_get }
 ```
 
 
@@ -1282,8 +1103,9 @@ Create an instance: `opt_out = client.OptOut`
 #### Example: List
 
 ```ruby
-# list returns an Array of OptOut records (raises on error).
+# list returns an Array of OptOut entities, one per record (raises on error).
 opt_outs = client.OptOut.list
+opt_outs.each { |item| puts item.data_get }
 ```
 
 
@@ -1338,7 +1160,7 @@ Create an instance: `permission = client.Permission`
 
 ```ruby
 # load returns the ENTITY — call data_get for the Permission record (raises on error).
-permission = client.Permission.load({ "id" => "permission_id", "group_id" => "group_id", "username" => "username" })
+permission = client.Permission.load({ "id" => "permission_id", "group_id" => "group_id" })
 ```
 
 #### Example: Create
@@ -1374,8 +1196,9 @@ Create an instance: `ping = client.Ping`
 #### Example: List
 
 ```ruby
-# list returns an Array of Ping records (raises on error).
+# list returns an Array of Ping entities, one per record (raises on error).
 pings = client.Ping.list
+pings.each { |item| puts item.data_get }
 ```
 
 
@@ -1412,8 +1235,9 @@ profile = client.Profile.load()
 #### Example: List
 
 ```ruby
-# list returns an Array of Profile records (raises on error).
+# list returns an Array of Profile entities, one per record (raises on error).
 profiles = client.Profile.list
+profiles.each { |item| puts item.data_get }
 ```
 
 
@@ -1430,8 +1254,9 @@ Create an instance: `rcs = client.Rcs`
 #### Example: List
 
 ```ruby
-# list returns an Array of Rcs records (raises on error).
+# list returns an Array of Rcs entities, one per record (raises on error).
 rcss = client.Rcs.list
+rcss.each { |item| puts item.data_get }
 ```
 
 
@@ -1467,8 +1292,9 @@ sendername = client.Sendername.load({ "id" => "sendername_id" })
 #### Example: List
 
 ```ruby
-# list returns an Array of Sendername records (raises on error).
+# list returns an Array of Sendername entities, one per record (raises on error).
 sendernames = client.Sendername.list
+sendernames.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
@@ -1500,8 +1326,9 @@ Create an instance: `sendername_statement = client.SendernameStatement`
 #### Example: List
 
 ```ruby
-# list returns an Array of SendernameStatement records (raises on error).
+# list returns an Array of SendernameStatement entities, one per record (raises on error).
 sendername_statements = client.SendernameStatement.list
+sendername_statements.each { |item| puts item.data_get }
 ```
 
 
@@ -1521,7 +1348,7 @@ Create an instance: `sent_rcs_message = client.SentRcsMessage`
 | --- | --- | --- |
 | `content` | `Hash` | RCS message content in RCS JSON format. |
 | `phone_number` | `String` | Recipient phone number (e.g. |
-| `sender` | `Object` |  |
+| `sender` | `String` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String` | Plain text message content. |
 
 #### Example: Create
@@ -1529,7 +1356,7 @@ Create an instance: `sent_rcs_message = client.SentRcsMessage`
 ```ruby
 sent_rcs_message = client.SentRcsMessage.create({
   "phone_number" => "example_phone_number", # String
-  "sender" => "example_sender", # Object
+  "sender" => "example_sender", # String
 })
 ```
 
@@ -1556,8 +1383,9 @@ Create an instance: `shipment_country_volume = client.ShipmentCountryVolume`
 #### Example: List
 
 ```ruby
-# list returns an Array of ShipmentCountryVolume records (raises on error).
+# list returns an Array of ShipmentCountryVolume entities, one per record (raises on error).
 shipment_country_volumes = client.ShipmentCountryVolume.list
+shipment_country_volumes.each { |item| puts item.data_get }
 ```
 
 
@@ -1600,8 +1428,9 @@ short_url = client.ShortUrl.load({ "id" => "short_url_id" })
 #### Example: List
 
 ```ruby
-# list returns an Array of ShortUrl records (raises on error).
+# list returns an Array of ShortUrl entities, one per record (raises on error).
 short_urls = client.ShortUrl.list
+short_urls.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
@@ -1671,7 +1500,7 @@ Create an instance: `smssendername = client.Smssendername`
 
 ```ruby
 smssendername = client.Smssendername.create({
-  "sendername_id" => "example_sendername_id", # String
+  "sender" => "example_sender", # String
 })
 ```
 
@@ -1728,8 +1557,9 @@ subuser = client.Subuser.load({ "id" => "subuser_id" })
 #### Example: List
 
 ```ruby
-# list returns an Array of Subuser records (raises on error).
+# list returns an Array of Subuser entities, one per record (raises on error).
 subusers = client.Subuser.list
+subusers.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
@@ -1773,8 +1603,9 @@ template = client.Template.load({ "id" => "template_id" })
 #### Example: List
 
 ```ruby
-# list returns an Array of Template records (raises on error).
+# list returns an Array of Template entities, one per record (raises on error).
 templates = client.Template.list
+templates.each { |item| puts item.data_get }
 ```
 
 #### Example: Create
@@ -1795,26 +1626,12 @@ Create an instance: `user_rcs_sender_collection = client.UserRcsSenderCollection
 | --- | --- |
 | `list(match)` | List entities matching the criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `String` |  |
-| `expiredAt` | `String` |  |
-| `id` | `String` | Object ID |
-| `interface` | `String` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String` | RCS message type (basic, single, ...). |
-| `readAt` | `String` |  |
-| `recipient` | `String` | Recipient phone number (without +). |
-| `sender` | `String` | Sender name |
-| `senderId` | `String` | Sender id |
-| `sentAt` | `String` |  |
-
 #### Example: List
 
 ```ruby
-# list returns an Array of UserRcsSenderCollection records (raises on error).
+# list returns an Array of UserRcsSenderCollection entities, one per record (raises on error).
 user_rcs_sender_collections = client.UserRcsSenderCollection.list
+user_rcs_sender_collections.each { |item| puts item.data_get }
 ```
 
 ## Features
@@ -2257,15 +2074,15 @@ when needed.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally.
 
 ```ruby
-permission = client.Permission
-permission.load({ "group_id" => "example", "id" => "example_id", "username" => "example" })
+template = client.Template
+template.list()
 
-# permission.data_get now returns the permission data from the last load
-# permission.match_get returns the last match criteria
+# template.data_get now returns the template data from the last list
+# template.match_get returns the last match criteria
 ```
 
 Call `make` to create a fresh instance with the same configuration

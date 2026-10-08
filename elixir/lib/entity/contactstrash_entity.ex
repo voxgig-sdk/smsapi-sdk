@@ -1,7 +1,7 @@
 # Smsapi SDK Contactstrash entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Contactstrash do
@@ -32,9 +32,10 @@ defmodule Smsapi.Entity.Contactstrash do
   
 
   
-  # Returns the updated contactstrash entity map (Smsapi.Types.contactstrash/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the updated contactstrash entity, whose data_get/1 reads its record
+  # (Smsapi.Types.contactstrash/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec update(map(), Smsapi.Types.contactstrash_update_data() | nil, map() | nil) :: term()
   def update(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -67,9 +68,12 @@ defmodule Smsapi.Entity.Contactstrash do
 
 
   
-  # Returns the removed contactstrash entity map (Smsapi.Types.contactstrash/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed contactstrash entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.contactstrash/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.contactstrash_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

@@ -36,6 +36,9 @@
                   "templates"
                   "available")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -66,6 +69,18 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "fields" (vs/jt
+                        (vs/jm
+                          "name" "expire_at")
+                        (vs/jm
+                          "name" "phone_number"))
+                      "kind" "form"
+                      "media" "application/x-www-form-urlencoded"))
+                  "kind" "json"
+                  "media" "application/json")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/blacklist/phone_numbers"
@@ -73,6 +88,9 @@
                   "blacklist"
                   "phone_numbers")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "blacklist")
@@ -85,6 +103,16 @@
                   "res" "`body`"))
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "kind" "raw"
+                      "media" "text/csv"))
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "import"))
+                  "kind" "multipart"
+                  "media" "multipart/form-data")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/blacklist/phone_numbers/imports"
@@ -149,19 +177,20 @@
                   "blacklist"
                   "phone_numbers")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "kind" "raw"
+                      "media" "text/csv"))
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "blacklist")
                   (vs/jm
                     "lit" "phone_numbers"))
                 "select" (vs/jm
-                  "$action" "phone_number"
-                  "exist" (vs/jt
-                    "accept"
-                    "limit"
-                    "offset"
-                    "q"
-                    "x_async"))
+                  "$action" "phone_number")
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body`"))))
@@ -221,9 +250,7 @@
                   (vs/jm
                     "lit" "phone_numbers"))
                 "select" (vs/jm
-                  "$action" "phone_number"
-                  "exist" (vs/jt
-                    "phone_number"))
+                  "$action" "phone_number")
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body`")))))
@@ -289,6 +316,9 @@
                 "parts" (vs/jt
                   "callbacks")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "callbacks"))
@@ -308,6 +338,9 @@
                 "parts" (vs/jt
                   "callbacks")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "callbacks"))
@@ -336,6 +369,9 @@
                   "callbacks"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "callbacks")
@@ -366,6 +402,9 @@
                   "commands"
                   "test")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "callbacks")
@@ -435,6 +474,9 @@
                   "callbacks"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "callbacks")
@@ -531,9 +573,6 @@
             "type" "`$STRING`")
           (vs/jm
             "name" "collection"
-            "op" (vs/jm
-              "update" (vs/jm
-                "type" "`$ARRAY`"))
             "req" true
             "title" "Collection"
             "type" "`$ARRAY`")
@@ -545,9 +584,6 @@
             "type" "`$INTEGER`")
           (vs/jm
             "name" "contacts_count"
-            "op" (vs/jm
-              "list" (vs/jm
-                "type" "`$INTEGER`"))
             "req" true
             "title" "Contacts Count"
             "type" "`$INTEGER`")
@@ -595,12 +631,6 @@
             "title" "Gender"
             "type" "`$STRING`")
           (vs/jm
-            "format" "oid"
-            "name" "group_id"
-            "short" "Object ID"
-            "title" "Group Id"
-            "type" "`$STRING`")
-          (vs/jm
             "name" "groups"
             "req" true
             "title" "Groups"
@@ -623,9 +653,6 @@
             "type" "`$STRING`")
           (vs/jm
             "name" "name"
-            "op" (vs/jm
-              "list" (vs/jm
-                "type" "`$STRING`"))
             "req" true
             "short" "Group name"
             "title" "Name"
@@ -639,16 +666,6 @@
             "title" "Phone Number"
             "type" "`$STRING`")
           (vs/jm
-            "name" "read"
-            "short" "Has read permission"
-            "title" "Read"
-            "type" "`$BOOLEAN`")
-          (vs/jm
-            "name" "send"
-            "short" "Has send permission"
-            "title" "Send"
-            "type" "`$BOOLEAN`")
-          (vs/jm
             "name" "size"
             "req" true
             "title" "Size"
@@ -656,24 +673,7 @@
           (vs/jm
             "name" "source"
             "title" "Source"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "type"
-            "title" "Type"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "username"
-            "title" "Username"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "value"
-            "title" "Value"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "write"
-            "short" "Has write permission"
-            "title" "Write"
-            "type" "`$BOOLEAN`"))
+            "type" "`$STRING`"))
         "id" (vs/jm
           "field" "id"
           "name" "id")
@@ -693,6 +693,9 @@
                       "orig" "contactId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/contacts/{contactId}/groups"
@@ -703,6 +706,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "contactId" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -719,12 +725,49 @@
                   "res" "`body`"))
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "birthday_date")
+                    (vs/jm
+                      "name" "browser")
+                    (vs/jm
+                      "name" "city")
+                    (vs/jm
+                      "name" "country")
+                    (vs/jm
+                      "name" "description")
+                    (vs/jm
+                      "name" "device")
+                    (vs/jm
+                      "name" "email")
+                    (vs/jm
+                      "name" "first_name")
+                    (vs/jm
+                      "name" "gender")
+                    (vs/jm
+                      "name" "idx")
+                    (vs/jm
+                      "name" "last_name")
+                    (vs/jm
+                      "name" "operating_system")
+                    (vs/jm
+                      "name" "phone_number")
+                    (vs/jm
+                      "name" "source")
+                    (vs/jm
+                      "name" "undelivered_messages"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/contacts"
                 "parts" (vs/jt
                   "contacts")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts"))
@@ -738,24 +781,65 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm
+                  "params" (vs/jt
+                    (vs/jm
+                      "example" "0f0f0f0f0f0f0f0f0f0f0f0f"
+                      "kind" "param"
+                      "name" "id"
+                      "orig" "contactId"
+                      "reqd" true
+                      "type" "`$STRING`")))
+                "kind" "http"
+                "method" "GET"
+                "orig" "/contacts/{contactId}/groups"
+                "parts" (vs/jt
+                  "contacts"
+                  "{id}"
+                  "groups")
+                "rename" (vs/jm
+                  "param" (vs/jm
+                    "contactId" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
+                "segments" (vs/jt
+                  (vs/jm
+                    "lit" "contacts")
+                  (vs/jm
+                    "var" "id")
+                  (vs/jm
+                    "lit" "groups"))
+                "select" (vs/jm
+                  "$action" "group"
+                  "exist" (vs/jt
+                    "id"))
+                "transform" (vs/jm
+                  "req" "`reqdata`"
+                  "res" "`body.collection`"))
+              (vs/jm
+                "args" (vs/jm
                   "query" (vs/jt
                     (vs/jm
                       "example" "2022-06-24"
+                      "field" true
                       "kind" "query"
                       "name" "birthday_date"
                       "orig" "birthday_date"
                       "type" "`$ARRAY`")
                     (vs/jm
+                      "field" true
                       "kind" "query"
                       "name" "email"
                       "orig" "email"
                       "type" "`$ARRAY`")
                     (vs/jm
+                      "field" true
                       "kind" "query"
                       "name" "first_name"
                       "orig" "first_name"
                       "type" "`$ARRAY`")
                     (vs/jm
+                      "field" true
                       "kind" "query"
                       "name" "gender"
                       "orig" "gender"
@@ -766,6 +850,7 @@
                       "orig" "group_id"
                       "type" "`$ARRAY`")
                     (vs/jm
+                      "field" true
                       "kind" "query"
                       "name" "last_name"
                       "orig" "last_name"
@@ -788,6 +873,7 @@
                       "orig" "order_by"
                       "type" "`$STRING`")
                     (vs/jm
+                      "field" true
                       "kind" "query"
                       "name" "phone_number"
                       "orig" "phone_number"
@@ -803,56 +889,13 @@
                 "parts" (vs/jt
                   "contacts")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts"))
-                "select" (vs/jm
-                  "exist" (vs/jt
-                    "birthday_date"
-                    "email"
-                    "first_name"
-                    "gender"
-                    "group_id"
-                    "last_name"
-                    "limit"
-                    "offset"
-                    "order_by"
-                    "phone_number"
-                    "q"))
-                "transform" (vs/jm
-                  "req" "`reqdata`"
-                  "res" "`body.collection`"))
-              (vs/jm
-                "args" (vs/jm
-                  "params" (vs/jt
-                    (vs/jm
-                      "example" "0f0f0f0f0f0f0f0f0f0f0f0f"
-                      "kind" "param"
-                      "name" "id"
-                      "orig" "contactId"
-                      "reqd" true
-                      "type" "`$STRING`")))
-                "kind" "http"
-                "method" "GET"
-                "orig" "/contacts/{contactId}/groups"
-                "parts" (vs/jt
-                  "contacts"
-                  "{id}"
-                  "groups")
-                "rename" (vs/jm
-                  "param" (vs/jm
-                    "contactId" "id"))
-                "segments" (vs/jt
-                  (vs/jm
-                    "lit" "contacts")
-                  (vs/jm
-                    "var" "id")
-                  (vs/jm
-                    "lit" "groups"))
-                "select" (vs/jm
-                  "$action" "group"
-                  "exist" (vs/jt
-                    "id"))
+                "select" (vs/jm)
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body.collection`"))))
@@ -890,6 +933,9 @@
                   "param" (vs/jm
                     "contactId" "contact_id"
                     "groupId" "group_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -937,6 +983,9 @@
                   "param" (vs/jm
                     "contactId" "id"
                     "groupId" "group_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -972,6 +1021,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "contactId" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1111,6 +1163,9 @@
                   "param" (vs/jm
                     "contactId" "contact_id"
                     "groupId" "group_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1158,6 +1213,9 @@
                   "param" (vs/jm
                     "contactId" "id"
                     "groupId" "group_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1184,6 +1242,28 @@
                       "orig" "contactId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "birthday_date")
+                    (vs/jm
+                      "name" "city")
+                    (vs/jm
+                      "name" "description")
+                    (vs/jm
+                      "name" "email")
+                    (vs/jm
+                      "name" "first_name")
+                    (vs/jm
+                      "name" "gender")
+                    (vs/jm
+                      "name" "last_name")
+                    (vs/jm
+                      "name" "phone_number")
+                    (vs/jm
+                      "name" "source"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "PUT"
                 "orig" "/contacts/{contactId}"
@@ -1193,6 +1273,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "contactId" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1213,137 +1296,19 @@
       "contacts_field" (vs/jm
         "fields" (vs/jt
           (vs/jm
-            "format" "date"
-            "name" "birthday_date"
-            "title" "Birthday Date"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "city"
-            "title" "City"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "contact_expire_after"
-            "req" true
-            "short" "Contact expire after days"
-            "title" "Contact Expire After"
-            "type" "`$INTEGER`")
-          (vs/jm
-            "name" "contacts_count"
-            "title" "Contacts Count"
-            "type" "`$INTEGER`")
-          (vs/jm
-            "name" "country"
-            "title" "Country"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "created_by"
-            "req" true
-            "title" "Created By"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "date_created"
-            "req" true
-            "title" "Date Created"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "date_updated"
-            "req" true
-            "title" "Date Updated"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "description"
-            "title" "Description"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "email"
-            "name" "email"
-            "title" "Email"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "first_name"
-            "title" "First Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "gender"
-            "req" true
-            "title" "Gender"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "oid"
-            "name" "group_id"
-            "short" "Object ID"
-            "title" "Group Id"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "groups"
-            "req" true
-            "title" "Groups"
-            "type" "`$ARRAY`")
-          (vs/jm
             "format" "oid"
             "name" "id"
-            "op" (vs/jm
-              "list" (vs/jm
-                "req" true
-                "type" "`$STRING`"))
             "short" "Object ID"
             "title" "Id"
             "type" "`$STRING`")
           (vs/jm
-            "name" "idx"
-            "short" "User provided resource id"
-            "title" "Idx"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "last_name"
-            "title" "Last Name"
-            "type" "`$STRING`")
-          (vs/jm
             "name" "name"
-            "short" "Group name"
             "title" "Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "permissions"
-            "title" "Permissions"
-            "type" "`$ARRAY`")
-          (vs/jm
-            "name" "phone_number"
-            "title" "Phone Number"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "read"
-            "short" "Has read permission"
-            "title" "Read"
-            "type" "`$BOOLEAN`")
-          (vs/jm
-            "name" "send"
-            "short" "Has send permission"
-            "title" "Send"
-            "type" "`$BOOLEAN`")
-          (vs/jm
-            "name" "source"
-            "title" "Source"
             "type" "`$STRING`")
           (vs/jm
             "name" "type"
             "title" "Type"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "username"
-            "title" "Username"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "value"
-            "title" "Value"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "write"
-            "short" "Has write permission"
-            "title" "Write"
-            "type" "`$BOOLEAN`"))
+            "type" "`$STRING`"))
         "id" (vs/jm
           "field" "id"
           "name" "id")
@@ -1355,6 +1320,14 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "name")
+                    (vs/jm
+                      "name" "type"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/contacts/fields"
@@ -1362,6 +1335,9 @@
                   "contacts"
                   "fields")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1384,6 +1360,9 @@
                   "contacts"
                   "fields")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1444,6 +1423,12 @@
                       "orig" "fieldId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "name"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "PUT"
                 "orig" "/contacts/fields/{fieldId}"
@@ -1454,6 +1439,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "fieldId" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1470,139 +1458,7 @@
         "relations" (vs/jm
           "ancestors" (vs/jt)))
       "contacts_field_option" (vs/jm
-        "fields" (vs/jt
-          (vs/jm
-            "format" "date"
-            "name" "birthday_date"
-            "title" "Birthday Date"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "city"
-            "title" "City"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "contact_expire_after"
-            "req" true
-            "short" "Contact expire after days"
-            "title" "Contact Expire After"
-            "type" "`$INTEGER`")
-          (vs/jm
-            "name" "contacts_count"
-            "title" "Contacts Count"
-            "type" "`$INTEGER`")
-          (vs/jm
-            "name" "country"
-            "title" "Country"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "created_by"
-            "req" true
-            "title" "Created By"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "date_created"
-            "req" true
-            "title" "Date Created"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "date_updated"
-            "req" true
-            "title" "Date Updated"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "description"
-            "title" "Description"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "email"
-            "name" "email"
-            "title" "Email"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "first_name"
-            "title" "First Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "gender"
-            "req" true
-            "title" "Gender"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "oid"
-            "name" "group_id"
-            "short" "Object ID"
-            "title" "Group Id"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "groups"
-            "req" true
-            "title" "Groups"
-            "type" "`$ARRAY`")
-          (vs/jm
-            "format" "oid"
-            "name" "id"
-            "req" true
-            "short" "Object ID"
-            "title" "Id"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "idx"
-            "short" "User provided resource id"
-            "title" "Idx"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "last_name"
-            "title" "Last Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "name"
-            "short" "Group name"
-            "title" "Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "permissions"
-            "title" "Permissions"
-            "type" "`$ARRAY`")
-          (vs/jm
-            "name" "phone_number"
-            "title" "Phone Number"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "read"
-            "short" "Has read permission"
-            "title" "Read"
-            "type" "`$BOOLEAN`")
-          (vs/jm
-            "name" "send"
-            "short" "Has send permission"
-            "title" "Send"
-            "type" "`$BOOLEAN`")
-          (vs/jm
-            "name" "source"
-            "title" "Source"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "type"
-            "title" "Type"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "username"
-            "title" "Username"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "value"
-            "title" "Value"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "write"
-            "short" "Has write permission"
-            "title" "Write"
-            "type" "`$BOOLEAN`"))
-        "id" (vs/jm
-          "field" "id"
-          "name" "id")
+        "fields" (vs/jt)
         "name" "contacts_field_option"
         "op" (vs/jm
           "list" (vs/jm
@@ -1630,6 +1486,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "fieldId" "field_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1650,157 +1509,35 @@
       "contactsgroup" (vs/jm
         "fields" (vs/jt
           (vs/jm
-            "format" "date"
-            "name" "birthday_date"
-            "title" "Birthday Date"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "city"
-            "title" "City"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "contact_expire_after"
-            "req" true
-            "short" "Contact expire after days"
-            "title" "Contact Expire After"
-            "type" "`$INTEGER`")
-          (vs/jm
-            "name" "contacts_count"
-            "title" "Contacts Count"
-            "type" "`$INTEGER`")
-          (vs/jm
-            "name" "country"
-            "title" "Country"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "created_by"
-            "req" true
-            "title" "Created By"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "date_created"
-            "req" true
-            "title" "Date Created"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "date_updated"
-            "req" true
-            "title" "Date Updated"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "description"
-            "title" "Description"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "email"
-            "name" "email"
-            "title" "Email"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "first_name"
-            "title" "First Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "gender"
-            "req" true
-            "title" "Gender"
-            "type" "`$STRING`")
-          (vs/jm
             "format" "oid"
             "name" "group_id"
-            "op" (vs/jm
-              "list" (vs/jm
-                "type" "`$STRING`"))
             "req" true
             "short" "Object ID"
             "title" "Group Id"
             "type" "`$STRING`")
           (vs/jm
-            "name" "groups"
-            "req" true
-            "title" "Groups"
-            "type" "`$ARRAY`")
-          (vs/jm
-            "format" "oid"
-            "name" "id"
-            "req" true
-            "short" "Object ID"
-            "title" "Id"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "idx"
-            "short" "User provided resource id"
-            "title" "Idx"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "last_name"
-            "title" "Last Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "name"
-            "short" "Group name"
-            "title" "Name"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "permissions"
-            "title" "Permissions"
-            "type" "`$ARRAY`")
-          (vs/jm
-            "name" "phone_number"
-            "title" "Phone Number"
-            "type" "`$STRING`")
-          (vs/jm
             "name" "read"
-            "op" (vs/jm
-              "list" (vs/jm
-                "type" "`$BOOLEAN`"))
             "req" true
             "short" "Has read permission"
             "title" "Read"
             "type" "`$BOOLEAN`")
           (vs/jm
             "name" "send"
-            "op" (vs/jm
-              "list" (vs/jm
-                "type" "`$BOOLEAN`"))
             "req" true
             "short" "Has send permission"
             "title" "Send"
             "type" "`$BOOLEAN`")
           (vs/jm
-            "name" "source"
-            "title" "Source"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "type"
-            "title" "Type"
-            "type" "`$STRING`")
-          (vs/jm
             "name" "username"
-            "op" (vs/jm
-              "list" (vs/jm
-                "type" "`$STRING`"))
             "req" true
             "title" "Username"
             "type" "`$STRING`")
           (vs/jm
-            "name" "value"
-            "title" "Value"
-            "type" "`$STRING`")
-          (vs/jm
             "name" "write"
-            "op" (vs/jm
-              "list" (vs/jm
-                "type" "`$BOOLEAN`"))
             "req" true
             "short" "Has write permission"
             "title" "Write"
             "type" "`$BOOLEAN`"))
-        "id" (vs/jm
-          "field" "id"
-          "name" "id")
         "name" "contactsgroup"
         "op" (vs/jm
           "create" (vs/jm
@@ -1817,6 +1554,32 @@
                       "orig" "groupId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "list" true
+                      "name" "birthday_date")
+                    (vs/jm
+                      "list" true
+                      "name" "email")
+                    (vs/jm
+                      "list" true
+                      "name" "first_name")
+                    (vs/jm
+                      "name" "gender")
+                    (vs/jm
+                      "list" true
+                      "name" "group_id")
+                    (vs/jm
+                      "list" true
+                      "name" "last_name")
+                    (vs/jm
+                      "list" true
+                      "name" "phone_number")
+                    (vs/jm
+                      "name" "q"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/contacts/groups/{groupId}/members"
@@ -1845,6 +1608,18 @@
                   "res" "`body`"))
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "contact_expire_after")
+                    (vs/jm
+                      "name" "description")
+                    (vs/jm
+                      "name" "idx")
+                    (vs/jm
+                      "name" "name"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/contacts/groups"
@@ -1852,6 +1627,9 @@
                   "contacts"
                   "groups")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1865,39 +1643,6 @@
             "input" "data"
             "name" "list"
             "points" (vs/jt
-              (vs/jm
-                "args" (vs/jm
-                  "query" (vs/jt
-                    (vs/jm
-                      "example" "{\"name\" : \"group name\"}"
-                      "kind" "query"
-                      "name" "name"
-                      "orig" "name"
-                      "type" "`$OBJECT`")
-                    (vs/jm
-                      "kind" "query"
-                      "name" "with"
-                      "orig" "with"
-                      "type" "`$ARRAY`")))
-                "kind" "http"
-                "method" "GET"
-                "orig" "/contacts/groups"
-                "parts" (vs/jt
-                  "contacts"
-                  "groups")
-                "rename" (vs/jm)
-                "segments" (vs/jt
-                  (vs/jm
-                    "lit" "contacts")
-                  (vs/jm
-                    "lit" "groups"))
-                "select" (vs/jm
-                  "exist" (vs/jt
-                    "name"
-                    "with"))
-                "transform" (vs/jm
-                  "req" "`reqdata`"
-                  "res" "`body.collection`"))
               (vs/jm
                 "args" (vs/jm
                   "params" (vs/jt
@@ -1919,6 +1664,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "groupId" "group_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -1931,6 +1679,39 @@
                 "select" (vs/jm
                   "exist" (vs/jt
                     "group_id"))
+                "transform" (vs/jm
+                  "req" "`reqdata`"
+                  "res" "`body.collection`"))
+              (vs/jm
+                "args" (vs/jm
+                  "query" (vs/jt
+                    (vs/jm
+                      "example" "{\"name\" : \"group name\"}"
+                      "kind" "query"
+                      "name" "name"
+                      "orig" "name"
+                      "type" "`$OBJECT`")
+                    (vs/jm
+                      "kind" "query"
+                      "name" "with"
+                      "orig" "with"
+                      "type" "`$ARRAY`")))
+                "kind" "http"
+                "method" "GET"
+                "orig" "/contacts/groups"
+                "parts" (vs/jt
+                  "contacts"
+                  "groups")
+                "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
+                "segments" (vs/jt
+                  (vs/jm
+                    "lit" "contacts")
+                  (vs/jm
+                    "lit" "groups"))
+                "select" (vs/jm)
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body.collection`"))))
@@ -1997,15 +1778,8 @@
                       "reqd" true
                       "type" "`$STRING`")
                     (vs/jm
-                      "kind" "param"
-                      "name" "username"
-                      "orig" "username"
-                      "reqd" true
-                      "type" "`$STRING`"))
-                  "query" (vs/jt
-                    (vs/jm
                       "example" "example_username"
-                      "kind" "query"
+                      "kind" "param"
                       "name" "username"
                       "orig" "username"
                       "reqd" true
@@ -2050,6 +1824,12 @@
                       "orig" "groupId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "delete_contacts"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "DELETE"
                 "orig" "/contacts/groups/{groupId}"
@@ -2083,6 +1863,32 @@
                       "orig" "groupId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "list" true
+                      "name" "birthday_date")
+                    (vs/jm
+                      "list" true
+                      "name" "email")
+                    (vs/jm
+                      "list" true
+                      "name" "first_name")
+                    (vs/jm
+                      "name" "gender")
+                    (vs/jm
+                      "list" true
+                      "name" "group_id")
+                    (vs/jm
+                      "list" true
+                      "name" "last_name")
+                    (vs/jm
+                      "list" true
+                      "name" "phone_number")
+                    (vs/jm
+                      "name" "q"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "DELETE"
                 "orig" "/contacts/groups/{groupId}/members"
@@ -2142,19 +1948,22 @@
                       "reqd" true
                       "type" "`$STRING`")
                     (vs/jm
+                      "example" "example_username"
                       "kind" "param"
                       "name" "username"
                       "orig" "username"
                       "reqd" true
-                      "type" "`$STRING`"))
-                  "query" (vs/jt
-                    (vs/jm
-                      "example" "example_username"
-                      "kind" "query"
-                      "name" "username"
-                      "orig" "username"
-                      "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "read")
+                    (vs/jm
+                      "name" "send")
+                    (vs/jm
+                      "name" "write"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "PUT"
                 "orig" "/contacts/groups/{groupId}/permissions/{username}"
@@ -2167,6 +1976,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "groupId" "group_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -2195,6 +2007,32 @@
                       "orig" "groupId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "list" true
+                      "name" "birthday_date")
+                    (vs/jm
+                      "list" true
+                      "name" "email")
+                    (vs/jm
+                      "list" true
+                      "name" "first_name")
+                    (vs/jm
+                      "name" "gender")
+                    (vs/jm
+                      "list" true
+                      "name" "group_id")
+                    (vs/jm
+                      "list" true
+                      "name" "last_name")
+                    (vs/jm
+                      "list" true
+                      "name" "phone_number")
+                    (vs/jm
+                      "name" "q"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "PUT"
                 "orig" "/contacts/groups/{groupId}/members"
@@ -2326,6 +2164,9 @@
                   "fields"
                   "available")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -2425,6 +2266,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "groupId" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -2452,6 +2296,18 @@
                       "orig" "groupId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "contact_expire_after")
+                    (vs/jm
+                      "name" "description")
+                    (vs/jm
+                      "name" "idx")
+                    (vs/jm
+                      "name" "name"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "PUT"
                 "orig" "/contacts/groups/{groupId}"
@@ -2462,6 +2318,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "groupId" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -2513,6 +2372,9 @@
                   "mfa"
                   "codes")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "mfa")
@@ -2524,6 +2386,14 @@
                   "res" "`body`"))
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "code")
+                    (vs/jm
+                      "name" "phone_number"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/mfa/codes/verifications"
@@ -2613,16 +2483,17 @@
                 "parts" (vs/jt
                   "opt_outs")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "kind" "raw"
+                      "media" "text/csv"))
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "opt_outs"))
-                "select" (vs/jm
-                  "exist" (vs/jt
-                    "accept"
-                    "limit"
-                    "offset"
-                    "phone_number"
-                    "x_async"))
+                "select" (vs/jm)
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body.collection`"))))
@@ -2682,6 +2553,9 @@
                   "opt_outs"
                   "settings")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "opt_outs")
@@ -2704,6 +2578,9 @@
                   "opt_outs"
                   "settings")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "opt_outs")
@@ -2770,6 +2647,18 @@
                       "orig" "groupId"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "read")
+                    (vs/jm
+                      "name" "send")
+                    (vs/jm
+                      "name" "username")
+                    (vs/jm
+                      "name" "write"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/contacts/groups/{groupId}/permissions"
@@ -2781,6 +2670,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "groupId" "group_id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -2811,16 +2703,9 @@
                       "reqd" true
                       "type" "`$STRING`")
                     (vs/jm
+                      "example" "example_username"
                       "kind" "param"
                       "name" "id"
-                      "orig" "username"
-                      "reqd" true
-                      "type" "`$STRING`"))
-                  "query" (vs/jt
-                    (vs/jm
-                      "example" "example_username"
-                      "kind" "query"
-                      "name" "username"
                       "orig" "username"
                       "reqd" true
                       "type" "`$STRING`")))
@@ -2837,6 +2722,9 @@
                   "param" (vs/jm
                     "groupId" "group_id"
                     "username" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "contacts")
@@ -2851,8 +2739,7 @@
                 "select" (vs/jm
                   "exist" (vs/jt
                     "group_id"
-                    "id"
-                    "username"))
+                    "id"))
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body`")))))
@@ -2886,6 +2773,9 @@
                 "parts" (vs/jt
                   "ping")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "ping"))
@@ -2954,15 +2844,16 @@
                   "profile"
                   "prices")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "profile")
                   (vs/jm
                     "lit" "prices"))
                 "select" (vs/jm
-                  "$action" "price"
-                  "exist" (vs/jt
-                    "type"))
+                  "$action" "price")
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body.collection`"))))
@@ -2978,6 +2869,9 @@
                 "parts" (vs/jt
                   "profile")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "profile"))
@@ -3004,6 +2898,9 @@
                   "rcs"
                   "messages")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "rcs")
@@ -3051,6 +2948,12 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "sender"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/sms/sendernames"
@@ -3058,6 +2961,9 @@
                   "sms"
                   "sendernames")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -3080,6 +2986,9 @@
                   "sms"
                   "sendernames")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -3112,6 +3021,9 @@
                 "rename" (vs/jm
                   "param" (vs/jm
                     "sender" "id"))
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -3157,6 +3069,9 @@
                   "sendernames"
                   "statement")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -3184,10 +3099,12 @@
             "title" "Phone Number"
             "type" "`$STRING`")
           (vs/jm
+            "format" "oid"
             "name" "sender"
             "req" true
+            "short" "RCS sender ID (object ID of the agent/sender the user has access to)."
             "title" "Sender"
-            "type" "`$ANY`")
+            "type" "`$STRING`")
           (vs/jm
             "name" "text"
             "short" "Plain text message content."
@@ -3201,6 +3118,22 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "fields" (vs/jt
+                        (vs/jm
+                          "name" "content")
+                        (vs/jm
+                          "name" "phone_number")
+                        (vs/jm
+                          "name" "sender")
+                        (vs/jm
+                          "name" "text"))
+                      "kind" "form"
+                      "media" "application/x-www-form-urlencoded"))
+                  "kind" "json"
+                  "media" "application/json")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/rcs/messages"
@@ -3208,6 +3141,9 @@
                   "rcs"
                   "messages")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "rcs")
@@ -3270,16 +3206,19 @@
                   "shipment"
                   "country_volumes")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "kind" "raw"
+                      "media" "text/csv"))
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "shipment")
                   (vs/jm
                     "lit" "country_volumes"))
-                "select" (vs/jm
-                  "exist" (vs/jt
-                    "accept"
-                    "month"
-                    "year"))
+                "select" (vs/jm)
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body.collection`")))))
@@ -3343,6 +3282,13 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "kind" "form"
+                      "media" "application/x-www-form-urlencoded"))
+                  "kind" "json"
+                  "media" "application/json")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/short_url/links"
@@ -3350,6 +3296,9 @@
                   "short_url"
                   "links")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "short_url")
@@ -3373,6 +3322,9 @@
                   "short_url"
                   "links")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "short_url")
@@ -3405,6 +3357,9 @@
                   "links"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "short_url")
@@ -3467,6 +3422,16 @@
                       "orig" "id"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "description")
+                    (vs/jm
+                      "name" "name")
+                    (vs/jm
+                      "name" "url"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "PUT"
                 "orig" "/short_url/links/{id}"
@@ -3475,6 +3440,9 @@
                   "links"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "short_url")
@@ -3605,12 +3573,70 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "fields" (vs/jt
+                        (vs/jm
+                          "name" "allow_duplicates")
+                        (vs/jm
+                          "name" "check_idx")
+                        (vs/jm
+                          "name" "date")
+                        (vs/jm
+                          "name" "date_validate")
+                        (vs/jm
+                          "name" "details")
+                        (vs/jm
+                          "name" "encoding")
+                        (vs/jm
+                          "name" "expiration_date")
+                        (vs/jm
+                          "list" true
+                          "name" "fallback")
+                        (vs/jm
+                          "name" "fast")
+                        (vs/jm
+                          "name" "flash")
+                        (vs/jm
+                          "name" "format")
+                        (vs/jm
+                          "name" "from")
+                        (vs/jm
+                          "name" "group")
+                        (vs/jm
+                          "name" "idx")
+                        (vs/jm
+                          "name" "max_parts")
+                        (vs/jm
+                          "name" "message")
+                        (vs/jm
+                          "name" "normalize")
+                        (vs/jm
+                          "name" "notify_url")
+                        (vs/jm
+                          "name" "test")
+                        (vs/jm
+                          "name" "time_restriction")
+                        (vs/jm
+                          "name" "to"))
+                      "kind" "form"
+                      "media" "application/x-www-form-urlencoded"))
+                  "kind" "json"
+                  "media" "application/json")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/sms.do"
                 "parts" (vs/jt
                   "sms.do")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "alternatives" (vs/jt
+                    (vs/jm
+                      "kind" "raw"
+                      "media" "text/plain"))
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms.do"))
@@ -3633,7 +3659,7 @@
                   "params" (vs/jt
                     (vs/jm
                       "kind" "param"
-                      "name" "sendername_id"
+                      "name" "sender"
                       "orig" "sender"
                       "reqd" true
                       "type" "`$STRING`")))
@@ -3643,26 +3669,24 @@
                 "parts" (vs/jt
                   "sms"
                   "sendernames"
-                  "{sendername_id}"
+                  "{sender}"
                   "commands"
                   "make_default")
-                "rename" (vs/jm
-                  "param" (vs/jm
-                    "sender" "sendername_id"))
+                "rename" (vs/jm)
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
                   (vs/jm
                     "lit" "sendernames")
                   (vs/jm
-                    "var" "sendername_id")
+                    "var" "sender")
                   (vs/jm
                     "lit" "commands")
                   (vs/jm
                     "lit" "make_default"))
                 "select" (vs/jm
                   "exist" (vs/jt
-                    "sendername_id"))
+                    "sender"))
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body`"))))
@@ -3800,6 +3824,9 @@
                 "parts" (vs/jt
                   "subusers")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "subusers"))
@@ -3830,6 +3857,9 @@
                   "shares"
                   "sendernames")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "subusers")
@@ -3865,6 +3895,9 @@
                   "shares"
                   "templates")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "subusers")
@@ -3895,12 +3928,13 @@
                 "parts" (vs/jt
                   "subusers")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "subusers"))
-                "select" (vs/jm
-                  "exist" (vs/jt
-                    "q"))
+                "select" (vs/jm)
                 "transform" (vs/jm
                   "req" "`reqdata`"
                   "res" "`body.collection`"))))
@@ -3925,6 +3959,9 @@
                   "subusers"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "subusers")
@@ -3989,6 +4026,9 @@
                   "subusers"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "subusers")
@@ -4101,6 +4141,16 @@
             "points" (vs/jt
               (vs/jm
                 "args" (vs/jm)
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "name")
+                    (vs/jm
+                      "name" "normalize")
+                    (vs/jm
+                      "name" "template"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "POST"
                 "orig" "/sms/templates"
@@ -4108,6 +4158,9 @@
                   "sms"
                   "templates")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -4130,6 +4183,9 @@
                   "sms"
                   "templates")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -4160,6 +4216,9 @@
                   "templates"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -4186,6 +4245,16 @@
                       "orig" "id"
                       "reqd" true
                       "type" "`$STRING`")))
+                "body" (vs/jm
+                  "fields" (vs/jt
+                    (vs/jm
+                      "name" "name")
+                    (vs/jm
+                      "name" "normalize")
+                    (vs/jm
+                      "name" "template"))
+                  "kind" "form"
+                  "media" "application/x-www-form-urlencoded")
                 "kind" "http"
                 "method" "PUT"
                 "orig" "/sms/templates/{id}"
@@ -4194,6 +4263,9 @@
                   "templates"
                   "{id}")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "sms")
@@ -4210,61 +4282,7 @@
         "relations" (vs/jm
           "ancestors" (vs/jt)))
       "user_rcs_sender_collection" (vs/jm
-        "fields" (vs/jt
-          (vs/jm
-            "format" "date-time"
-            "name" "deliveredAt"
-            "title" "Delivered At"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "expiredAt"
-            "title" "Expired At"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "oid"
-            "name" "id"
-            "short" "Object ID"
-            "title" "Id"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "interface"
-            "short" "Interface through which the message was sent (www, api, ...)."
-            "title" "Interface"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "messageType"
-            "short" "RCS message type (basic, single, ...)."
-            "title" "Message Type"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "readAt"
-            "title" "Read At"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "recipient"
-            "short" "Recipient phone number (without +)."
-            "title" "Recipient"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "sender"
-            "short" "Sender name"
-            "title" "Sender"
-            "type" "`$STRING`")
-          (vs/jm
-            "name" "senderId"
-            "short" "Sender id"
-            "title" "Sender Id"
-            "type" "`$STRING`")
-          (vs/jm
-            "format" "date-time"
-            "name" "sentAt"
-            "title" "Sent At"
-            "type" "`$STRING`"))
-        "id" (vs/jm
-          "field" "id"
-          "name" "id")
+        "fields" (vs/jt)
         "name" "user_rcs_sender_collection"
         "op" (vs/jm
           "list" (vs/jm
@@ -4280,6 +4298,9 @@
                   "rcs"
                   "senders")
                 "rename" (vs/jm)
+                "response" (vs/jm
+                  "kind" "json"
+                  "media" "application/json")
                 "segments" (vs/jt
                   (vs/jm
                     "lit" "rcs")
@@ -4527,6 +4548,7 @@
           "ms" 30000)
         "optspec" (vs/jm
           "clearTimer" "`$FUNCTION`"
+          "now" "`$FUNCTION`"
           "setTimer" "`$FUNCTION`")
         "strict" false
         "transport" "wrap")

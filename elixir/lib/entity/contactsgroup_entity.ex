@@ -1,7 +1,7 @@
 # Smsapi SDK Contactsgroup entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Contactsgroup do
@@ -28,9 +28,10 @@ defmodule Smsapi.Entity.Contactsgroup do
   
 
   
-  # Returns a list of contactsgroup entity maps (Smsapi.Types.contactsgroup/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of contactsgroup entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.contactsgroup/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.contactsgroup_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -63,9 +64,10 @@ defmodule Smsapi.Entity.Contactsgroup do
 
 
   
-  # Returns the created contactsgroup entity map (Smsapi.Types.contactsgroup/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the created contactsgroup entity, whose data_get/1 reads its record
+  # (Smsapi.Types.contactsgroup/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec create(map(), Smsapi.Types.contactsgroup_create_data() | nil, map() | nil) :: term()
   def create(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -96,9 +98,10 @@ defmodule Smsapi.Entity.Contactsgroup do
 
 
   
-  # Returns the updated contactsgroup entity map (Smsapi.Types.contactsgroup/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the updated contactsgroup entity, whose data_get/1 reads its record
+  # (Smsapi.Types.contactsgroup/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec update(map(), Smsapi.Types.contactsgroup_update_data() | nil, map() | nil) :: term()
   def update(ent, reqdata, ctrl \\ nil) do
     ctx =
@@ -131,9 +134,12 @@ defmodule Smsapi.Entity.Contactsgroup do
 
 
   
-  # Returns the removed contactsgroup entity map (Smsapi.Types.contactsgroup/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed contactsgroup entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.contactsgroup/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.contactsgroup_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

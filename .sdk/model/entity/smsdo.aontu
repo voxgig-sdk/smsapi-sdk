@@ -185,6 +185,29 @@ main: kit: entity: smsdo: {
       name: "create"
       points: [
         {
+          bf: [
+            "allow_duplicates"
+            "check_idx"
+            "date"
+            "date_validate"
+            "details"
+            "encoding"
+            "expiration_date"
+            "fallback"
+            "fast"
+            "flash"
+            "format"
+            "from"
+            "group"
+            "idx"
+            "max_parts"
+            "message"
+            "normalize"
+            "notify_url"
+            "test"
+            "time_restriction"
+            "to"
+          ]
           co: {
             id: "POST /sms.do"
             source: "openapi3"
@@ -192,6 +215,92 @@ main: kit: entity: smsdo: {
           }
           m: "POST"
           o: "/sms.do"
+          rb: {
+            alternatives: [
+              {
+                fields: [
+                  {
+                    name: "allow_duplicates"
+                  }
+                  {
+                    name: "check_idx"
+                  }
+                  {
+                    name: "date"
+                  }
+                  {
+                    name: "date_validate"
+                  }
+                  {
+                    name: "details"
+                  }
+                  {
+                    name: "encoding"
+                  }
+                  {
+                    name: "expiration_date"
+                  }
+                  {
+                    list: true
+                    name: "fallback"
+                  }
+                  {
+                    name: "fast"
+                  }
+                  {
+                    name: "flash"
+                  }
+                  {
+                    name: "format"
+                  }
+                  {
+                    name: "from"
+                  }
+                  {
+                    name: "group"
+                  }
+                  {
+                    name: "idx"
+                  }
+                  {
+                    name: "max_parts"
+                  }
+                  {
+                    name: "message"
+                  }
+                  {
+                    name: "normalize"
+                  }
+                  {
+                    name: "notify_url"
+                  }
+                  {
+                    name: "test"
+                  }
+                  {
+                    name: "time_restriction"
+                  }
+                  {
+                    name: "to"
+                  }
+                ]
+                kind: "form"
+                media: "application/x-www-form-urlencoded"
+              }
+            ]
+            kind: "json"
+            media: "application/json"
+          }
+          rs: {
+            alternatives: [
+              {
+                kind: "raw"
+                media: "text/plain"
+              }
+            ]
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "sms.do"

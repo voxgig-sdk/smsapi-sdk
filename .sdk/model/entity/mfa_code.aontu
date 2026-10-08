@@ -44,6 +44,12 @@ main: kit: entity: mfa_code: {
       name: "create"
       points: [
         {
+          bf: [
+            "content"
+            "fast"
+            "from"
+            "phone_number"
+          ]
           co: {
             id: "POST /mfa/codes"
             source: "openapi3"
@@ -51,6 +57,10 @@ main: kit: entity: mfa_code: {
           }
           m: "POST"
           o: "/mfa/codes"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "mfa"
@@ -74,6 +84,18 @@ main: kit: entity: mfa_code: {
           o: "/mfa/codes/verifications"
           q: {
             "$action": "verification"
+          }
+          rb: {
+            fields: [
+              {
+                name: "code"
+              }
+              {
+                name: "phone_number"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
           }
           s: [
             {

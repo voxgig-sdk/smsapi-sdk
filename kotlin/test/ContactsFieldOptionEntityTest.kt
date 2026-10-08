@@ -6,18 +6,29 @@ import java.nio.file.Paths
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 
+import voxgig.smsapisdk.core.Config
+import voxgig.smsapisdk.core.Context
 import voxgig.smsapisdk.core.Helpers
 import voxgig.smsapisdk.core.SdkEntity
+import voxgig.smsapisdk.core.SdkError
 import voxgig.smsapisdk.core.SmsapiSDK
+import voxgig.smsapisdk.feature.BaseFeature
 import voxgig.smsapisdk.utility.Json
 import voxgig.smsapisdk.utility.struct.Struct
 
 @Suppress("UNCHECKED_CAST", "UNUSED_VARIABLE", "UNUSED_VALUE")
 class ContactsFieldOptionEntityTest {
+
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  private val LIVE_STRICT = true
 
   @Test
   fun instance() {
@@ -38,10 +49,13 @@ class ContactsFieldOptionEntityTest {
         if (reason == null || "" == reason) "skipped via sdk-test-control.json" else reason,
       )
     }
-    Assumptions.assumeFalse(
-      setup.syntheticOnly,
-      "live entity test uses synthetic IDs from fixture — set SMSAPI_TEST_CONTACTS_FIELD_OPTION_ENTID JSON to run live",
-    )
+    if (setup.live) {
+      for (liveKey in arrayOf<String>("field01")) {
+        if (setup.syntheticOnly || setup.idmap?.get(liveKey) == null) {
+          RunnerSupport.liveMiss(LIVE_STRICT, "Live entity test blocked: needs " + liveKey + " via SMSAPI_TEST_CONTACTS_FIELD_OPTION_ENTID")
+        }
+      }
+    }
     val client = setup.client
 
     // Bootstrap entity data from existing test data (no create step in flow).
@@ -61,37 +75,21 @@ class ContactsFieldOptionEntityTest {
 
   }
 
+  private fun hasFeature(name: String): Boolean {
+    val fm = Helpers.toMapAny(Config.sharedConfig()["feature"])
+    return fm != null && fm[name] != null
+  }
+
   @Test
-  fun stream() {
-    val streamingActive = linkedMapOf<String, Any?>(
+  fun validate() {
+    Assumptions.assumeTrue(hasFeature("validate"), "feature not present in this SDK: validate")
+    val client = SmsapiSDK.testSDK(null, linkedMapOf<String, Any?>(
       "feature" to linkedMapOf<String, Any?>(
-        "streaming" to linkedMapOf<String, Any?>("active" to true),
-      ),
-    )
-    val setup = contactsFieldOptionBasicSetup(streamingActive)
-    Assumptions.assumeFalse(
-      setup.live,
-      "stream test streams the seeded fixture data (unit mode only)",
-    )
-
-    val ent = setup.client.contactsFieldOption(null)
-    val match = linkedMapOf<String, Any?>()
-
-    // Materialised list result for the same op.
-    val listedResult = ent.list(match, null)
-    val listed = (listedResult as? List<Any?>) ?: emptyList<Any?>()
-
-    // stream("list") yields items via the streaming feature's iterator.
-    val streamed = ent.stream("list", match, null).toList()
-    assertTrue(streamed.size > 0, "expected stream to yield items")
-    assertEquals(listed.size, streamed.size, "expected stream to match list count")
-
-    // Fallback: with streaming inactive, stream still yields the materialised
-    // items.
-    val setup2 = contactsFieldOptionBasicSetup(null)
-    val ent2 = setup2.client.contactsFieldOption(null)
-    val streamed2 = ent2.stream("list", match, null).toList()
-    assertEquals(listed.size, streamed2.size, "expected fallback stream to match list")
+        "validate" to linkedMapOf<String, Any?>("active" to true))))
+    val err = assertThrows(SdkError::class.java) {
+      client.contactsFieldOption(null).list(linkedMapOf<String, Any?>("field_id" to 1), null)
+    }
+    assertEquals("validate_failed", err.code)
   }
 
   companion object {
@@ -124,7 +122,7 @@ class ContactsFieldOptionEntityTest {
           "\"`\$VAL`\": [\"`\$FORMAT`\", \"upper\", \"`\$COPY`\"]" +
           "}]}"))
 
-      // Detect ENTID env override before envOverride consumes it.
+      // Whether *_ENTID supplied the idmap, read before envOverride consumes it.
       val entidEnvRaw = RunnerSupport.getenv("SMSAPI_TEST_CONTACTS_FIELD_OPTION_ENTID")
       val idmapOverridden = entidEnvRaw != null && entidEnvRaw.trim().startsWith("{")
 

@@ -293,9 +293,6 @@ CallbackRemoveMatch = Struct.new(
 # @!attribute [rw] gender
 #   @return [String]
 #
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
 # @!attribute [rw] groups
 #   @return [Array]
 #
@@ -317,29 +314,11 @@ CallbackRemoveMatch = Struct.new(
 # @!attribute [rw] phone_number
 #   @return [String, nil]
 #
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
 # @!attribute [rw] size
 #   @return [Integer]
 #
 # @!attribute [rw] source
 #   @return [String, nil]
-#
-# @!attribute [rw] type
-#   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
 Contact = Struct.new(
   :birthday_date,
   :city,
@@ -354,7 +333,6 @@ Contact = Struct.new(
   :email,
   :first_name,
   :gender,
-  :group_id,
   :groups,
   :id,
   :idx,
@@ -362,14 +340,8 @@ Contact = Struct.new(
   :name,
   :permissions,
   :phone_number,
-  :read,
-  :send,
   :size,
   :source,
-  :type,
-  :username,
-  :value,
-  :write,
   keyword_init: true
 )
 
@@ -472,9 +444,6 @@ ContactListMatch = Struct.new(
 # @!attribute [rw] gender
 #   @return [String]
 #
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
 # @!attribute [rw] groups
 #   @return [Array]
 #
@@ -496,29 +465,11 @@ ContactListMatch = Struct.new(
 # @!attribute [rw] phone_number
 #   @return [String, nil]
 #
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
 # @!attribute [rw] size
 #   @return [Integer]
 #
 # @!attribute [rw] source
 #   @return [String, nil]
-#
-# @!attribute [rw] type
-#   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
 ContactCreateData = Struct.new(
   :birthday_date,
   :city,
@@ -533,7 +484,6 @@ ContactCreateData = Struct.new(
   :email,
   :first_name,
   :gender,
-  :group_id,
   :groups,
   :id,
   :idx,
@@ -541,14 +491,8 @@ ContactCreateData = Struct.new(
   :name,
   :permissions,
   :phone_number,
-  :read,
-  :send,
   :size,
   :source,
-  :type,
-  :username,
-  :value,
-  :write,
   keyword_init: true
 )
 
@@ -596,9 +540,6 @@ ContactCreateData = Struct.new(
 # @!attribute [rw] gender
 #   @return [String, nil]
 #
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
 # @!attribute [rw] groups
 #   @return [Array, nil]
 #
@@ -617,29 +558,11 @@ ContactCreateData = Struct.new(
 # @!attribute [rw] phone_number
 #   @return [String, nil]
 #
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
 # @!attribute [rw] size
 #   @return [Integer, nil]
 #
 # @!attribute [rw] source
 #   @return [String, nil]
-#
-# @!attribute [rw] type
-#   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
 ContactUpdateData = Struct.new(
   :id,
   :birthday_date,
@@ -655,21 +578,14 @@ ContactUpdateData = Struct.new(
   :email,
   :first_name,
   :gender,
-  :group_id,
   :groups,
   :idx,
   :last_name,
   :name,
   :permissions,
   :phone_number,
-  :read,
-  :send,
   :size,
   :source,
-  :type,
-  :username,
-  :value,
-  :write,
   keyword_init: true
 )
 
@@ -684,340 +600,52 @@ ContactRemoveMatch = Struct.new(
 
 # ContactsField entity data model.
 #
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String]
-#
-# @!attribute [rw] date_created
-#   @return [String]
-#
-# @!attribute [rw] date_updated
-#   @return [String]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String]
-#
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
-# @!attribute [rw] groups
-#   @return [Array]
-#
 # @!attribute [rw] id
-#   @return [String, nil]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
 #   @return [String, nil]
 #
 # @!attribute [rw] name
 #   @return [String, nil]
 #
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
-#
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] source
-#   @return [String, nil]
-#
 # @!attribute [rw] type
 #   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
 ContactsField = Struct.new(
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
-  :group_id,
-  :groups,
   :id,
-  :idx,
-  :last_name,
   :name,
-  :permissions,
-  :phone_number,
-  :read,
-  :send,
-  :source,
   :type,
-  :username,
-  :value,
-  :write,
   keyword_init: true
 )
 
 # Request payload for ContactsField#list.
 #
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer, nil]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String, nil]
-#
-# @!attribute [rw] date_created
-#   @return [String, nil]
-#
-# @!attribute [rw] date_updated
-#   @return [String, nil]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String, nil]
-#
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
-# @!attribute [rw] groups
-#   @return [Array, nil]
-#
 # @!attribute [rw] id
-#   @return [String, nil]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
 #   @return [String, nil]
 #
 # @!attribute [rw] name
 #   @return [String, nil]
 #
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
-#
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] source
-#   @return [String, nil]
-#
 # @!attribute [rw] type
 #   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
 ContactsFieldListMatch = Struct.new(
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
-  :group_id,
-  :groups,
   :id,
-  :idx,
-  :last_name,
   :name,
-  :permissions,
-  :phone_number,
-  :read,
-  :send,
-  :source,
   :type,
-  :username,
-  :value,
-  :write,
   keyword_init: true
 )
 
 # Request payload for ContactsField#create.
 #
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String]
-#
-# @!attribute [rw] date_created
-#   @return [String]
-#
-# @!attribute [rw] date_updated
-#   @return [String]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String]
-#
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
-# @!attribute [rw] groups
-#   @return [Array]
-#
 # @!attribute [rw] id
-#   @return [String, nil]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
 #   @return [String, nil]
 #
 # @!attribute [rw] name
 #   @return [String, nil]
 #
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
-#
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] source
-#   @return [String, nil]
-#
 # @!attribute [rw] type
 #   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
 ContactsFieldCreateData = Struct.new(
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
-  :group_id,
-  :groups,
   :id,
-  :idx,
-  :last_name,
   :name,
-  :permissions,
-  :phone_number,
-  :read,
-  :send,
-  :source,
   :type,
-  :username,
-  :value,
-  :write,
   keyword_init: true
 )
 
@@ -1026,111 +654,15 @@ ContactsFieldCreateData = Struct.new(
 # @!attribute [rw] id
 #   @return [String]
 #
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer, nil]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String, nil]
-#
-# @!attribute [rw] date_created
-#   @return [String, nil]
-#
-# @!attribute [rw] date_updated
-#   @return [String, nil]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String, nil]
-#
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
-# @!attribute [rw] groups
-#   @return [Array, nil]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
-#   @return [String, nil]
-#
 # @!attribute [rw] name
-#   @return [String, nil]
-#
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
-#
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] source
 #   @return [String, nil]
 #
 # @!attribute [rw] type
 #   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
 ContactsFieldUpdateData = Struct.new(
   :id,
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
-  :group_id,
-  :groups,
-  :idx,
-  :last_name,
   :name,
-  :permissions,
-  :phone_number,
-  :read,
-  :send,
-  :source,
   :type,
-  :username,
-  :value,
-  :write,
   keyword_init: true
 )
 
@@ -1144,117 +676,8 @@ ContactsFieldRemoveMatch = Struct.new(
 )
 
 # ContactsFieldOption entity data model.
-#
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String]
-#
-# @!attribute [rw] date_created
-#   @return [String]
-#
-# @!attribute [rw] date_updated
-#   @return [String]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String]
-#
-# @!attribute [rw] group_id
-#   @return [String, nil]
-#
-# @!attribute [rw] groups
-#   @return [Array]
-#
-# @!attribute [rw] id
-#   @return [String]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
-#   @return [String, nil]
-#
-# @!attribute [rw] name
-#   @return [String, nil]
-#
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
-#
-# @!attribute [rw] read
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] send
-#   @return [Boolean, nil]
-#
-# @!attribute [rw] source
-#   @return [String, nil]
-#
-# @!attribute [rw] type
-#   @return [String, nil]
-#
-# @!attribute [rw] username
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
-# @!attribute [rw] write
-#   @return [Boolean, nil]
-ContactsFieldOption = Struct.new(
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
-  :group_id,
-  :groups,
-  :id,
-  :idx,
-  :last_name,
-  :name,
-  :permissions,
-  :phone_number,
-  :read,
-  :send,
-  :source,
-  :type,
-  :username,
-  :value,
-  :write,
-  keyword_init: true
-)
+class ContactsFieldOption
+end
 
 # Request payload for ContactsFieldOption#list.
 #
@@ -1267,65 +690,8 @@ ContactsFieldOptionListMatch = Struct.new(
 
 # Contactsgroup entity data model.
 #
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String]
-#
-# @!attribute [rw] date_created
-#   @return [String]
-#
-# @!attribute [rw] date_updated
-#   @return [String]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String]
-#
 # @!attribute [rw] group_id
 #   @return [String]
-#
-# @!attribute [rw] groups
-#   @return [Array]
-#
-# @!attribute [rw] id
-#   @return [String]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
-#   @return [String, nil]
-#
-# @!attribute [rw] name
-#   @return [String, nil]
-#
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
 #
 # @!attribute [rw] read
 #   @return [Boolean]
@@ -1333,47 +699,16 @@ ContactsFieldOptionListMatch = Struct.new(
 # @!attribute [rw] send
 #   @return [Boolean]
 #
-# @!attribute [rw] source
-#   @return [String, nil]
-#
-# @!attribute [rw] type
-#   @return [String, nil]
-#
 # @!attribute [rw] username
 #   @return [String]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
 #
 # @!attribute [rw] write
 #   @return [Boolean]
 Contactsgroup = Struct.new(
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
   :group_id,
-  :groups,
-  :id,
-  :idx,
-  :last_name,
-  :name,
-  :permissions,
-  :phone_number,
   :read,
   :send,
-  :source,
-  :type,
   :username,
-  :value,
   :write,
   keyword_init: true
 )
@@ -1393,65 +728,8 @@ ContactsgroupListMatch = Struct.new(
 
 # Request payload for Contactsgroup#create.
 #
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String]
-#
-# @!attribute [rw] date_created
-#   @return [String]
-#
-# @!attribute [rw] date_updated
-#   @return [String]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String]
-#
 # @!attribute [rw] group_id
 #   @return [String]
-#
-# @!attribute [rw] groups
-#   @return [Array]
-#
-# @!attribute [rw] id
-#   @return [String]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
-#   @return [String, nil]
-#
-# @!attribute [rw] name
-#   @return [String, nil]
-#
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
 #
 # @!attribute [rw] read
 #   @return [Boolean]
@@ -1459,47 +737,16 @@ ContactsgroupListMatch = Struct.new(
 # @!attribute [rw] send
 #   @return [Boolean]
 #
-# @!attribute [rw] source
-#   @return [String, nil]
-#
-# @!attribute [rw] type
-#   @return [String, nil]
-#
 # @!attribute [rw] username
 #   @return [String]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
 #
 # @!attribute [rw] write
 #   @return [Boolean]
 ContactsgroupCreateData = Struct.new(
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
   :group_id,
-  :groups,
-  :id,
-  :idx,
-  :last_name,
-  :name,
-  :permissions,
-  :phone_number,
   :read,
   :send,
-  :source,
-  :type,
   :username,
-  :value,
   :write,
   keyword_init: true
 )
@@ -1512,107 +759,19 @@ ContactsgroupCreateData = Struct.new(
 # @!attribute [rw] username
 #   @return [String, nil]
 #
-# @!attribute [rw] birthday_date
-#   @return [String, nil]
-#
-# @!attribute [rw] city
-#   @return [String, nil]
-#
-# @!attribute [rw] contact_expire_after
-#   @return [Integer, nil]
-#
-# @!attribute [rw] contacts_count
-#   @return [Integer, nil]
-#
-# @!attribute [rw] country
-#   @return [String, nil]
-#
-# @!attribute [rw] created_by
-#   @return [String, nil]
-#
-# @!attribute [rw] date_created
-#   @return [String, nil]
-#
-# @!attribute [rw] date_updated
-#   @return [String, nil]
-#
-# @!attribute [rw] description
-#   @return [String, nil]
-#
-# @!attribute [rw] email
-#   @return [String, nil]
-#
-# @!attribute [rw] first_name
-#   @return [String, nil]
-#
-# @!attribute [rw] gender
-#   @return [String, nil]
-#
-# @!attribute [rw] groups
-#   @return [Array, nil]
-#
-# @!attribute [rw] id
-#   @return [String, nil]
-#
-# @!attribute [rw] idx
-#   @return [String, nil]
-#
-# @!attribute [rw] last_name
-#   @return [String, nil]
-#
-# @!attribute [rw] name
-#   @return [String, nil]
-#
-# @!attribute [rw] permissions
-#   @return [Array, nil]
-#
-# @!attribute [rw] phone_number
-#   @return [String, nil]
-#
 # @!attribute [rw] read
 #   @return [Boolean, nil]
 #
 # @!attribute [rw] send
 #   @return [Boolean, nil]
 #
-# @!attribute [rw] source
-#   @return [String, nil]
-#
-# @!attribute [rw] type
-#   @return [String, nil]
-#
-# @!attribute [rw] value
-#   @return [String, nil]
-#
 # @!attribute [rw] write
 #   @return [Boolean, nil]
 ContactsgroupUpdateData = Struct.new(
   :group_id,
   :username,
-  :birthday_date,
-  :city,
-  :contact_expire_after,
-  :contacts_count,
-  :country,
-  :created_by,
-  :date_created,
-  :date_updated,
-  :description,
-  :email,
-  :first_name,
-  :gender,
-  :groups,
-  :id,
-  :idx,
-  :last_name,
-  :name,
-  :permissions,
-  :phone_number,
   :read,
   :send,
-  :source,
-  :type,
-  :value,
   :write,
   keyword_init: true
 )
@@ -1939,13 +1098,9 @@ Permission = Struct.new(
 #
 # @!attribute [rw] id
 #   @return [String]
-#
-# @!attribute [rw] username
-#   @return [String]
 PermissionLoadMatch = Struct.new(
   :group_id,
   :id,
-  :username,
   keyword_init: true
 )
 
@@ -2214,7 +1369,7 @@ SendernameStatementListMatch = Struct.new(
 #   @return [String]
 #
 # @!attribute [rw] sender
-#   @return [Object]
+#   @return [String]
 #
 # @!attribute [rw] text
 #   @return [String, nil]
@@ -2235,7 +1390,7 @@ SentRcsMessage = Struct.new(
 #   @return [String]
 #
 # @!attribute [rw] sender
-#   @return [Object]
+#   @return [String]
 #
 # @!attribute [rw] text
 #   @return [String, nil]
@@ -2663,10 +1818,10 @@ end
 
 # Request payload for Smssendername#create.
 #
-# @!attribute [rw] sendername_id
+# @!attribute [rw] sender
 #   @return [String]
 SmssendernameCreateData = Struct.new(
-  :sendername_id,
+  :sender,
   keyword_init: true
 )
 
@@ -2905,92 +2060,10 @@ TemplateUpdateData = Struct.new(
 )
 
 # UserRcsSenderCollection entity data model.
-#
-# @!attribute [rw] deliveredAt
-#   @return [String, nil]
-#
-# @!attribute [rw] expiredAt
-#   @return [String, nil]
-#
-# @!attribute [rw] id
-#   @return [String, nil]
-#
-# @!attribute [rw] interface
-#   @return [String, nil]
-#
-# @!attribute [rw] messageType
-#   @return [String, nil]
-#
-# @!attribute [rw] readAt
-#   @return [String, nil]
-#
-# @!attribute [rw] recipient
-#   @return [String, nil]
-#
-# @!attribute [rw] sender
-#   @return [String, nil]
-#
-# @!attribute [rw] senderId
-#   @return [String, nil]
-#
-# @!attribute [rw] sentAt
-#   @return [String, nil]
-UserRcsSenderCollection = Struct.new(
-  :deliveredAt,
-  :expiredAt,
-  :id,
-  :interface,
-  :messageType,
-  :readAt,
-  :recipient,
-  :sender,
-  :senderId,
-  :sentAt,
-  keyword_init: true
-)
+class UserRcsSenderCollection
+end
 
 # Request payload for UserRcsSenderCollection#list.
-#
-# @!attribute [rw] deliveredAt
-#   @return [String, nil]
-#
-# @!attribute [rw] expiredAt
-#   @return [String, nil]
-#
-# @!attribute [rw] id
-#   @return [String, nil]
-#
-# @!attribute [rw] interface
-#   @return [String, nil]
-#
-# @!attribute [rw] messageType
-#   @return [String, nil]
-#
-# @!attribute [rw] readAt
-#   @return [String, nil]
-#
-# @!attribute [rw] recipient
-#   @return [String, nil]
-#
-# @!attribute [rw] sender
-#   @return [String, nil]
-#
-# @!attribute [rw] senderId
-#   @return [String, nil]
-#
-# @!attribute [rw] sentAt
-#   @return [String, nil]
-UserRcsSenderCollectionListMatch = Struct.new(
-  :deliveredAt,
-  :expiredAt,
-  :id,
-  :interface,
-  :messageType,
-  :readAt,
-  :recipient,
-  :sender,
-  :senderId,
-  :sentAt,
-  keyword_init: true
-)
+class UserRcsSenderCollectionListMatch
+end
 

@@ -37,6 +37,10 @@ fun resultBody(ctx: Context): KOTLINPACKAGE.core.Result {
     if (response != null && response.jsonFunc != null && response.body != null) {
       result.body = response.jsonFunc!!.get()
     }
+    if (response != null && response.unreadable) {
+      result.err = KOTLINPACKAGE.core.Response.unreadableBody(ctx, result.status, result.headers,
+        response.body, ctx.spec?.headers, result.err)
+    }
   }
 
   return result!!
@@ -62,12 +66,19 @@ fun resultHeaders(ctx: Context): KOTLINPACKAGE.core.Result {
 // the body is a copy without it. The caller's map is left untouched.
 private fun stripAction(reqdata: Any?): Any? = omitKeys(reqdata, listOf("\$action"))
 
-// A header argument travels as a header, which prepareHeaders sends, so the
-// body is built from the request data without it.
-private fun headerArgNames(ctx: Context): List<String> {
-  val point = ctx.point ?: return emptyList()
-  val hl = Struct.getpath(point, listOf("args", "header")) as? List<*> ?: return emptyList()
-  return hl.mapNotNull { hd -> (Struct.getprop(hd, "name", null) as? String)?.takeIf { it.isNotEmpty() } }
+// A header, cookie or query argument travels where prepareHeaders or
+// prepareQuery sends it, so the body is built from the request data without
+// it, unless the point marks it as a field the body keeps.
+private fun routedArgNames(ctx: Context): List<String> =
+  (callArgs(ctx, "header") + callArgs(ctx, "cookie") + callArgs(ctx, "query")).map { it.name }
+    .filter { !fieldArg(ctx, it) }
+
+private fun fieldArg(ctx: Context, name: String): Boolean {
+  val point = ctx.point ?: return false
+  return listOf("header", "cookie", "query").any { kind ->
+    val defs = Struct.getpath(point, listOf("args", kind)) as? List<*> ?: emptyList<Any?>()
+    defs.any { name == Struct.getprop(it, "name") && true == Struct.getprop(it, "field") }
+  }
 }
 
 private fun omitKeys(reqdata: Any?, names: List<String>): Any? {
@@ -88,7 +99,7 @@ fun transformRequest(ctx: Context): Any? {
     ctx.spec!!.step = "reqform"
   }
 
-  val reqdata = omitKeys(ctx.reqdata, headerArgNames(ctx))
+  val reqdata = omitKeys(ctx.reqdata, routedArgNames(ctx))
 
   val transform = Helpers.toMapAny(Struct.getprop(ctx.point, "transform"))
     ?: return stripAction(reqdata)

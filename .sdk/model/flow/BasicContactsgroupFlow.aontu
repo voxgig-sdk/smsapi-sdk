@@ -19,10 +19,6 @@ main: kit: flow: BasicContactsgroupFlow:
     }
 
     {
-      m: {
-        group_id: "group01"
-      }
-
       o: "list",
       v: [
         {
@@ -38,8 +34,7 @@ main: kit: flow: BasicContactsgroupFlow:
       i: {
         ref: "contactsgroup_ref01",
         srcdatavar: "contactsgroup_ref01_data",
-        suffix: "_up0",
-        textfield: "birthday_date"
+        suffix: "_up0"
       }
 
       o: "update",
@@ -65,10 +60,6 @@ main: kit: flow: BasicContactsgroupFlow:
     {
       i: {
         suffix: "_rt0"
-      }
-
-      m: {
-        group_id: "group01"
       }
 
       o: "list",

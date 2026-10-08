@@ -17,7 +17,7 @@ keeps the cognitive load low.
 
 ## Install
 This package is not yet published to the opam registry. Install it from the
-GitHub release tag (`ocaml/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases))
+GitHub release tag (`ocaml/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags))
 or from a source checkout. The SDK is dependency-free and compiles with the
 stock `ocamlc` — no opam packages, no dune:
 
@@ -36,6 +36,7 @@ loading a specific record.
 ```ocaml
 open Voxgig_struct
 open Sdk_helpers
+open Sdk_types
 
 let client = Sdk_client.make (jo [("apikey", Str (Sys.getenv "SMSAPI_APIKEY"))])
 ```
@@ -60,7 +61,7 @@ record.
 
 ```ocaml
 (try
-   let permission = (Sdk_client.permission client Noval).e_load (jo [("group_id", (Str "example_group_id")); ("username", (Str "example_username")); ("id", (Str "example_id"))]) Noval in
+   let permission = (Sdk_client.permission client Noval).e_load (jo [("group_id", (Str "example_group_id")); ("id", (Str "example_id"))]) Noval in
    print_endline (stringify (permission.e_data_get ()))
  with Sdk_error.E err -> Printf.eprintf "load failed: %s\n" (Sdk_error.message err))
 ```
@@ -72,15 +73,16 @@ Entity operations reject on failure, so wrap them in `try` / `catch`:
 
 ```ts
 try {
-  const permission = await client.Permission().load({ group_id: "example", id: "example_id", username: "example" })
-  console.log(permission)
+  const templates = await client.Template().list()
+  console.log(templates.map((item) => item.data()))
 } catch (err) {
-  console.error('load failed:', err)
+  console.error('list failed:', err)
 }
 ```
 
 The low-level `direct()` method does **not** throw — it returns the
-value or an `Error`, so check the result before using it:
+result envelope. Branch on `ok`; on failure `status` holds the HTTP status
+(for error responses) and `err` holds the error:
 
 ```ts
 const result = await client.direct({
@@ -89,8 +91,8 @@ const result = await client.direct({
   params: { id: 'example_id' },
 })
 
-if (result instanceof Error) {
-  throw result
+if (!result.ok) {
+  console.error('request failed:', result.status, result.err)
 }
 ```
 
@@ -139,9 +141,9 @@ Create a mock client for unit testing — no server required:
 ```ocaml
 let () =
   let client = Sdk_client.test () in
-  (* Entity ops resolve to the ENTITY and raise on error. *)
-  let permission = (Sdk_client.permission client Noval).e_load (jo [("id", Str "test01")]) Noval in
-  print_endline (stringify (permission.e_data_get ()))  (* the mock response record *)
+  (* Entity ops resolve to the ENTITY (list: one per record) and raise on error. *)
+  let templates = (Sdk_client.template client Noval).e_list (empty_map ()) Noval in
+  List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) templates  (* the mock records *)
 ```
 
 ### Use a custom fetch function
@@ -182,6 +184,7 @@ cd ocaml && make test
 ```ocaml
 open Voxgig_struct
 open Sdk_helpers
+open Sdk_types
 
 let client = Sdk_client.make options
 ```
@@ -341,7 +344,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -349,14 +351,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -366,33 +362,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -402,33 +374,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -438,32 +383,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -631,7 +554,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -751,16 +674,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -916,7 +829,6 @@ Create an instance: `let contact = Sdk_client.contact client Noval`
 | `email` | `string` |  |
 | `first_name` | `string` |  |
 | `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
 | `groups` | `value list` |  |
 | `id` | `string` | Object ID |
 | `idx` | `string` | User provided resource id |
@@ -924,14 +836,8 @@ Create an instance: `let contact = Sdk_client.contact client Noval`
 | `name` | `string` | Group name |
 | `permissions` | `value list` |  |
 | `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
 | `size` | `int` |  |
 | `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: Load
 
@@ -986,33 +892,9 @@ Create an instance: `let contacts_field = Sdk_client.contacts_field client Noval
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `value list` |  |
 | `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `value list` |  |
-| `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `string` |  |
+| `name` | `string` |  |
 | `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: List
 
@@ -1026,12 +908,6 @@ let contacts_field_datas = List.map (fun e -> e.e_data_get ()) contacts_fields
 
 ```ocaml
 let contacts_field = (Sdk_client.contacts_field client Noval).e_create (jo [
-    ("contact_expire_after", (Num 1.));  (* int *)
-    ("created_by", (Str "example_created_by"));  (* string *)
-    ("date_created", (Str "example_date_created"));  (* string *)
-    ("date_updated", (Str "example_date_updated"));  (* string *)
-    ("gender", (Str "example_gender"));  (* string *)
-    ("groups", (empty_list ()));  (* value list *)
 ]) Noval
 let contacts_field_data = contacts_field.e_data_get ()
 ```
@@ -1047,43 +923,11 @@ Create an instance: `let contacts_field_option = Sdk_client.contacts_field_optio
 | --- | --- |
 | `e_list reqmatch ctrl` | List entities, optionally matching the given criteria. Resolves to one entity per record. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `value list` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `value list` |  |
-| `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
-
 #### Example: List
 
 ```ocaml
 (* One ENTITY per record. *)
-let contacts_field_options = (Sdk_client.contacts_field_option client Noval).e_list (empty_map ()) Noval
+let contacts_field_options = (Sdk_client.contacts_field_option client Noval).e_list (jo [("field_id", (Str "example"))]) Noval
 let contacts_field_option_datas = List.map (fun e -> e.e_data_get ()) contacts_field_options
 ```
 
@@ -1105,32 +949,10 @@ Create an instance: `let contactsgroup = Sdk_client.contactsgroup client Noval`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
 | `group_id` | `string` | Object ID |
-| `groups` | `value list` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `value list` |  |
-| `phone_number` | `string` |  |
 | `read` | `bool` | Has read permission |
 | `send` | `bool` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
 | `username` | `string` |  |
-| `value` | `string` |  |
 | `write` | `bool` | Has write permission |
 
 #### Example: List
@@ -1145,14 +967,7 @@ let contactsgroup_datas = List.map (fun e -> e.e_data_get ()) contactsgroups
 
 ```ocaml
 let contactsgroup = (Sdk_client.contactsgroup client Noval).e_create (jo [
-    ("contact_expire_after", (Num 1.));  (* int *)
-    ("created_by", (Str "example_created_by"));  (* string *)
-    ("date_created", (Str "example_date_created"));  (* string *)
-    ("date_updated", (Str "example_date_updated"));  (* string *)
-    ("gender", (Str "example_gender"));  (* string *)
     ("group_id", (Str "example_group_id"));  (* string *)
-    ("groups", (empty_list ()));  (* value list *)
-    ("id", (Str "example_id"));  (* string *)
     ("read", (Bool true));  (* bool *)
     ("send", (Bool true));  (* bool *)
     ("username", (Str "example_username"));  (* string *)
@@ -1348,7 +1163,7 @@ Create an instance: `let permission = Sdk_client.permission client Noval`
 
 ```ocaml
 (* The op resolves to the ENTITY; the record is inside it. *)
-let permission = (Sdk_client.permission client Noval).e_load (jo [("id", (Str "permission_id")); ("group_id", (Str "group_id")); ("username", (Str "username"))]) Noval
+let permission = (Sdk_client.permission client Noval).e_load (jo [("id", (Str "permission_id")); ("group_id", (Str "group_id"))]) Noval
 let permission_data = permission.e_data_get ()
 ```
 
@@ -1541,7 +1356,7 @@ Create an instance: `let sent_rcs_message = Sdk_client.sent_rcs_message client N
 | --- | --- | --- |
 | `content` | `value map` | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Recipient phone number (e.g. |
-| `sender` | `value` |  |
+| `sender` | `string` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | Plain text message content. |
 
 #### Example: Create
@@ -1549,7 +1364,7 @@ Create an instance: `let sent_rcs_message = Sdk_client.sent_rcs_message client N
 ```ocaml
 let sent_rcs_message = (Sdk_client.sent_rcs_message client Noval).e_create (jo [
     ("phone_number", (Str "example_phone_number"));  (* string *)
-    ("sender", (Str "example_sender"));  (* value *)
+    ("sender", (Str "example_sender"));  (* string *)
 ]) Noval
 let sent_rcs_message_data = sent_rcs_message.e_data_get ()
 ```
@@ -1697,7 +1512,7 @@ Create an instance: `let smssendername = Sdk_client.smssendername client Noval`
 
 ```ocaml
 let smssendername = (Sdk_client.smssendername client Noval).e_create (jo [
-    ("sendername_id", (Str "example_sendername_id"));  (* string *)
+    ("sender", (Str "example_sender"));  (* string *)
 ]) Noval
 let smssendername_data = smssendername.e_data_get ()
 ```
@@ -1827,21 +1642,6 @@ Create an instance: `let user_rcs_sender_collection = Sdk_client.user_rcs_sender
 | Method | Description |
 | --- | --- |
 | `e_list reqmatch ctrl` | List entities, optionally matching the given criteria. Resolves to one entity per record. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `string` |  |
-| `expiredAt` | `string` |  |
-| `id` | `string` | Object ID |
-| `interface` | `string` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | RCS message type (basic, single, ...). |
-| `readAt` | `string` |  |
-| `recipient` | `string` | Recipient phone number (without +). |
-| `sender` | `string` | Sender name |
-| `senderId` | `string` | Sender id |
-| `sentAt` | `string` |  |
 
 #### Example: List
 
@@ -2295,16 +2095,16 @@ helpers. Open the runtime modules directly only when needed.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally. Subsequent
 calls on the same instance can rely on this state.
 
 ```ts
-const permission = client.Permission()
-await permission.load({ group_id: "example", id: "example_id", username: "example" })
+const template = client.Template()
+await template.list()
 
-// permission.data() now returns the permission data from the last `load`
-// permission.match() returns { id: "example_id" }
+// template.data() now returns the template data from the last `list`
+// template.match() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

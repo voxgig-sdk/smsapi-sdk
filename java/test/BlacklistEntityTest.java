@@ -3,6 +3,7 @@ package voxgig.smsapisdk.sdktest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -16,14 +17,24 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
+import voxgig.smsapisdk.core.Config;
+import voxgig.smsapisdk.core.Context;
 import voxgig.smsapisdk.core.Helpers;
 import voxgig.smsapisdk.core.SdkEntity;
+import voxgig.smsapisdk.core.SdkError;
 import voxgig.smsapisdk.core.SmsapiSDK;
+import voxgig.smsapisdk.feature.BaseFeature;
 import voxgig.smsapisdk.utility.Json;
 import voxgig.smsapisdk.utility.struct.Struct;
 
 @SuppressWarnings({"unchecked", "unused"})
 public class BlacklistEntityTest {
+
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  static final boolean LIVE_STRICT = true;
 
   @Test
   public void instance() {
@@ -44,10 +55,6 @@ public class BlacklistEntityTest {
           reason == null || "".equals(reason)
               ? "skipped via sdk-test-control.json" : reason);
     }
-    // The basic flow consumes synthetic IDs from the fixture. In live mode
-    // without an *_ENTID env override, those IDs hit the live API and 4xx.
-    Assumptions.assumeFalse(setup.syntheticOnly,
-        "live entity test uses synthetic IDs from fixture — set SMSAPI_TEST_BLACKLIST_ENTID JSON to run live");
     SmsapiSDK client = setup.client;
 
     // CREATE
@@ -74,6 +81,21 @@ public class BlacklistEntityTest {
     blacklistRef01MatchRm0.put("id", blacklistRef01Data.get("id"));
     blacklistRef01Ent.remove(blacklistRef01MatchRm0, null);
 
+  }
+
+  static boolean hasFeature(String name) {
+    Map<String, Object> fm = Helpers.toMapAny(Config.makeConfig().get("feature"));
+    return fm != null && fm.get(name) != null;
+  }
+
+  @Test
+  public void validate() {
+    Assumptions.assumeTrue(hasFeature("validate"), "feature not present in this SDK: validate");
+    SmsapiSDK client = SmsapiSDK.testSDK(null,
+        Struct.jm("feature", Struct.jm("validate", Struct.jm("active", true))));
+    SdkError err = assertThrows(SdkError.class, () ->
+        client.blacklist(null).load(Struct.jm("limit", "x"), null));
+    assertEquals("validate_failed", err.code);
   }
 
   static RunnerSupport.EntityTestSetup blacklistBasicSetup(Map<String, Object> extra) {
@@ -105,10 +127,8 @@ public class BlacklistEntityTest {
         + "\"`$VAL`\": [\"`$FORMAT`\", \"upper\", \"`$COPY`\"]"
         + "}]}"));
 
-    // Detect ENTID env override before envOverride consumes it. When live
-    // mode is on without a real override, the basic test runs against
-    // synthetic IDs from the fixture and 4xx's. Surface this so the test
-    // can skip.
+    // Whether *_ENTID supplied the idmap, read before envOverride consumes
+    // it: without it, the ids a live flow binds are the fixture's synthetic ones.
     String entidEnvRaw = RunnerSupport.getenv("SMSAPI_TEST_BLACKLIST_ENTID");
     boolean idmapOverridden = entidEnvRaw != null
         && entidEnvRaw.trim().startsWith("{");

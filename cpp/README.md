@@ -21,7 +21,7 @@ The C++ SDK is **header-only** — there is no package to install
 from a registry. Vendor the `cpp/` directory into your project (or add the
 repository as a git submodule) and put it on your compiler's include path.
 Releases are cut as the git tag `cpp/vX.Y.Z` (see
-[Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)).
+[Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)).
 
 ```bash
 # Add the SDK as a submodule (or copy the cpp/ directory into your tree).
@@ -60,14 +60,14 @@ auto client = std::make_shared<SmsapiSDK>(vmap({
 
 ### 2. List available records
 
-`list()` returns an `sdk::Value` list and throws `sdk::SdkErrorPtr`
-on error — iterate it directly.
+`list()` returns a `std::vector` of entities, one per record, and throws
+`sdk::SdkErrorPtr` on error; `data()` reads an entity's record.
 
 ```cpp
 try {
-  Value availables = client->available()->list(Value::undef(), Value::undef());
-  for (const auto& available : *availables.as_list()) {
-    std::cout << Struct::jsonify(available) << std::endl;
+  std::vector<SdkEntityPtr> availables = client->available()->list(Value::undef(), Value::undef());
+  for (const auto& available : availables) {
+    std::cout << Struct::jsonify(available->data()) << std::endl;
   }
 } catch (const SdkErrorPtr& err) {
   std::cerr << "list failed: " << err->msg << std::endl;
@@ -77,12 +77,12 @@ try {
 ### 3. Load a permission
 
 Permission is nested under group, so provide the `group_id`.
-`load()` returns the bare record and throws on error.
+`load()` returns the entity and throws on error; `data()` reads its record.
 
 ```cpp
 try {
-  Value permission = client->permission()->load(vmap({{"group_id", Value("example_group_id")}, {"username", Value("example_username")}, {"id", Value("example_id")}}), Value::undef());
-  std::cout << Struct::jsonify(permission) << std::endl;
+  SdkEntityPtr permission = client->permission()->load(vmap({{"group_id", Value("example_group_id")}, {"id", Value("example_id")}}), Value::undef());
+  std::cout << Struct::jsonify(permission->data()) << std::endl;
 } catch (const SdkErrorPtr& err) {
   std::cerr << "load failed: " << err->msg << std::endl;
 }
@@ -95,15 +95,16 @@ Entity operations reject on failure, so wrap them in `try` / `catch`:
 
 ```ts
 try {
-  const permission = await client.Permission().load({ group_id: "example", id: "example_id", username: "example" })
-  console.log(permission)
+  const templates = await client.Template().list()
+  console.log(templates.map((item) => item.data()))
 } catch (err) {
-  console.error('load failed:', err)
+  console.error('list failed:', err)
 }
 ```
 
 The low-level `direct()` method does **not** throw — it returns the
-value or an `Error`, so check the result before using it:
+result envelope. Branch on `ok`; on failure `status` holds the HTTP status
+(for error responses) and `err` holds the error:
 
 ```ts
 const result = await client.direct({
@@ -112,8 +113,8 @@ const result = await client.direct({
   params: { id: 'example_id' },
 })
 
-if (result instanceof Error) {
-  throw result
+if (!result.ok) {
+  console.error('request failed:', result.status, result.err)
 }
 ```
 
@@ -168,10 +169,10 @@ feature installs an in-memory mock transport:
 ```cpp
 auto client = SmsapiSDK::testSDK();
 
-// Entity ops return the bare record and throw on error.
-Value permission = client->permission()->load(vmap({{"id", Value("test01")}}), Value::undef());
-// permission contains the mock response record
-std::cout << Struct::jsonify(permission) << std::endl;
+// list returns one entity per mock record, and throws on error.
+for (const auto& template_ : client->template_()->list(Value::undef(), Value::undef())) {
+  std::cout << Struct::jsonify(template_->data()) << std::endl;
+}
 ```
 
 You can seed the mock store by passing test options — see the generated
@@ -269,11 +270,11 @@ All entities share the same interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `load` | `(reqmatch, ctrl) -> Value` | Load a single entity by match criteria. Throws on error. |
-| `list` | `(reqmatch, ctrl) -> Value` | List entities matching the criteria (a Value list). Throws on error. |
-| `create` | `(reqdata, ctrl) -> Value` | Create a new entity. Throws on error. |
-| `update` | `(reqdata, ctrl) -> Value` | Update an existing entity. Throws on error. |
-| `remove` | `(reqmatch, ctrl) -> Value` | Remove an entity. Throws on error. |
+| `load` | `(reqmatch, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. Throws on error. |
+| `list` | `(reqmatch, ctrl) -> std::vector<SdkEntityPtr>` | List entities matching the criteria, one per record. Throws on error. |
+| `create` | `(reqdata, ctrl) -> SdkEntityPtr` | Create a new entity. Throws on error. |
+| `update` | `(reqdata, ctrl) -> SdkEntityPtr` | Update an existing entity. Throws on error. |
+| `remove` | `(reqmatch, ctrl) -> SdkEntityPtr` | Remove an entity, which is returned marked as deleted. Throws on error. |
 | `data` | `(arg) -> Value` | Get (no arg) or set (with arg) entity data. |
 | `match` | `(arg) -> Value` | Get (no arg) or set (with arg) entity match criteria. |
 | `make` | `() -> EntityPtr` | Create a new instance with the same options. |
@@ -281,9 +282,9 @@ All entities share the same interface.
 
 ### Result shape
 
-Entity operations return the bare result data (a map `Value` for
-single-entity ops, a list `Value` for `list`) and throw
-`sdk::SdkErrorPtr` on error. Wrap calls in `try`/`catch` to handle
+Entity operations return the entity, and `list` a `std::vector` of
+entities, one per record; `data()` reads an entity's record. They throw
+`sdk::SdkErrorPtr` on error, so wrap calls in `try`/`catch` to handle
 failures.
 
 The `direct()` escape hatch never throws — it returns a result `Value`
@@ -356,7 +357,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -364,14 +364,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -381,33 +375,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -417,33 +387,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -453,32 +396,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -646,7 +567,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -766,16 +687,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -794,7 +705,7 @@ Create an instance: `auto available = client->available();`
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Fields
 
@@ -807,7 +718,10 @@ Create an instance: `auto available = client->available();`
 #### Example: List
 
 ```cpp
-Value availables = client->available()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> availables = client->available()->list(Value::undef(), Value::undef());
+for (const auto& available : availables) {
+  std::cout << Struct::jsonify(available->data()) << std::endl;
+}
 ```
 
 
@@ -819,9 +733,9 @@ Create an instance: `auto blacklist = client->blacklist();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
 
 #### Fields
 
@@ -832,13 +746,14 @@ Create an instance: `auto blacklist = client->blacklist();`
 #### Example: Load
 
 ```cpp
-Value blacklist = client->blacklist()->load(Value::undef(), Value::undef());
+SdkEntityPtr blacklist = client->blacklist()->load(Value::undef(), Value::undef());
+std::cout << Struct::jsonify(blacklist->data()) << std::endl;
 ```
 
 #### Example: Create
 
 ```cpp
-Value blacklist = client->blacklist()->create(vmap({
+SdkEntityPtr blacklist = client->blacklist()->create(vmap({
 }), Value::undef());
 ```
 
@@ -851,11 +766,11 @@ Create an instance: `auto callback = client->callback();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
@@ -873,19 +788,23 @@ Create an instance: `auto callback = client->callback();`
 #### Example: Load
 
 ```cpp
-Value callback = client->callback()->load(vmap({{"id", Value("callback_id")}}), Value::undef());
+SdkEntityPtr callback = client->callback()->load(vmap({{"id", Value("callback_id")}}), Value::undef());
+std::cout << Struct::jsonify(callback->data()) << std::endl;
 ```
 
 #### Example: List
 
 ```cpp
-Value callbacks = client->callback()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> callbacks = client->callback()->list(Value::undef(), Value::undef());
+for (const auto& callback : callbacks) {
+  std::cout << Struct::jsonify(callback->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value callback = client->callback()->create(vmap({
+SdkEntityPtr callback = client->callback()->create(vmap({
 }), Value::undef());
 ```
 
@@ -898,11 +817,11 @@ Create an instance: `auto contact = client->contact();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
@@ -921,7 +840,6 @@ Create an instance: `auto contact = client->contact();`
 | `email` | `std::string` |  |
 | `first_name` | `std::string` |  |
 | `gender` | `std::string` |  |
-| `group_id` | `std::string` | Object ID |
 | `groups` | `std::vector<Value>` |  |
 | `id` | `std::string` | Object ID |
 | `idx` | `std::string` | User provided resource id |
@@ -929,31 +847,29 @@ Create an instance: `auto contact = client->contact();`
 | `name` | `std::string` | Group name |
 | `permissions` | `std::vector<Value>` |  |
 | `phone_number` | `std::string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
 | `size` | `int64_t` |  |
 | `source` | `std::string` |  |
-| `type` | `std::string` |  |
-| `username` | `std::string` |  |
-| `value` | `std::string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: Load
 
 ```cpp
-Value contact = client->contact()->load(vmap({{"id", Value("contact_id")}}), Value::undef());
+SdkEntityPtr contact = client->contact()->load(vmap({{"id", Value("contact_id")}}), Value::undef());
+std::cout << Struct::jsonify(contact->data()) << std::endl;
 ```
 
 #### Example: List
 
 ```cpp
-Value contacts = client->contact()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> contacts = client->contact()->list(Value::undef(), Value::undef());
+for (const auto& contact : contacts) {
+  std::cout << Struct::jsonify(contact->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value contact = client->contact()->create(vmap({
+SdkEntityPtr contact = client->contact()->create(vmap({
     {"collection", vlist()},  // std::vector<Value>
     {"contact_expire_after", Value(1)},  // int64_t
     {"contacts_count", Value(1)},  // int64_t
@@ -977,59 +893,32 @@ Create an instance: `auto contacts_field = client->contacts_field();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `std::string` |  |
-| `city` | `std::string` |  |
-| `contact_expire_after` | `int64_t` | Contact expire after days |
-| `contacts_count` | `int64_t` |  |
-| `country` | `std::string` |  |
-| `created_by` | `std::string` |  |
-| `date_created` | `std::string` |  |
-| `date_updated` | `std::string` |  |
-| `description` | `std::string` |  |
-| `email` | `std::string` |  |
-| `first_name` | `std::string` |  |
-| `gender` | `std::string` |  |
-| `group_id` | `std::string` | Object ID |
-| `groups` | `std::vector<Value>` |  |
 | `id` | `std::string` | Object ID |
-| `idx` | `std::string` | User provided resource id |
-| `last_name` | `std::string` |  |
-| `name` | `std::string` | Group name |
-| `permissions` | `std::vector<Value>` |  |
-| `phone_number` | `std::string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `std::string` |  |
+| `name` | `std::string` |  |
 | `type` | `std::string` |  |
-| `username` | `std::string` |  |
-| `value` | `std::string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: List
 
 ```cpp
-Value contacts_fields = client->contacts_field()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> contacts_fields = client->contacts_field()->list(Value::undef(), Value::undef());
+for (const auto& contacts_field : contacts_fields) {
+  std::cout << Struct::jsonify(contacts_field->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value contacts_field = client->contacts_field()->create(vmap({
-    {"contact_expire_after", Value(1)},  // int64_t
-    {"created_by", Value("example_created_by")},  // std::string
-    {"date_created", Value("example_date_created")},  // std::string
-    {"date_updated", Value("example_date_updated")},  // std::string
-    {"gender", Value("example_gender")},  // std::string
-    {"groups", vlist()},  // std::vector<Value>
+SdkEntityPtr contacts_field = client->contacts_field()->create(vmap({
 }), Value::undef());
 ```
 
@@ -1042,44 +931,15 @@ Create an instance: `auto contacts_field_option = client->contacts_field_option(
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `std::string` |  |
-| `city` | `std::string` |  |
-| `contact_expire_after` | `int64_t` | Contact expire after days |
-| `contacts_count` | `int64_t` |  |
-| `country` | `std::string` |  |
-| `created_by` | `std::string` |  |
-| `date_created` | `std::string` |  |
-| `date_updated` | `std::string` |  |
-| `description` | `std::string` |  |
-| `email` | `std::string` |  |
-| `first_name` | `std::string` |  |
-| `gender` | `std::string` |  |
-| `group_id` | `std::string` | Object ID |
-| `groups` | `std::vector<Value>` |  |
-| `id` | `std::string` | Object ID |
-| `idx` | `std::string` | User provided resource id |
-| `last_name` | `std::string` |  |
-| `name` | `std::string` | Group name |
-| `permissions` | `std::vector<Value>` |  |
-| `phone_number` | `std::string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `std::string` |  |
-| `type` | `std::string` |  |
-| `username` | `std::string` |  |
-| `value` | `std::string` |  |
-| `write` | `bool` | Has write permission |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Example: List
 
 ```cpp
-Value contacts_field_options = client->contacts_field_option()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> contacts_field_options = client->contacts_field_option()->list(vmap({{"field_id", Value("example")}}), Value::undef());
+for (const auto& contacts_field_option : contacts_field_options) {
+  std::cout << Struct::jsonify(contacts_field_option->data()) << std::endl;
+}
 ```
 
 
@@ -1091,61 +951,35 @@ Create an instance: `auto contactsgroup = client->contactsgroup();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `std::string` |  |
-| `city` | `std::string` |  |
-| `contact_expire_after` | `int64_t` | Contact expire after days |
-| `contacts_count` | `int64_t` |  |
-| `country` | `std::string` |  |
-| `created_by` | `std::string` |  |
-| `date_created` | `std::string` |  |
-| `date_updated` | `std::string` |  |
-| `description` | `std::string` |  |
-| `email` | `std::string` |  |
-| `first_name` | `std::string` |  |
-| `gender` | `std::string` |  |
 | `group_id` | `std::string` | Object ID |
-| `groups` | `std::vector<Value>` |  |
-| `id` | `std::string` | Object ID |
-| `idx` | `std::string` | User provided resource id |
-| `last_name` | `std::string` |  |
-| `name` | `std::string` | Group name |
-| `permissions` | `std::vector<Value>` |  |
-| `phone_number` | `std::string` |  |
 | `read` | `bool` | Has read permission |
 | `send` | `bool` | Has send permission |
-| `source` | `std::string` |  |
-| `type` | `std::string` |  |
 | `username` | `std::string` |  |
-| `value` | `std::string` |  |
 | `write` | `bool` | Has write permission |
 
 #### Example: List
 
 ```cpp
-Value contactsgroups = client->contactsgroup()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> contactsgroups = client->contactsgroup()->list(Value::undef(), Value::undef());
+for (const auto& contactsgroup : contactsgroups) {
+  std::cout << Struct::jsonify(contactsgroup->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value contactsgroup = client->contactsgroup()->create(vmap({
-    {"contact_expire_after", Value(1)},  // int64_t
-    {"created_by", Value("example_created_by")},  // std::string
-    {"date_created", Value("example_date_created")},  // std::string
-    {"date_updated", Value("example_date_updated")},  // std::string
-    {"gender", Value("example_gender")},  // std::string
+SdkEntityPtr contactsgroup = client->contactsgroup()->create(vmap({
     {"group_id", Value("example_group_id")},  // std::string
-    {"groups", vlist()},  // std::vector<Value>
-    {"id", Value("example_id")},  // std::string
     {"read", Value(true)},  // bool
     {"send", Value(true)},  // bool
     {"username", Value("example_username")},  // std::string
@@ -1162,8 +996,8 @@ Create an instance: `auto contactstrash = client->contactstrash();`
 
 | Method | Description |
 | --- | --- |
-| `remove(match, ctrl)` | Remove the matching entity. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 
 ### FieldAvailable
@@ -1174,7 +1008,7 @@ Create an instance: `auto field_available = client->field_available();`
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Fields
 
@@ -1189,7 +1023,10 @@ Create an instance: `auto field_available = client->field_available();`
 #### Example: List
 
 ```cpp
-Value field_availables = client->field_available()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> field_availables = client->field_available()->list(Value::undef(), Value::undef());
+for (const auto& field_available : field_availables) {
+  std::cout << Struct::jsonify(field_available->data()) << std::endl;
+}
 ```
 
 
@@ -1201,8 +1038,8 @@ Create an instance: `auto group = client->group();`
 
 | Method | Description |
 | --- | --- |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
@@ -1222,7 +1059,8 @@ Create an instance: `auto group = client->group();`
 #### Example: Load
 
 ```cpp
-Value group = client->group()->load(vmap({{"id", Value("group_id")}}), Value::undef());
+SdkEntityPtr group = client->group()->load(vmap({{"id", Value("group_id")}}), Value::undef());
+std::cout << Struct::jsonify(group->data()) << std::endl;
 ```
 
 
@@ -1234,7 +1072,7 @@ Create an instance: `auto mfa_code = client->mfa_code();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
 
 #### Fields
 
@@ -1248,7 +1086,7 @@ Create an instance: `auto mfa_code = client->mfa_code();`
 #### Example: Create
 
 ```cpp
-Value mfa_code = client->mfa_code()->create(vmap({
+SdkEntityPtr mfa_code = client->mfa_code()->create(vmap({
     {"phone_number", Value("example_phone_number")},  // std::string
 }), Value::undef());
 ```
@@ -1262,8 +1100,8 @@ Create an instance: `auto opt_out = client->opt_out();`
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
 
 #### Fields
 
@@ -1277,7 +1115,10 @@ Create an instance: `auto opt_out = client->opt_out();`
 #### Example: List
 
 ```cpp
-Value opt_outs = client->opt_out()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> opt_outs = client->opt_out()->list(Value::undef(), Value::undef());
+for (const auto& opt_out : opt_outs) {
+  std::cout << Struct::jsonify(opt_out->data()) << std::endl;
+}
 ```
 
 
@@ -1289,8 +1130,8 @@ Create an instance: `auto opt_out_setting = client->opt_out_setting();`
 
 | Method | Description |
 | --- | --- |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
@@ -1301,7 +1142,8 @@ Create an instance: `auto opt_out_setting = client->opt_out_setting();`
 #### Example: Load
 
 ```cpp
-Value opt_out_setting = client->opt_out_setting()->load(Value::undef(), Value::undef());
+SdkEntityPtr opt_out_setting = client->opt_out_setting()->load(Value::undef(), Value::undef());
+std::cout << Struct::jsonify(opt_out_setting->data()) << std::endl;
 ```
 
 
@@ -1313,8 +1155,8 @@ Create an instance: `auto permission = client->permission();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
 
 #### Fields
 
@@ -1330,13 +1172,14 @@ Create an instance: `auto permission = client->permission();`
 #### Example: Load
 
 ```cpp
-Value permission = client->permission()->load(vmap({{"id", Value("permission_id")}, {"group_id", Value("group_id")}, {"username", Value("username")}}), Value::undef());
+SdkEntityPtr permission = client->permission()->load(vmap({{"id", Value("permission_id")}, {"group_id", Value("group_id")}}), Value::undef());
+std::cout << Struct::jsonify(permission->data()) << std::endl;
 ```
 
 #### Example: Create
 
 ```cpp
-Value permission = client->permission()->create(vmap({
+SdkEntityPtr permission = client->permission()->create(vmap({
     {"group_id", Value("example_group_id")},  // std::string
     {"read", Value(true)},  // bool
     {"send", Value(true)},  // bool
@@ -1354,7 +1197,7 @@ Create an instance: `auto ping = client->ping();`
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Fields
 
@@ -1366,7 +1209,10 @@ Create an instance: `auto ping = client->ping();`
 #### Example: List
 
 ```cpp
-Value pings = client->ping()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> pings = client->ping()->list(Value::undef(), Value::undef());
+for (const auto& ping : pings) {
+  std::cout << Struct::jsonify(ping->data()) << std::endl;
+}
 ```
 
 
@@ -1378,8 +1224,8 @@ Create an instance: `auto profile = client->profile();`
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
 
 #### Fields
 
@@ -1396,13 +1242,17 @@ Create an instance: `auto profile = client->profile();`
 #### Example: Load
 
 ```cpp
-Value profile = client->profile()->load(Value::undef(), Value::undef());
+SdkEntityPtr profile = client->profile()->load(Value::undef(), Value::undef());
+std::cout << Struct::jsonify(profile->data()) << std::endl;
 ```
 
 #### Example: List
 
 ```cpp
-Value profiles = client->profile()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> profiles = client->profile()->list(Value::undef(), Value::undef());
+for (const auto& profile : profiles) {
+  std::cout << Struct::jsonify(profile->data()) << std::endl;
+}
 ```
 
 
@@ -1414,12 +1264,15 @@ Create an instance: `auto rcs = client->rcs();`
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Example: List
 
 ```cpp
-Value rcss = client->rcs()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> rcss = client->rcs()->list(Value::undef(), Value::undef());
+for (const auto& rcs : rcss) {
+  std::cout << Struct::jsonify(rcs->data()) << std::endl;
+}
 ```
 
 
@@ -1431,9 +1284,9 @@ Create an instance: `auto sendername = client->sendername();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
 
 #### Fields
 
@@ -1448,19 +1301,23 @@ Create an instance: `auto sendername = client->sendername();`
 #### Example: Load
 
 ```cpp
-Value sendername = client->sendername()->load(vmap({{"id", Value("sendername_id")}}), Value::undef());
+SdkEntityPtr sendername = client->sendername()->load(vmap({{"id", Value("sendername_id")}}), Value::undef());
+std::cout << Struct::jsonify(sendername->data()) << std::endl;
 ```
 
 #### Example: List
 
 ```cpp
-Value sendernames = client->sendername()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> sendernames = client->sendername()->list(Value::undef(), Value::undef());
+for (const auto& sendername : sendernames) {
+  std::cout << Struct::jsonify(sendername->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value sendername = client->sendername()->create(vmap({
+SdkEntityPtr sendername = client->sendername()->create(vmap({
 }), Value::undef());
 ```
 
@@ -1473,7 +1330,7 @@ Create an instance: `auto sendername_statement = client->sendername_statement();
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Fields
 
@@ -1486,7 +1343,10 @@ Create an instance: `auto sendername_statement = client->sendername_statement();
 #### Example: List
 
 ```cpp
-Value sendername_statements = client->sendername_statement()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> sendername_statements = client->sendername_statement()->list(Value::undef(), Value::undef());
+for (const auto& sendername_statement : sendername_statements) {
+  std::cout << Struct::jsonify(sendername_statement->data()) << std::endl;
+}
 ```
 
 
@@ -1498,7 +1358,7 @@ Create an instance: `auto sent_rcs_message = client->sent_rcs_message();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
 
 #### Fields
 
@@ -1506,15 +1366,15 @@ Create an instance: `auto sent_rcs_message = client->sent_rcs_message();`
 | --- | --- | --- |
 | `content` | `std::map<std::string, Value>` | RCS message content in RCS JSON format. |
 | `phone_number` | `std::string` | Recipient phone number (e.g. |
-| `sender` | `Value` |  |
+| `sender` | `std::string` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `std::string` | Plain text message content. |
 
 #### Example: Create
 
 ```cpp
-Value sent_rcs_message = client->sent_rcs_message()->create(vmap({
+SdkEntityPtr sent_rcs_message = client->sent_rcs_message()->create(vmap({
     {"phone_number", Value("example_phone_number")},  // std::string
-    {"sender", Value("example_sender")},  // Value
+    {"sender", Value("example_sender")},  // std::string
 }), Value::undef());
 ```
 
@@ -1527,7 +1387,7 @@ Create an instance: `auto shipment_country_volume = client->shipment_country_vol
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Fields
 
@@ -1541,7 +1401,10 @@ Create an instance: `auto shipment_country_volume = client->shipment_country_vol
 #### Example: List
 
 ```cpp
-Value shipment_country_volumes = client->shipment_country_volume()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> shipment_country_volumes = client->shipment_country_volume()->list(Value::undef(), Value::undef());
+for (const auto& shipment_country_volume : shipment_country_volumes) {
+  std::cout << Struct::jsonify(shipment_country_volume->data()) << std::endl;
+}
 ```
 
 
@@ -1553,11 +1416,11 @@ Create an instance: `auto short_url = client->short_url();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
@@ -1577,19 +1440,23 @@ Create an instance: `auto short_url = client->short_url();`
 #### Example: Load
 
 ```cpp
-Value short_url = client->short_url()->load(vmap({{"id", Value("short_url_id")}}), Value::undef());
+SdkEntityPtr short_url = client->short_url()->load(vmap({{"id", Value("short_url_id")}}), Value::undef());
+std::cout << Struct::jsonify(short_url->data()) << std::endl;
 ```
 
 #### Example: List
 
 ```cpp
-Value short_urls = client->short_url()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> short_urls = client->short_url()->list(Value::undef(), Value::undef());
+for (const auto& short_url : short_urls) {
+  std::cout << Struct::jsonify(short_url->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value short_url = client->short_url()->create(vmap({
+SdkEntityPtr short_url = client->short_url()->create(vmap({
 }), Value::undef());
 ```
 
@@ -1602,7 +1469,7 @@ Create an instance: `auto smsdo = client->smsdo();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
 
 #### Fields
 
@@ -1633,7 +1500,7 @@ Create an instance: `auto smsdo = client->smsdo();`
 #### Example: Create
 
 ```cpp
-Value smsdo = client->smsdo()->create(vmap({
+SdkEntityPtr smsdo = client->smsdo()->create(vmap({
 }), Value::undef());
 ```
 
@@ -1646,14 +1513,14 @@ Create an instance: `auto smssendername = client->smssendername();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `remove(match, ctrl)` | Remove the matching entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
 
 #### Example: Create
 
 ```cpp
-Value smssendername = client->smssendername()->create(vmap({
-    {"sendername_id", Value("example_sendername_id")},  // std::string
+SdkEntityPtr smssendername = client->smssendername()->create(vmap({
+    {"sender", Value("example_sender")},  // std::string
 }), Value::undef());
 ```
 
@@ -1666,7 +1533,7 @@ Create an instance: `auto smstemplate = client->smstemplate();`
 
 | Method | Description |
 | --- | --- |
-| `remove(match, ctrl)` | Remove the matching entity. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
 
 #### Fields
 
@@ -1683,11 +1550,11 @@ Create an instance: `auto subuser = client->subuser();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `remove(match, ctrl)` | Remove the matching entity. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `remove(match, ctrl) -> SdkEntityPtr` | Remove the matching entity, which is returned marked as deleted. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
@@ -1703,19 +1570,23 @@ Create an instance: `auto subuser = client->subuser();`
 #### Example: Load
 
 ```cpp
-Value subuser = client->subuser()->load(vmap({{"id", Value("subuser_id")}}), Value::undef());
+SdkEntityPtr subuser = client->subuser()->load(vmap({{"id", Value("subuser_id")}}), Value::undef());
+std::cout << Struct::jsonify(subuser->data()) << std::endl;
 ```
 
 #### Example: List
 
 ```cpp
-Value subusers = client->subuser()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> subusers = client->subuser()->list(Value::undef(), Value::undef());
+for (const auto& subuser : subusers) {
+  std::cout << Struct::jsonify(subuser->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value subuser = client->subuser()->create(vmap({
+SdkEntityPtr subuser = client->subuser()->create(vmap({
     {"credentials", vmap()},  // std::map<std::string, Value>
 }), Value::undef());
 ```
@@ -1729,10 +1600,10 @@ Create an instance: `auto template_ = client->template_();`
 
 | Method | Description |
 | --- | --- |
-| `create(data, ctrl)` | Create a new entity with the given data. |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-| `load(match, ctrl)` | Load a single entity by match criteria. |
-| `update(data, ctrl)` | Update an existing entity. |
+| `create(data, ctrl) -> SdkEntityPtr` | Create a new entity with the given data. |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
+| `load(match, ctrl) -> SdkEntityPtr` | Load a single entity by match criteria. |
+| `update(data, ctrl) -> SdkEntityPtr` | Update an existing entity. |
 
 #### Fields
 
@@ -1746,19 +1617,23 @@ Create an instance: `auto template_ = client->template_();`
 #### Example: Load
 
 ```cpp
-Value template_ = client->template_()->load(vmap({{"id", Value("template_id")}}), Value::undef());
+SdkEntityPtr template_ = client->template_()->load(vmap({{"id", Value("template_id")}}), Value::undef());
+std::cout << Struct::jsonify(template_->data()) << std::endl;
 ```
 
 #### Example: List
 
 ```cpp
-Value template_s = client->template_()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> template_s = client->template_()->list(Value::undef(), Value::undef());
+for (const auto& template_ : template_s) {
+  std::cout << Struct::jsonify(template_->data()) << std::endl;
+}
 ```
 
 #### Example: Create
 
 ```cpp
-Value template_ = client->template_()->create(vmap({
+SdkEntityPtr template_ = client->template_()->create(vmap({
 }), Value::undef());
 ```
 
@@ -1771,27 +1646,15 @@ Create an instance: `auto user_rcs_sender_collection = client->user_rcs_sender_c
 
 | Method | Description |
 | --- | --- |
-| `list(match, ctrl)` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `std::string` |  |
-| `expiredAt` | `std::string` |  |
-| `id` | `std::string` | Object ID |
-| `interface` | `std::string` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `std::string` | RCS message type (basic, single, ...). |
-| `readAt` | `std::string` |  |
-| `recipient` | `std::string` | Recipient phone number (without +). |
-| `sender` | `std::string` | Sender name |
-| `senderId` | `std::string` | Sender id |
-| `sentAt` | `std::string` |  |
+| `list(match, ctrl) -> std::vector<SdkEntityPtr>` | List entities, optionally matching the given criteria: one entity per record. |
 
 #### Example: List
 
 ```cpp
-Value user_rcs_sender_collections = client->user_rcs_sender_collection()->list(Value::undef(), Value::undef());
+std::vector<SdkEntityPtr> user_rcs_sender_collections = client->user_rcs_sender_collection()->list(Value::undef(), Value::undef());
+for (const auto& user_rcs_sender_collection : user_rcs_sender_collections) {
+  std::cout << Struct::jsonify(user_rcs_sender_collection->data()) << std::endl;
+}
 ```
 
 ## Features
@@ -2236,16 +2099,16 @@ client class. Everything lives in the `sdk` namespace.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally. Subsequent
 calls on the same instance can rely on this state.
 
 ```ts
-const permission = client.Permission()
-await permission.load({ group_id: "example", id: "example_id", username: "example" })
+const template = client.Template()
+await template.list()
 
-// permission.data() now returns the permission data from the last `load`
-// permission.match() returns { id: "example_id" }
+// template.data() now returns the template data from the last `list`
+// template.match() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

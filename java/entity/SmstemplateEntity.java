@@ -47,6 +47,12 @@ public class SmstemplateEntity extends EntityBase {
   }
 
 
+  @Override
+  public Object patch(Map<String, Object> req, Map<String, Object> ctrl) {
+    throw Helpers.unsupportedOp("patch", this.name);
+  }
+
+
 
   @Override
   public Object remove(Map<String, Object> reqmatch, Map<String, Object> ctrl) {

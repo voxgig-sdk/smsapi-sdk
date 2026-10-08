@@ -146,38 +146,12 @@ class ContactEntity
       end
       begin
         catch(:stream_stop) do
-          utility.feature_hook.call(ctx, "PrePoint")
-          point, err = utility.make_point.call(ctx)
-          ctx.out["point"] = point
-          throw :stream_stop if err
-
-          utility.feature_hook.call(ctx, "PreSpec")
-          spec, err = utility.make_spec.call(ctx)
-          ctx.out["spec"] = spec
-          throw :stream_stop if err
-
-          utility.feature_hook.call(ctx, "PreRequest")
-          resp, err = utility.make_request.call(ctx)
-          ctx.out["request"] = resp
-          throw :stream_stop if err
-
-          utility.feature_hook.call(ctx, "PreResponse")
-          resp2, err = utility.make_response.call(ctx)
-          ctx.out["response"] = resp2
-          throw :stream_stop if err
-
-          utility.feature_hook.call(ctx, "PreResult")
-          result, err = utility.make_result.call(ctx)
-          ctx.out["result"] = result
-          throw :stream_stop if err
-
-          utility.feature_hook.call(ctx, "PreDone")
-
+          failed = _stream_steps(ctx)
           result = ctx.result
 
           # Inbound: prefer the streaming feature's incremental Enumerator;
           # else fall back to the materialised items so stream always yields.
-          stream_enum = result ? result.stream : nil
+          stream_enum = failed.nil? && result ? result.stream : nil
           if stream_enum
             # done does not run on this path, so its record is cleaned here.
             utility.clean_explain.call(ctx)
@@ -186,7 +160,8 @@ class ContactEntity
               give.call(item)
             end
           else
-            data = utility.done.call(ctx)
+            # A failed step leaves through make_error, as an operation's does.
+            data = failed.nil? ? utility.done.call(ctx) : utility.make_error.call(ctx, failed)
             items = data.is_a?(Array) ? data : (data.nil? ? [] : [data])
             items.each do |item|
               throw :stream_stop if aborted.call
@@ -197,10 +172,53 @@ class ContactEntity
       rescue StandardError => operr
         raise if inblock
         ctx.ctrl.err = operr
+
+        # What a hook raises here must not escape the cleaning below.
+        begin
+          utility.feature_hook.call(ctx, "PreUnexpected")
+        rescue StandardError => hookerr
+          operr = hookerr
+          ctx.ctrl.err = operr
+        end
+
         e = _unexpected(ctx, operr)
         raise e, cause: nil unless e.nil?
       end
     end
+  end
+
+  # The steps an operation runs, with their hooks; the first that fails hands
+  # back its error.
+  private def _stream_steps(ctx)
+    utility = @_utility
+
+    utility.feature_hook.call(ctx, "PrePoint")
+    point, err = utility.make_point.call(ctx)
+    ctx.out["point"] = point
+    return err if err
+
+    utility.feature_hook.call(ctx, "PreSpec")
+    spec, err = utility.make_spec.call(ctx)
+    ctx.out["spec"] = spec
+    return err if err
+
+    utility.feature_hook.call(ctx, "PreRequest")
+    resp, err = utility.make_request.call(ctx)
+    ctx.out["request"] = resp
+    return err if err
+
+    utility.feature_hook.call(ctx, "PreResponse")
+    resp2, err = utility.make_response.call(ctx)
+    ctx.out["response"] = resp2
+    return err if err
+
+    utility.feature_hook.call(ctx, "PreResult")
+    result, err = utility.make_result.call(ctx)
+    ctx.out["result"] = result
+    return err if err
+
+    utility.feature_hook.call(ctx, "PreDone")
+    nil
   end
 
   
@@ -210,7 +228,8 @@ class ContactEntity
   #   optional — an entity with no id-like key loads with no match (nil is treated
   #   as an empty match, so client.Contact.load works with no args).
   # @param ctrl [Object, nil] optional per-call control
-  # @return [Contact, Hash] the loaded Contact; raises SmsapiError on failure
+  # @return [ContactEntity] the loaded Contact entity (data_get reads its record);
+  #   raises SmsapiError on failure
   def load(reqmatch = nil, ctrl = nil)
     utility = @_utility
     ctx = utility.make_context.call({
@@ -239,7 +258,8 @@ class ContactEntity
   # @param reqmatch [ContactListMatch, Hash, nil] match filter (any subset of
   #   Contact fields); defaults to nil, treated as an empty match that lists all.
   # @param ctrl [Object, nil] optional per-call control
-  # @return [Array<Contact>, Array] the matching Contact items; raises SmsapiError on failure
+  # @return [Array<ContactEntity>] the matching Contact items, one entity per
+  #   record (data_get reads the record); raises SmsapiError on failure
   def list(reqmatch = nil, ctrl = nil)
     utility = @_utility
     ctx = utility.make_context.call({
@@ -256,16 +276,6 @@ class ContactEntity
       end
     end
 
-    # list yields the BARE Array of records — each an accessible Hash — so
-    # callers can index item["id"] directly, matching py/lua/go. make_result
-    # wraps each entry as an Entity instance for internal use; unwrap those
-    # back to their bare record Hashes here (load/create/etc. are unaffected).
-    if records.is_a?(Array)
-      records = records.map do |item|
-        item.respond_to?(:data_get) ? item.data_get : item
-      end
-    end
-
     records
   end
 
@@ -276,7 +286,8 @@ class ContactEntity
   #
   # @param reqdata [ContactCreateData, Hash, nil] body data
   # @param ctrl [Object, nil] optional per-call control
-  # @return [Contact, Hash] the created Contact; raises SmsapiError on failure
+  # @return [ContactEntity] the created Contact entity (data_get reads its record);
+  #   raises SmsapiError on failure
   def create(reqdata, ctrl = nil)
     utility = @_utility
     ctx = utility.make_context.call({
@@ -303,7 +314,8 @@ class ContactEntity
   #
   # @param reqdata [ContactUpdateData, Hash, nil] body data
   # @param ctrl [Object, nil] optional per-call control
-  # @return [Contact, Hash] the updated Contact; raises SmsapiError on failure
+  # @return [ContactEntity] the updated Contact entity (data_get reads its record);
+  #   raises SmsapiError on failure
   def update(reqdata, ctrl = nil)
     utility = @_utility
     ctx = utility.make_context.call({
@@ -327,11 +339,14 @@ class ContactEntity
 
 
   
+
+  
   # Remove an Contact matching the given criteria.
   #
   # @param reqmatch [ContactRemoveMatch, Hash, nil] match criteria (id/query fields)
   # @param ctrl [Object, nil] optional per-call control
-  # @return [Contact, Hash] the removed Contact; raises SmsapiError on failure
+  # @return [ContactEntity] the removed Contact entity, marked as deleted; raises
+  #   SmsapiError on failure
   def remove(reqmatch = nil, ctrl = nil)
     utility = @_utility
     ctx = utility.make_context.call({

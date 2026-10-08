@@ -131,7 +131,23 @@
                                     "body" "<html>"
                                     "json" (fn [] (throw (RuntimeException. "Unexpected token < in JSON")))) nil])}])
 
-(defn- make-sdk [scenario sinks cleanopts & extra]
+;; Offline, as every generated suite is: the test OPTION resolves a required
+;; server variable to test-<name>, and installs no transport.
+(defn- offline [opts]
+  (.put ^java.util.Map opts "test" (vs/jm "active" true))
+  opts)
+
+;; A client the sweep cannot build leaves nothing swept: a harness error, not
+;; a leak.
+(defn- construct [opts]
+  (try (api/make-sdk (offline opts))
+       (catch Throwable e
+         (throw (IllegalStateException.
+                 (str "clean harness: the client could not be constructed, so nothing was swept: "
+                      (.getMessage e))
+                 e)))))
+
+(defn- sdk-opts [scenario sinks cleanopts extra]
   (let [capture (fn [name] (fn [rec] (swap! sinks into (forms name rec))))
         feature (vs/jm)
         on (fn [name & kvs] (when (feature/feature-present? name)
@@ -145,12 +161,15 @@
     (on "clienttrack")
     (let [clean (vs/jm "values" (:value CANARY))]
       (doseq [[k v] (or cleanopts {})] (.put ^java.util.Map clean k v))
-      (api/make-sdk (vs/jm "apikey" (:apikey CANARY) "secret" (:secret CANARY)
-                           "headers" (vs/jm "X-Custom-Token" (:header CANARY))
-                           "clean" clean
-                           "feature" feature
-                           "extend" (apply vs/jt (capture-feature sinks) extra)
-                           "utility" (vs/jm "fetcher" (fn [_fctx url fd] ((:respond scenario) url fd))))))))
+      (vs/jm "apikey" (:apikey CANARY) "secret" (:secret CANARY)
+             "headers" (vs/jm "X-Custom-Token" (:header CANARY))
+             "clean" clean
+             "feature" feature
+             "extend" (apply vs/jt (capture-feature sinks) extra)
+             "utility" (vs/jm "fetcher" (fn [_fctx url fd] ((:respond scenario) url fd)))))))
+
+(defn- make-sdk [scenario sinks cleanopts & extra]
+  (construct (sdk-opts scenario sinks cleanopts extra)))
 
 ;; A fresh struct map of the match, since an operation may keep what it is
 ;; given.
@@ -444,7 +463,7 @@
     :stream (fn [ent match callopts] (e-smsdo/stream ent "create" (vs/jm "reqmatch" (args match)) callopts))}
    {:name "smssendername.create"
     :accessor (fn [sdk] (api/smssendername sdk nil))
-    :params ["sendername_id"]
+    :params ["sender"]
     :op (fn [ent match ctrl] (e-smssendername/create ent (args match) ctrl))
     :stream (fn [ent match callopts] (e-smssendername/stream ent "create" (vs/jm "reqmatch" (args match)) callopts))}
    {:name "smssendername.remove"
@@ -487,8 +506,8 @@
 ;; The first operation that completes against a plain 200: with no
 ;; arguments, else with every path parameter its points declare filled in.
 (defn- usable-op []
-  (let [plain (api/make-sdk (vs/jm "apikey" (:apikey CANARY)
-                                   "utility" (vs/jm "fetcher" (fn [_ _ _] [(response 200 (vs/jm "id" "i1") {}) nil]))))]
+  (let [plain (construct (vs/jm "apikey" (:apikey CANARY)
+                                "utility" (vs/jm "fetcher" (fn [_ _ _] [(response 200 (vs/jm "id" "i1") {}) nil]))))]
     (some (fn [c]
             (some (fn [match]
                     (try ((:op c) ((:accessor c) plain) match (vs/jm))
@@ -546,6 +565,8 @@
         explain (vs/getprop ctrl "explain")]
     (when err (swap! sinks into (forms "error" err)))
     (when (some? out) (swap! sinks into (forms "result" out)))
+    ;; Raw, as a caller copying the match into another query reads it.
+    (swap! sinks into (forms "match" ((:match-get ent))))
     (when (some? explain) (swap! sinks into (forms "explain" explain)))
     (when (and (some? held) (not (identical? held explain))) (swap! sinks into (forms "explain:held" held)))
     err))
@@ -569,10 +590,15 @@
               (when-let [ex (vs/getprop ctrl "explain")] (swap! explains assoc key ex))
               (swap! sinks into (forms "sdk" sdk))
               (swap! sinks conj {:name "sdk:slots" :text (pr-str (into {} sdk))})))
+          ;; A name given at run time replaces the declared one: the match
+          ;; leaves out whichever name prepare-auth placed.
+          (let [opts (sdk-opts (first SCENARIOS) sinks nil nil)]
+            (.put ^java.util.Map opts "auth" (vs/jm "name" "zzcred"))
+            (drive (construct opts) target (vs/jm) sinks))
           ;; A credential mistyped as a map is rejected by validation, whose
           ;; message quotes the value it rejected.
-          (let [rejected (try (api/make-sdk (vs/jm "apikey" (vs/jm "value" (:apikey CANARY))
-                                                   "clean" (vs/jm "values" (:value CANARY))))
+          (let [rejected (try (api/make-sdk (offline (vs/jm "apikey" (vs/jm "value" (:apikey CANARY))
+                                                            "clean" (vs/jm "values" (:value CANARY)))))
                               nil
                               (catch Throwable e e))]
             (t/is-some rejected "a credential mistyped as a map should be rejected")
@@ -620,25 +646,28 @@
             (t/is-deep (vs/getpath config "options.clean") (vs/jm "keys" "zzsens" "values" (:config CANARY))
                        "the config's clean block is unchanged"))
           ;; With no clean option at all, the schema defaults still apply.
-          (let [bare (api/make-sdk (vs/jm "apikey" (:apikey CANARY) "secret" (:secret CANARY)
-                                          "headers" (vs/jm "X-Custom-Token" (:header CANARY))
-                                          "utility" (vs/jm "fetcher" (fn [_fctx url fd]
-                                                                       ((:respond (nth SCENARIOS 1)) url fd)))))]
+          (let [bare (construct (vs/jm "apikey" (:apikey CANARY) "secret" (:secret CANARY)
+                                       "headers" (vs/jm "X-Custom-Token" (:header CANARY))
+                                       "utility" (vs/jm "fetcher" (fn [_fctx url fd]
+                                                                    ((:respond (nth SCENARIOS 1)) url fd)))))]
             (t/is-some (drive bare target (vs/jm "explain" (vs/jm)) sinks) "the 404 should fail without a clean option"))
           ;; A feature's name is not a field name: only the sensitive names
           ;; inside its settings register. An entity block, of entity settings
-          ;; or seeded records keyed by entity name and id, is not read at all.
+          ;; or seeded records keyed by entity name and id, is not read at all,
+          ;; and nor are rbac's rules, keyed by entity and operation names.
           (let [record (vs/jm "zztoken" (vs/jm "ZZTOKEN01" (vs/jm "note" "PLAINRECORD-t5r3e1w9")))
-                sdk (api/make-sdk (vs/jm "apikey" (:apikey CANARY)
-                                         "feature" (vs/jm "zzsecrets" (vs/jm "active" false "kind" "PLAINSETTING-q8w2e4r6")
-                                                          "zzfeat" (vs/jm "active" false "apitoken" "FEATTOKEN-z9y8x7w6")
-                                                          "test" (vs/jm "active" false "entity" record))
-                                         "entity" (vs/jm "zztoken" (vs/jm "alias" (vs/jm "zzkey" "PLAINALIAS-m2n4b6v8")))))
+                sdk (construct (vs/jm "apikey" (:apikey CANARY)
+                                      "feature" (vs/jm "zzsecrets" (vs/jm "active" false "kind" "PLAINSETTING-q8w2e4r6")
+                                                       "zzfeat" (vs/jm "active" false "apitoken" "FEATTOKEN-z9y8x7w6")
+                                                       "rbac" (vs/jm "active" false "rules" (vs/jm "zztoken.load" "PLAINRULE-k7j5h3g1"))
+                                                       "test" (vs/jm "active" false "entity" record))
+                                      "entity" (vs/jm "zztoken" (vs/jm "alias" (vs/jm "zzkey" "PLAINALIAS-m2n4b6v8")))))
                 root (core/client-root-ctx sdk)]
             (reset! featured {:plain (core/u-clean root "kind PLAINSETTING-q8w2e4r6")
                               :token (core/u-clean root "token FEATTOKEN-z9y8x7w6")
                               :record (core/u-clean root "record PLAINRECORD-t5r3e1w9")
-                              :alias (core/u-clean root "alias PLAINALIAS-m2n4b6v8")}))
+                              :alias (core/u-clean root "alias PLAINALIAS-m2n4b6v8")
+                              :rule (core/u-clean root "rule PLAINRULE-k7j5h3g1")}))
           (let [leaked (filterv (fn [s] (seq (leaks (:text s)))) @sinks)]
             (println (str "clean: swept " (count @sinks) " surface(s), " (count leaked) " leak(s)"))
             (t/is-eq (count leaked) 0
@@ -675,6 +704,7 @@
           (t/is-eq (:token @featured) (str "token " MASK) "a sensitive setting inside a feature registers")
           (t/is-eq (:record @featured) "record PLAINRECORD-t5r3e1w9" "a seeded record does not register")
           (t/is-eq (:alias @featured) "alias PLAINALIAS-m2n4b6v8" "an entity setting does not register")
+          (t/is-eq (:rule @featured) "rule PLAINRULE-k7j5h3g1" "an rbac rule keyed by entity and operation does not register")
           (let [explained (get @explains "ok/explain")
                 result (vs/getprop explained "result")]
             (t/is-some result "the explain record should carry the result")
@@ -717,11 +747,11 @@
     (fn []
       (let [cfg (core/make-clean-config (vs/jm "keys" "key,secret,token"))
             ctx (atom {:options (vs/jm "__derived__" (vs/jm "clean" cfg))})
+            _ (core/u-clean-add-sensitive ctx (vs/jm "apikey" (vs/jm "value" "NESTED-SECRET-1")
+                                                     "headers" (vs/jm "X-Api-Token" (vs/jt "LISTED-SECRET-2"))
+                                                     "secret" 123456789
+                                                     "name" "not-a-secret"))
             values (vs/getprop cfg "values")]
-        (core/u-clean-add-sensitive ctx (vs/jm "apikey" (vs/jm "value" "NESTED-SECRET-1")
-                                               "headers" (vs/jm "X-Api-Token" (vs/jt "LISTED-SECRET-2"))
-                                               "secret" 123456789
-                                               "name" "not-a-secret"))
         (t/is-true (.contains ^java.util.List values "NESTED-SECRET-1") "nested under apikey")
         (t/is-true (.contains ^java.util.List values "LISTED-SECRET-2") "listed under a token header")
         (t/is-true (.contains ^java.util.List values "123456789") "a number, as its text")

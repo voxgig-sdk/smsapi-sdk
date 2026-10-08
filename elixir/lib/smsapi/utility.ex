@@ -204,22 +204,43 @@ defmodule Smsapi.Utility do
   def clean_add_impl(ctx, value) do
     cfg = clean_config(ctx)
     minlen = numof(S.getprop(cfg, "min"), 4)
-    values = S.getprop(cfg, "values")
 
-    if is_binary(value) and String.length(value) >= minlen and S.islist(values) do
-      have = list_values(values)
+    if is_binary(value) and String.length(value) >= minlen and S.islist(S.getprop(cfg, "values")) do
+      forms = Enum.filter(clean_forms(value), &(String.length(&1) >= minlen))
 
-      add =
-        clean_forms(value)
-        |> Enum.filter(fn f -> String.length(f) >= minlen and f not in have end)
+      # A registration reads the registry and writes a new one, so a request
+      # in another process registering at once would drop it; they take turns.
+      have = list_values(S.getprop(cfg, "values"))
 
-      # Longest first, so a value is never masked by a substring of itself.
-      if add != [] do
-        S.setprop(cfg, "values", S.jt(Enum.sort_by(have ++ add, &(-String.length(&1)))))
+      if Enum.any?(forms, &(&1 not in have)) do
+        registering(fn -> publish(cfg, forms) end)
       end
     end
 
     nil
+  end
+
+  # Retried after a millisecond rather than after global's back-off sleep,
+  # which grows to seconds; the lock is released if its holder dies.
+  defp registering(fun) do
+    case :global.trans({{__MODULE__, :clean_registry}, self()}, fun, [node()], 0) do
+      :aborted ->
+        Process.sleep(1)
+        registering(fun)
+
+      done ->
+        done
+    end
+  end
+
+  defp publish(cfg, forms) do
+    have = list_values(S.getprop(cfg, "values"))
+    add = Enum.reject(forms, &(&1 in have))
+
+    # Longest first, so a value is never masked by a substring of itself.
+    if add != [] do
+      S.setprop(cfg, "values", S.jt(Enum.sort_by(have ++ add, &(-String.length(&1)))))
+    end
   end
 
   defp mask_value(cfg, value) do
@@ -826,7 +847,8 @@ defmodule Smsapi.Utility do
   # The options to scan for secrets. The feature map is keyed by feature
   # names, not field names, so it is scanned as a list: `secrets` must not
   # make every setting of that feature a secret. Entity blocks hold entity
-  # settings and seeded records, never a credential, so they are skipped.
+  # settings and seeded records, never a credential, so they are skipped, and
+  # so are rbac's rules, keyed by entity and operation names.
   defp secret_scan(opts, names) do
     out = S.jm([])
 
@@ -836,10 +858,15 @@ defmodule Smsapi.Utility do
           nil
 
         k == "feature" and (S.ismap(v) or S.islist(v)) ->
-          S.setprop(out, k, S.jt(Enum.map(H.entries(v), fn {_, f} -> without(f, "entity") end)))
+          blocks =
+            Enum.map(H.entries(v), fn {fk, f} ->
+              plain(f, if(S.ismap(v), do: fk, else: S.getprop(f, "name")))
+            end)
+
+          S.setprop(out, k, S.jt(blocks))
 
         k == "test" ->
-          S.setprop(out, k, without(v, "entity"))
+          S.setprop(out, k, plain(v, nil))
 
         true ->
           S.setprop(out, k, v)
@@ -847,6 +874,10 @@ defmodule Smsapi.Utility do
     end)
 
     out
+  end
+
+  defp plain(node, name) do
+    if name == "rbac", do: without(without(node, "entity"), "rules"), else: without(node, "entity")
   end
 
   defp without(node, key) do
@@ -860,6 +891,61 @@ defmodule Smsapi.Utility do
   end
 
   # ---- make_point ----------------------------------------------------------
+
+  # A terminal parameter marks a record route (/boards/{id}); a
+  # cross-reference ends in the relationship's name (/posts/{id}/author), and
+  # failing that the shallower path wins. The same rule runs at generation
+  # time, in helpers/opShape.ts — both sides must move together.
+  defp parts_len(p) do
+    parts = S.getprop(p, "parts")
+    if S.islist(parts), do: S.size(parts), else: 0
+  end
+
+  defp terminal_param?(p) do
+    parts = S.getprop(p, "parts")
+
+    if S.islist(parts) and S.size(parts) > 0 do
+      last = S.getelem(parts, S.size(parts) - 1)
+      is_binary(last) and String.starts_with?(last, "{")
+    else
+      false
+    end
+  end
+
+  defp own_point(points) do
+    Enum.reduce(points, hd(points), fn cand, best ->
+      ct = terminal_param?(cand)
+      bt = terminal_param?(best)
+
+      cond do
+        ct != bt -> if ct, do: cand, else: best
+        parts_len(cand) < parts_len(best) -> cand
+        true -> best
+      end
+    end)
+  end
+
+  # The path parameters of a point that neither the call nor the entity gives
+  # a value for, looked up as param_impl looks them up.
+  defp unfilled(ctx, point) do
+    parts = S.getprop(point, "parts")
+
+    if S.islist(parts) and S.size(parts) > 0 do
+      Enum.flat_map(0..(S.size(parts) - 1), fn i ->
+        part = S.getelem(parts, i)
+
+        case is_binary(part) && Regex.run(~r/\A\{([^{}\/]+)\}\z/, part) do
+          [_, name] ->
+            if param_value(ctx, point, name) != nil, do: [], else: [name]
+
+          _ ->
+            []
+        end
+      end)
+    else
+      []
+    end
+  end
 
   def make_point_impl(ctx) do
     out = S.getprop(ctx, "out")
@@ -877,15 +963,16 @@ defmodule Smsapi.Utility do
       op = S.getprop(ctx, "op")
       options = S.getprop(ctx, "options")
       opname = S.getprop(op, "name")
-      allow_op = H.or_(S.getpath(options, "allow.op"), "")
+      allow_op = S.getpath(options, "allow.op")
       points = S.getprop(op, "points")
       npoints = S.size(points)
 
       cond do
-        is_binary(allow_op) and not String.contains?(allow_op, opname) ->
+        not allowed?(allow_op, opname) ->
           {nil,
            Context.make_error(ctx, "point_op_allow",
-             "Operation \"" <> opname <> "\" not allowed by SDK option allow.op value: \"" <> allow_op <> "\"")}
+             "Operation \"" <> opname <> "\" not allowed by SDK option allow.op value: \"" <>
+               H.str_or(allow_op, "") <> "\"")}
 
         npoints == 0 ->
           {nil,
@@ -950,44 +1037,18 @@ defmodule Smsapi.Utility do
 
           matched? = match?({:halt, _}, point)
 
-          point =
+          # select.exist can list more than the params needed to pick a point,
+          # so nothing matched. A call without an action falls back to a
+          # point without one, as generation does, and only to a route the
+          # call can fill.
+          {point, plain} =
             if matched? do
-              elem(point, 1)
+              {elem(point, 1), nil}
             else
-              # select.exist can list more than the params needed to pick a
-              # point, so nothing matched. Fall back to the entity's own
-              # route: a terminal parameter marks a record route
-              # (/boards/{id}) where a cross-reference ends in the
-              # relationship's name (/posts/{id}/author), and failing that
-              # the shallower path wins. The same rule runs at generation
-              # time, in helpers/opShape.ts — both sides must move together.
-              parts_len = fn p ->
-                parts = S.getprop(p, "parts")
-                if S.islist(parts), do: S.size(parts), else: 0
-              end
-
-              terminal_param? = fn p ->
-                parts = S.getprop(p, "parts")
-
-                if S.islist(parts) and S.size(parts) > 0 do
-                  last = S.getelem(parts, S.size(parts) - 1)
-                  is_binary(last) and String.starts_with?(last, "{")
-                else
-                  false
-                end
-              end
-
-              Enum.reduce(0..(npoints - 1), S.getelem(points, 0), fn i, best ->
-                cand = S.getelem(points, i)
-                ct = terminal_param?.(cand)
-                bt = terminal_param?.(best)
-
-                cond do
-                  ct != bt -> if ct, do: cand, else: best
-                  parts_len.(cand) < parts_len.(best) -> cand
-                  true -> best
-                end
-              end)
+              all = Enum.map(0..(npoints - 1), &S.getelem(points, &1))
+              plain = Enum.filter(all, &(S.getprop(H.to_map(S.getprop(&1, "select")), "$action") == nil))
+              fillable = Enum.filter(plain, &(unfilled(ctx, &1) == []))
+              {if(fillable == [], do: nil, else: own_point(fillable)), plain}
             end
 
           unmatched_action =
@@ -1006,6 +1067,15 @@ defmodule Smsapi.Utility do
               unmatched_action != nil ->
                 Context.make_error(ctx, "point_action_invalid",
                   "Operation \"" <> opname <> "\" action \"" <> S.stringify(unmatched_action) <> "\" is not valid.")
+
+              plain == [] ->
+                Context.make_error(ctx, "point_action_required",
+                  "Operation \"" <> opname <> "\" has only action endpoints; pass $action to choose one.")
+
+              point == nil and plain != nil ->
+                Context.make_error(ctx, "point_no_match",
+                  "Operation \"" <> opname <> "\" has no endpoint whose path parameters are all given (missing: " <>
+                    Enum.join(unfilled(ctx, own_point(plain)), ", ") <> ").")
 
               reqselector != nil ->
                 req_action = S.getprop(reqselector, "$action")
@@ -1068,13 +1138,14 @@ defmodule Smsapi.Utility do
       S.setprop(ctx, "spec", spec)
       S.setprop(spec, "method", prepare_method(ctx))
 
-      allow_method = H.or_(S.getpath(options, "allow.method"), "")
+      allow_method = S.getpath(options, "allow.method")
       method = S.getprop(spec, "method")
 
-      if is_binary(allow_method) and not String.contains?(allow_method, method) do
+      if not allowed?(allow_method, method) do
         {nil,
          Context.make_error(ctx, "spec_method_allow",
-           "Method \"" <> method <> "\" not allowed by SDK option allow.method value: \"" <> allow_method <> "\"")}
+           "Method \"" <> H.str_or(method, "") <> "\" not allowed by SDK option allow.method value: \"" <>
+             H.str_or(allow_method, "") <> "\"")}
       else
         S.setprop(spec, "params", prepare_params(ctx))
         S.setprop(spec, "query", prepare_query(ctx))
@@ -1101,11 +1172,21 @@ defmodule Smsapi.Utility do
         explain = S.getprop(ctrl, "explain")
         if explain != nil, do: S.setprop(explain, "spec", spec)
 
+        # Whatever prepare_auth sets in the query, under whichever name, is
+        # the credential; a key it leaves as it was is the caller's.
+        query = Map.new(H.entries(S.getprop(spec, "query")))
+
         {spec2, err} = prepare_auth(ctx)
 
         if err != nil do
           {nil, err}
         else
+          authquery =
+            for {key, val} <- H.entries(S.getprop(spec2, "query")),
+                not Map.has_key?(query, key) or Map.get(query, key) != val,
+                do: key
+
+          S.setprop(spec2, "authquery", S.jt(authquery))
           S.setprop(ctx, "spec", spec2)
           {spec2, nil}
         end
@@ -1402,11 +1483,19 @@ defmodule Smsapi.Utility do
           ])
 
         body = S.getprop(spec, "body")
+        scalar = is_binary(body) or is_number(body) or is_boolean(body)
 
+        # A map or a list is JSON, and so is a scalar on a point that declares
+        # a JSON body. Anything else goes as given.
         cond do
-          body == nil -> :ok
-          S.ismap(body) -> S.setprop(fetchdef, "body", S.jsonify(body))
-          true -> S.setprop(fetchdef, "body", body)
+          body == nil ->
+            :ok
+
+          S.isnode(body) or (scalar and json_request?(S.getprop(ctx, "point"))) ->
+            S.setprop(fetchdef, "body", S.jsonify(body))
+
+          true ->
+            S.setprop(fetchdef, "body", body)
         end
 
         {fetchdef, nil}
@@ -1446,6 +1535,9 @@ defmodule Smsapi.Utility do
 
         resmatch = S.jm([])
 
+        # Sent with the request, never recorded as the entity's match.
+        authquery = for {_, name} <- H.entries(S.getprop(spec, "authquery")), do: name
+
         url1 =
           Enum.reduce(H.entries(S.getprop(spec, "params")), url0, fn {key, val}, acc ->
             if val != nil and is_binary(key) do
@@ -1457,19 +1549,32 @@ defmodule Smsapi.Utility do
             end
           end)
 
+        # A placeholder left in the route would send the request to the wrong
+        # route. The base's own placeholders are server variables, resolved
+        # with the options.
+        base = S.getprop(spec, "base")
+        base = if is_binary(base), do: String.trim_trailing(base, "/"), else: ""
+        route = String.replace_prefix(url1, base, "")
+        unfilled = Regex.scan(~r/\{[^{}\/]+\}/, route) |> Enum.map(&hd/1)
+
         {url2, _qsep} =
           Enum.reduce(H.entries(S.getprop(spec, "query")), {url1, "?"}, fn {key, val}, {acc, qsep} ->
             if val != nil and is_binary(key) do
               vstr = if is_binary(val), do: val, else: S.stringify(val)
-              S.setprop(resmatch, key, val)
+              if key not in authquery, do: S.setprop(resmatch, key, val)
               {acc <> qsep <> S.escurl(key) <> "=" <> S.escurl(vstr), "&"}
             else
               {acc, qsep}
             end
           end)
 
-        S.setprop(result, "resmatch", resmatch)
-        {url2, nil}
+        if unfilled != [] do
+          {"", Context.make_error(ctx, "url_param_missing",
+            "URL path has no value for " <> Enum.join(unfilled, ", ") <> ".")}
+        else
+          S.setprop(result, "resmatch", resmatch)
+          {url2, nil}
+        end
     end
   end
 
@@ -1478,10 +1583,6 @@ defmodule Smsapi.Utility do
   def param_impl(ctx, paramdef) do
     point = S.getprop(ctx, "point")
     spec = S.getprop(ctx, "spec")
-    match = S.getprop(ctx, "match")
-    reqmatch = S.getprop(ctx, "reqmatch")
-    data = S.getprop(ctx, "data")
-    reqdata = S.getprop(ctx, "reqdata")
 
     key =
       if is_binary(paramdef) do
@@ -1491,44 +1592,157 @@ defmodule Smsapi.Utility do
         if is_binary(k), do: k, else: ""
       end
 
-    akey =
-      if point != nil do
-        alias = H.to_map(S.getprop(point, "alias"))
+    akey = param_alias(point, key)
 
-        if alias != nil do
-          ak = S.getprop(alias, key)
-          if is_binary(ak), do: ak, else: ""
-        else
-          ""
-        end
-      else
-        ""
-      end
+    if spec != nil and akey != "" and S.getprop(S.getprop(ctx, "reqmatch"), key) == nil and
+         S.getprop(S.getprop(ctx, "match"), key) == nil do
+      S.setprop(S.getprop(spec, "alias"), akey, key)
+    end
+
+    param_value(ctx, point, key)
+  end
+
+  # The name a point gives a parameter in the call, if it renames it.
+  defp param_alias(point, key) do
+    alias = if point != nil, do: H.to_map(S.getprop(point, "alias")), else: nil
+    ak = if alias != nil, do: S.getprop(alias, key), else: nil
+    if is_binary(ak), do: ak, else: ""
+  end
+
+  # The value the call or its entity gives a point's parameter, under its name
+  # or the point's alias for it.
+  defp param_value(ctx, point, key) do
+    akey = param_alias(point, key)
+    reqmatch = S.getprop(ctx, "reqmatch")
+    reqdata = S.getprop(ctx, "reqdata")
+    data = S.getprop(ctx, "data")
 
     val = S.getprop(reqmatch, key)
-    val = if val == nil, do: S.getprop(match, key), else: val
-
-    val =
-      if val == nil and akey != "" do
-        if spec != nil, do: S.setprop(S.getprop(spec, "alias"), akey, key)
-        S.getprop(reqmatch, akey)
-      else
-        val
-      end
-
+    val = if val == nil, do: S.getprop(S.getprop(ctx, "match"), key), else: val
+    val = if val == nil and akey != "", do: S.getprop(reqmatch, akey), else: val
     val = if val == nil, do: S.getprop(reqdata, key), else: val
     val = if val == nil, do: S.getprop(data, key), else: val
 
-    val =
-      if val == nil and akey != "" do
-        v2 = S.getprop(reqdata, akey)
-        if v2 == nil, do: S.getprop(data, akey), else: v2
-      else
-        val
-      end
-
-    val
+    if val == nil and akey != "" do
+      v2 = S.getprop(reqdata, akey)
+      if v2 == nil, do: S.getprop(data, akey), else: v2
+    else
+      val
+    end
   end
+
+  # The arguments a point declares in one location, query or header, each as
+  # {name, wire, val}: the name it travels under and the value this call
+  # passes in its match or else its data. Unlike a path parameter, the
+  # entity's stored match and data never supply one.
+  defp call_args(ctx, kind) do
+    point = S.getprop(ctx, "point")
+    defs = if point != nil, do: S.getpath(point, "args." <> kind), else: nil
+
+    if S.islist(defs) and S.size(defs) > 0 do
+      Enum.flat_map(0..(S.size(defs) - 1), fn i ->
+        ad = S.getelem(defs, i)
+        name = S.getprop(ad, "name")
+
+        if is_binary(name) and name != "" do
+          orig = S.getprop(ad, "orig")
+          wire = if is_binary(orig) and orig != "", do: orig, else: name
+          val = S.getprop(S.getprop(ctx, "reqmatch"), name)
+          val = if val == nil, do: S.getprop(S.getprop(ctx, "reqdata"), name), else: val
+          [{name, wire, val}]
+        else
+          []
+        end
+      end)
+    else
+      []
+    end
+  end
+
+  # ---- media ---------------------------------------------------------------
+
+  # The media types a point declares: `response` (the model's `rs`) for the
+  # Accept header, and `body` (the model's `rb`) for the request body.
+
+  # The data key holding a raw request body. Like `$action`, it can never be
+  # a declared argument name.
+  @raw_body "$body"
+
+  def json_media?(media) do
+    m =
+      if(is_binary(media), do: media, else: "")
+      |> String.split(";", parts: 2)
+      |> hd()
+      |> String.trim()
+      |> String.downcase()
+
+    m == "application/json" or m == "text/json" or String.ends_with?(m, "+json")
+  end
+
+  # The declared JSON type alone, else every declared type in the model's
+  # order; nil when no success response declares a body.
+  def accept_of(point) do
+    res = S.getprop(point, "response")
+    media = S.getprop(res, "media")
+
+    cond do
+      not is_binary(media) or media == "" ->
+        nil
+
+      S.getprop(res, "kind") == "json" ->
+        media
+
+      true ->
+        alts = S.getprop(res, "alternatives")
+        n = if S.islist(alts), do: S.size(alts), else: 0
+
+        others =
+          if n == 0 do
+            []
+          else
+            Enum.flat_map(0..(n - 1), fn i ->
+              m = S.getprop(S.getelem(alts, i), "media")
+              if is_binary(m) and m != "", do: [m], else: []
+            end)
+          end
+
+        Enum.join([media | others], ", ")
+    end
+  end
+
+  def raw_request?(point), do: S.getprop(S.getprop(point, "body"), "kind") == "raw"
+  def json_request?(point), do: S.getprop(S.getprop(point, "body"), "kind") == "json"
+
+  defp media_header?(headers, name) do
+    Enum.any?(H.entries(headers), fn {k, _} -> is_binary(k) and String.downcase(k) == name end)
+  end
+
+  # A caller's accept wins. A declared request type replaces each JSON
+  # content-type, the SDK default, and leaves any other the caller set.
+  def media_headers(point, headers) do
+    accept = accept_of(point)
+
+    if accept != nil and not media_header?(headers, "accept"),
+      do: S.setprop(headers, "accept", accept)
+
+    body = S.getprop(point, "body")
+    media = S.getprop(body, "media")
+
+    if S.getprop(body, "kind") in ["raw", "json"] and is_binary(media) and media != "" do
+      Enum.each(H.entries(headers), fn {k, v} ->
+        if is_binary(k) and String.downcase(k) == "content-type" and json_media?(v),
+          do: S.delprop(headers, k)
+      end)
+
+      if not media_header?(headers, "content-type"),
+        do: S.setprop(headers, "content-type", media)
+    end
+
+    headers
+  end
+
+  # A binary, of bytes or text, sent as it is.
+  def raw_body(reqdata), do: if(S.ismap(reqdata), do: S.getprop(reqdata, @raw_body), else: nil)
 
   # ---- prepare_* -----------------------------------------------------------
 
@@ -1540,6 +1754,14 @@ defmodule Smsapi.Utility do
     "remove" => "DELETE",
     "patch" => "PATCH"
   }
+
+  # Whether a comma-separated allow option names the item: whole names, any case.
+  def allowed?(names, item) when is_binary(names) and is_binary(item) and item != "" do
+    want = String.upcase(item)
+    names |> String.split(",") |> Enum.any?(fn name -> String.upcase(String.trim(name)) == want end)
+  end
+
+  def allowed?(_names, _item), do: false
 
   def prepare_method_impl(ctx) do
     opname = S.getprop(S.getprop(ctx, "op"), "name")
@@ -1567,41 +1789,92 @@ defmodule Smsapi.Utility do
         if S.ismap(cloned), do: cloned, else: S.jm([])
       end
 
-    # A header parameter travels as a header, under the name the definition
-    # gives it, and only from this call's own arguments. It replaces a default
-    # of the same name, whatever its case.
-    point = S.getprop(ctx, "point")
-    aheader = if point != nil, do: S.getpath(point, "args.header"), else: nil
+    out = media_headers(S.getprop(ctx, "point"), out)
 
-    if S.islist(aheader) and S.size(aheader) > 0 do
-      Enum.each(0..(S.size(aheader) - 1), fn i ->
-        hd = S.getelem(aheader, i)
-        name = S.getprop(hd, "name")
+    # A header argument replaces a default of the same name, whatever its case.
+    Enum.each(call_args(ctx, "header"), fn {_name, wire, val} ->
+      if val != nil do
+        key = String.downcase(wire)
 
-        if is_binary(name) and name != "" do
-          orig = S.getprop(hd, "orig")
-          wire = if is_binary(orig) and orig != "", do: orig, else: name
-          val = S.getprop(S.getprop(ctx, "reqmatch"), name)
-          val = if val == nil, do: S.getprop(S.getprop(ctx, "reqdata"), name), else: val
-          if val != nil do
-            key = String.downcase(wire)
+        Enum.each(H.entries(out), fn {k, _} ->
+          if is_binary(k) and String.downcase(k) == key, do: S.delprop(out, k)
+        end)
 
-            Enum.each(H.entries(out), fn {k, _} ->
-              if is_binary(k) and String.downcase(k) == key, do: S.delprop(out, k)
-            end)
+        S.setprop(out, key, S.stringify(val))
+      end
+    end)
 
-            S.setprop(out, key, S.stringify(val))
+    # A cookie argument travels in the cookie header, form serialized and
+    # percent-encoded, replacing a cookie of the same name among those the
+    # caller's headers already send.
+    sent = Enum.filter(call_args(ctx, "cookie"), fn {_name, _wire, val} -> val != nil end)
+
+    if sent != [] do
+      names =
+        Enum.flat_map(sent, fn {_name, wire, val} ->
+          if S.ismap(val), do: Enum.map(S.keysof(val), &S.escurl/1), else: [wire]
+        end)
+
+      given =
+        Enum.filter(H.entries(out), fn {k, _} -> is_binary(k) and String.downcase(k) == "cookie" end)
+
+      kept = Enum.flat_map(given, fn {_, v} -> if is_binary(v), do: cookie_keep(v, names), else: [] end)
+
+      Enum.each(given, fn {k, _} -> S.delprop(out, k) end)
+
+      pairs =
+        Enum.flat_map(sent, fn {_name, wire, val} ->
+          case cookie_pair(wire, val) do
+            "" -> []
+            pair -> [pair]
           end
-        end
-      end)
+        end)
+
+      if kept ++ pairs != [], do: S.setprop(out, "cookie", Enum.join(kept ++ pairs, "; "))
     end
 
     out
   end
 
+  # The caller's cookie pieces with the named cookies removed: a cookie is one
+  # ;-delimited piece, whatever its value holds.
+  def cookie_keep(header, names) do
+    header
+    |> String.split(";")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(fn cookie -> cookie == "" or cookie_name(cookie) in names end)
+  end
+
+  defp cookie_name(cookie), do: cookie |> String.split("=", parts: 2) |> hd() |> String.trim()
+
+  # The form style of a cookie parameter: a list repeats the name, a map sends
+  # its own keys, and every value is percent-encoded.
+  defp cookie_pair(wire, val) do
+    esc = fn v -> S.escurl(S.stringify(v)) end
+
+    pairs =
+      cond do
+        S.islist(val) ->
+          Enum.map(H.entries(val), fn {_i, item} -> wire <> "=" <> esc.(item) end)
+
+        S.ismap(val) ->
+          Enum.map(S.keysof(val), fn k -> S.escurl(k) <> "=" <> esc.(S.getprop(val, k)) end)
+
+        true ->
+          [wire <> "=" <> esc.(val)]
+      end
+
+    Enum.join(pairs, "; ")
+  end
+
   def prepare_body_impl(ctx) do
     op = S.getprop(ctx, "op")
-    if S.getprop(op, "input") == "data", do: transform_request(ctx), else: nil
+
+    cond do
+      S.getprop(op, "input") != "data" -> nil
+      raw_request?(S.getprop(ctx, "point")) -> raw_body(S.getprop(ctx, "reqdata"))
+      true -> transform_request(ctx)
+    end
   end
 
   def prepare_params_impl(ctx) do
@@ -1687,8 +1960,14 @@ defmodule Smsapi.Utility do
 
     # A path parameter travels in the path. The generated config lists them
     # as args.params, which prepare_params reads; params is the older list.
-    # A header parameter travels in the headers, which prepare_headers fills.
-    param_strs = param_strs ++ arg_names(point, "args.params") ++ arg_names(point, "args.header")
+    # A header or cookie parameter travels in the headers, which prepare_headers
+    # fills, unless a query parameter shares its name: then both are sent.
+    declared = arg_names(point, "args.query")
+
+    param_strs =
+      param_strs ++
+        arg_names(point, "args.params") ++
+        Enum.reject(arg_names(point, "args.header") ++ arg_names(point, "args.cookie"), &(&1 in declared))
 
     # A query parameter travels under the name the definition gives it, its
     # orig, which the model may have renamed for the caller.
@@ -1716,6 +1995,11 @@ defmodule Smsapi.Utility do
            not Enum.member?(param_strs, key) do
         S.setprop(out, Map.get(wire, key, key), val)
       end
+    end)
+
+    # A create or update passes its query arguments in its data.
+    Enum.each(call_args(ctx, "query"), fn {name, orig, val} ->
+      if val != nil and not Enum.member?(param_strs, name), do: S.setprop(out, orig, val)
     end)
 
     out
@@ -1927,9 +2211,69 @@ defmodule Smsapi.Utility do
       jf = S.getprop(response, "json_func")
       body = S.getprop(response, "body")
       if jf != nil and body != nil and S.isfunc(jf), do: S.setprop(result, "body", jf.())
+
+      if S.getprop(response, "unreadable") == true do
+        spec = S.getprop(ctx, "spec")
+        sent = if spec != nil, do: S.getprop(spec, "headers")
+
+        S.setprop(result, "err",
+          unreadable_body(ctx, S.getprop(result, "status"), S.getprop(result, "headers"), body, sent,
+            S.getprop(result, "err")))
+      end
     end
 
     result
+  end
+
+  @body_preview_length 160
+
+  # A body that is not JSON. An HTTP failure keeps its own error, with the
+  # response described; otherwise the code tells a wrong content type from
+  # malformed JSON.
+  def unreadable_body(ctx, status, headers, text, sent, failed) do
+    type = body_header(headers, "content-type")
+    agent = to_string(clean(ctx, body_header(sent, "user-agent")))
+
+    detail =
+      "HTTP " <> to_string(status) <> ", content-type " <> if(type == "", do: "none", else: type) <>
+        ", user-agent " <> if(agent == "", do: "transport default", else: agent) <>
+        if(text == nil, do: "", else: ", body: " <> body_preview(ctx, text))
+
+    cond do
+      match?(%Smsapi.Error{}, failed) ->
+        %{failed | msg: failed.msg <> " (" <> detail <> ")"}
+
+      failed != nil ->
+        %RuntimeError{message: err_msg(failed) <> " (" <> detail <> ")"}
+
+      type == "" or String.contains?(String.downcase(type), "json") ->
+        Context.make_error(ctx, "response_json_invalid", "response: body is not valid JSON (" <> detail <> ")")
+
+      true ->
+        Context.make_error(ctx, "response_content_type",
+          "response: expected JSON, got " <> type <> " (" <> detail <> ")")
+    end
+  end
+
+  defp body_header(headers, name) do
+    if S.ismap(headers) do
+      case Enum.find(H.entries(headers), fn {k, _v} -> String.downcase(to_string(k)) == name end) do
+        {_k, v} -> to_string(v)
+        nil -> ""
+      end
+    else
+      ""
+    end
+  end
+
+  # Cleaned whole: a secret the bound would split could leave its prefix.
+  defp body_preview(ctx, text) do
+    flat = to_string(clean(ctx, String.trim(Regex.replace(~r/\s+/, to_string(text), " "))))
+    points = String.codepoints(flat)
+
+    if length(points) > @body_preview_length,
+      do: Enum.join(Enum.take(points, @body_preview_length)) <> "...",
+      else: flat
   end
 
   def result_headers_impl(ctx) do
@@ -1955,17 +2299,28 @@ defmodule Smsapi.Utility do
   # untouched.
   defp strip_action(reqdata), do: omit_keys(reqdata, ["$action"])
 
-  # A header argument travels as a header, which prepare_headers_impl sends, so
-  # the body is built from the request data without it.
-  defp header_arg_names(point) do
-    aheader = if point != nil, do: S.getpath(point, "args.header"), else: nil
+  # A header, cookie or query argument travels where prepare_headers_impl or
+  # prepare_query_impl sends it, so the body is built from the request data
+  # without it, unless the point marks it as a field the body keeps.
+  defp routed_arg_names(ctx) do
+    (call_args(ctx, "header") ++ call_args(ctx, "cookie") ++ call_args(ctx, "query"))
+    |> Enum.map(&elem(&1, 0))
+    |> Enum.reject(&field_arg?(ctx, &1))
+  end
 
-    if S.islist(aheader) and S.size(aheader) > 0 do
-      Enum.map(0..(S.size(aheader) - 1), &S.getprop(S.getelem(aheader, &1), "name"))
-      |> Enum.filter(&(is_binary(&1) and &1 != ""))
-    else
-      []
-    end
+  defp field_arg?(ctx, name) do
+    point = S.getprop(ctx, "point")
+
+    point != nil and
+      Enum.any?(["header", "cookie", "query"], fn kind ->
+        defs = S.getpath(point, "args." <> kind)
+
+        S.islist(defs) and S.size(defs) > 0 and
+          Enum.any?(0..(S.size(defs) - 1), fn i ->
+            ad = S.getelem(defs, i)
+            name == S.getprop(ad, "name") and true == S.getprop(ad, "field")
+          end)
+      end)
   end
 
   defp omit_keys(reqdata, names) do
@@ -1987,7 +2342,7 @@ defmodule Smsapi.Utility do
     point = S.getprop(ctx, "point")
     if spec != nil, do: S.setprop(spec, "step", "reqform")
 
-    data = omit_keys(S.getprop(ctx, "reqdata"), header_arg_names(point))
+    data = omit_keys(S.getprop(ctx, "reqdata"), routed_arg_names(ctx))
     transform = H.to_map(S.getprop(point, "transform"))
 
     reqdata =
@@ -2089,19 +2444,37 @@ defmodule Smsapi.Utility do
     has_ua =
       Enum.any?(H.entries(headers_node), fn {k, _v} -> String.downcase(to_string(k)) == "user-agent" end)
 
+    with_body = method in [:post, :put, :patch, :delete] and is_binary(body)
+    content_type? = fn {k, _v} -> String.downcase(to_string(k)) == "content-type" end
+
+    # :httpc takes a body's content type beside the headers, not among them.
+    ctype =
+      case Enum.find(H.entries(headers_node), content_type?) do
+        {_k, v} -> to_string(v)
+        nil -> "application/json"
+      end
+
+    pairs =
+      if with_body,
+        do: Enum.reject(H.entries(headers_node), content_type?),
+        else: H.entries(headers_node)
+
     hlist0 =
-      Enum.map(H.entries(headers_node), fn {k, v} ->
+      Enum.map(pairs, fn {k, v} ->
         {String.to_charlist(to_string(k)), String.to_charlist(to_string(v))}
       end)
 
     hlist =
       if has_ua, do: hlist0, else: [{~c"User-Agent", String.to_charlist(@default_user_agent)} | hlist0]
 
+    # The default User-Agent is recorded with the headers the request sent.
+    if not has_ua, do: S.setprop(headers_node, "user-agent", @default_user_agent)
+
     url = String.to_charlist(fullurl)
 
     request =
-      if method in [:post, :put, :patch, :delete] and is_binary(body) do
-        {url, hlist, ~c"application/json", body}
+      if with_body do
+        {url, hlist, String.to_charlist(ctype), body}
       else
         {url, hlist}
       end
@@ -2124,14 +2497,14 @@ defmodule Smsapi.Utility do
 
         body_str = if is_binary(resp_body), do: resp_body, else: to_string(resp_body)
 
-        json_body =
-          if String.length(body_str) > 0 do
+        {json_body, unreadable} =
+          if String.trim(body_str) != "" do
             case safe_json(body_str) do
-              {:ok, v} -> v
-              _ -> nil
+              {:ok, v} -> {v, false}
+              _ -> {nil, true}
             end
           else
-            nil
+            {nil, false}
           end
 
         status_text = if status < 400, do: "OK", else: "Error"
@@ -2141,7 +2514,8 @@ defmodule Smsapi.Utility do
            "statusText", status_text,
            "headers", rh,
            "json", fn -> json_body end,
-           "body", body_str
+           "body", body_str,
+           "unreadable", unreadable
          ]), nil}
 
       {:error, reason} ->

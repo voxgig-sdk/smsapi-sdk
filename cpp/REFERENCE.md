@@ -205,14 +205,14 @@ auto available = client->available();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->available()->list(Value::undef(), Value::undef());
-for (const auto& available : *results.as_list()) {
-  std::cout << Struct::jsonify(available) << std::endl;
+std::vector<SdkEntityPtr> results = client->available()->list(Value::undef(), Value::undef());
+for (const auto& available : results) {
+  std::cout << Struct::jsonify(available->data()) << std::endl;
 }
 ```
 
@@ -251,29 +251,33 @@ auto blacklist = client->blacklist();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->blacklist()->create(vmap({
+SdkEntityPtr result = client->blacklist()->create(vmap({
 }), Value::undef());
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->blacklist()->load(Value::undef(), Value::undef());
+SdkEntityPtr result = client->blacklist()->load(Value::undef(), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->blacklist()->remove(vmap({{"id", Value("id")}}), Value::undef());
+SdkEntityPtr result = client->blacklist()->remove(vmap({{"id", Value("id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
 ### Common Methods
@@ -331,48 +335,50 @@ auto callback = client->callback();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->callback()->create(vmap({
+SdkEntityPtr result = client->callback()->create(vmap({
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->callback()->list(Value::undef(), Value::undef());
-for (const auto& callback : *results.as_list()) {
-  std::cout << Struct::jsonify(callback) << std::endl;
+std::vector<SdkEntityPtr> results = client->callback()->list(Value::undef(), Value::undef());
+for (const auto& callback : results) {
+  std::cout << Struct::jsonify(callback->data()) << std::endl;
 }
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->callback()->load(vmap({{"id", Value("callback_id")}}), Value::undef());
+SdkEntityPtr result = client->callback()->load(vmap({{"id", Value("callback_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->callback()->remove(vmap({{"id", Value("callback_id")}}), Value::undef());
+SdkEntityPtr result = client->callback()->remove(vmap({{"id", Value("callback_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->callback()->update(vmap({
+SdkEntityPtr result = client->callback()->update(vmap({
     {"id", Value("callback_id")},
     // Fields to update
 }), Value::undef());
@@ -422,7 +428,6 @@ auto contact = client->contact();
 | `email` | `std::string` | No |  |
 | `first_name` | `std::string` | No |  |
 | `gender` | `std::string` | Yes |  |
-| `group_id` | `std::string` | No | Object ID |
 | `groups` | `std::vector<Value>` | Yes |  |
 | `id` | `std::string` | Yes | Object ID |
 | `idx` | `std::string` | No | User provided resource id |
@@ -430,14 +435,8 @@ auto contact = client->contact();
 | `name` | `std::string` | Yes | Group name |
 | `permissions` | `std::vector<Value>` | No |  |
 | `phone_number` | `std::string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
 | `size` | `int64_t` | Yes |  |
 | `source` | `std::string` | No |  |
-| `type` | `std::string` | No |  |
-| `username` | `std::string` | No |  |
-| `value` | `std::string` | No |  |
-| `write` | `bool` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -445,9 +444,9 @@ auto contact = client->contact();
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -456,31 +455,24 @@ auto contact = client->contact();
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->contact()->create(vmap({
+SdkEntityPtr result = client->contact()->create(vmap({
     {"collection", vlist()},  // std::vector<Value>
     {"contact_expire_after", Value(1)},  // int64_t
     {"contacts_count", Value(1)},  // int64_t
@@ -495,43 +487,49 @@ Value result = client->contact()->create(vmap({
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
+
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->contact()->list(Value::undef(), Value::undef());
-for (const auto& contact : *results.as_list()) {
-  std::cout << Struct::jsonify(contact) << std::endl;
+std::vector<SdkEntityPtr> results = client->contact()->list(Value::undef(), Value::undef());
+for (const auto& contact : results) {
+  std::cout << Struct::jsonify(contact->data()) << std::endl;
 }
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->contact()->load(vmap({{"id", Value("contact_id")}}), Value::undef());
+SdkEntityPtr result = client->contact()->load(vmap({{"id", Value("contact_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->contact()->remove(vmap({{"id", Value("contact_id")}}), Value::undef());
+SdkEntityPtr result = client->contact()->remove(vmap({{"id", Value("contact_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->contact()->update(vmap({
+SdkEntityPtr result = client->contact()->update(vmap({
     {"id", Value("contact_id")},
     // Fields to update
 }), Value::undef());
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -564,112 +562,55 @@ auto contacts_field = client->contacts_field();
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `std::string` | No |  |
-| `city` | `std::string` | No |  |
-| `contact_expire_after` | `int64_t` | Yes | Contact expire after days |
-| `contacts_count` | `int64_t` | No |  |
-| `country` | `std::string` | No |  |
-| `created_by` | `std::string` | Yes |  |
-| `date_created` | `std::string` | Yes |  |
-| `date_updated` | `std::string` | Yes |  |
-| `description` | `std::string` | No |  |
-| `email` | `std::string` | No |  |
-| `first_name` | `std::string` | No |  |
-| `gender` | `std::string` | Yes |  |
-| `group_id` | `std::string` | No | Object ID |
-| `groups` | `std::vector<Value>` | Yes |  |
 | `id` | `std::string` | No | Object ID |
-| `idx` | `std::string` | No | User provided resource id |
-| `last_name` | `std::string` | No |  |
-| `name` | `std::string` | No | Group name |
-| `permissions` | `std::vector<Value>` | No |  |
-| `phone_number` | `std::string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `std::string` | No |  |
+| `name` | `std::string` | No |  |
 | `type` | `std::string` | No |  |
-| `username` | `std::string` | No |  |
-| `value` | `std::string` | No |  |
-| `write` | `bool` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->contacts_field()->create(vmap({
-    {"contact_expire_after", Value(1)},  // int64_t
-    {"created_by", Value("example_created_by")},  // std::string
-    {"date_created", Value("example_date_created")},  // std::string
-    {"date_updated", Value("example_date_updated")},  // std::string
-    {"gender", Value("example_gender")},  // std::string
-    {"groups", vlist()},  // std::vector<Value>
+SdkEntityPtr result = client->contacts_field()->create(vmap({
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
+
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->contacts_field()->list(Value::undef(), Value::undef());
-for (const auto& contacts_field : *results.as_list()) {
-  std::cout << Struct::jsonify(contacts_field) << std::endl;
+std::vector<SdkEntityPtr> results = client->contacts_field()->list(Value::undef(), Value::undef());
+for (const auto& contacts_field : results) {
+  std::cout << Struct::jsonify(contacts_field->data()) << std::endl;
 }
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->contacts_field()->remove(vmap({{"id", Value("id")}}), Value::undef());
+SdkEntityPtr result = client->contacts_field()->remove(vmap({{"id", Value("id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->contacts_field()->update(vmap({
+SdkEntityPtr result = client->contacts_field()->update(vmap({
     {"id", Value("id")},
     // Fields to update
 }), Value::undef());
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -698,48 +639,16 @@ Return the entity name.
 auto contacts_field_option = client->contacts_field_option();
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `std::string` | No |  |
-| `city` | `std::string` | No |  |
-| `contact_expire_after` | `int64_t` | Yes | Contact expire after days |
-| `contacts_count` | `int64_t` | No |  |
-| `country` | `std::string` | No |  |
-| `created_by` | `std::string` | Yes |  |
-| `date_created` | `std::string` | Yes |  |
-| `date_updated` | `std::string` | Yes |  |
-| `description` | `std::string` | No |  |
-| `email` | `std::string` | No |  |
-| `first_name` | `std::string` | No |  |
-| `gender` | `std::string` | Yes |  |
-| `group_id` | `std::string` | No | Object ID |
-| `groups` | `std::vector<Value>` | Yes |  |
-| `id` | `std::string` | Yes | Object ID |
-| `idx` | `std::string` | No | User provided resource id |
-| `last_name` | `std::string` | No |  |
-| `name` | `std::string` | No | Group name |
-| `permissions` | `std::vector<Value>` | No |  |
-| `phone_number` | `std::string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `std::string` | No |  |
-| `type` | `std::string` | No |  |
-| `username` | `std::string` | No |  |
-| `value` | `std::string` | No |  |
-| `write` | `bool` | No | Has write permission |
-
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->contacts_field_option()->list(Value::undef(), Value::undef());
-for (const auto& contacts_field_option : *results.as_list()) {
-  std::cout << Struct::jsonify(contacts_field_option) << std::endl;
+std::vector<SdkEntityPtr> results = client->contacts_field_option()->list(vmap({{"field_id", Value("example")}}), Value::undef());
+for (const auto& contacts_field_option : results) {
+  std::cout << Struct::jsonify(contacts_field_option->data()) << std::endl;
 }
 ```
 
@@ -774,82 +683,21 @@ auto contactsgroup = client->contactsgroup();
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `std::string` | No |  |
-| `city` | `std::string` | No |  |
-| `contact_expire_after` | `int64_t` | Yes | Contact expire after days |
-| `contacts_count` | `int64_t` | No |  |
-| `country` | `std::string` | No |  |
-| `created_by` | `std::string` | Yes |  |
-| `date_created` | `std::string` | Yes |  |
-| `date_updated` | `std::string` | Yes |  |
-| `description` | `std::string` | No |  |
-| `email` | `std::string` | No |  |
-| `first_name` | `std::string` | No |  |
-| `gender` | `std::string` | Yes |  |
 | `group_id` | `std::string` | Yes | Object ID |
-| `groups` | `std::vector<Value>` | Yes |  |
-| `id` | `std::string` | Yes | Object ID |
-| `idx` | `std::string` | No | User provided resource id |
-| `last_name` | `std::string` | No |  |
-| `name` | `std::string` | No | Group name |
-| `permissions` | `std::vector<Value>` | No |  |
-| `phone_number` | `std::string` | No |  |
 | `read` | `bool` | Yes | Has read permission |
 | `send` | `bool` | Yes | Has send permission |
-| `source` | `std::string` | No |  |
-| `type` | `std::string` | No |  |
 | `username` | `std::string` | Yes |  |
-| `value` | `std::string` | No |  |
 | `write` | `bool` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->contactsgroup()->create(vmap({
-    {"contact_expire_after", Value(1)},  // int64_t
-    {"created_by", Value("example_created_by")},  // std::string
-    {"date_created", Value("example_date_created")},  // std::string
-    {"date_updated", Value("example_date_updated")},  // std::string
-    {"gender", Value("example_gender")},  // std::string
+SdkEntityPtr result = client->contactsgroup()->create(vmap({
     {"group_id", Value("example_group_id")},  // std::string
-    {"groups", vlist()},  // std::vector<Value>
-    {"id", Value("example_id")},  // std::string
     {"read", Value(true)},  // bool
     {"send", Value(true)},  // bool
     {"username", Value("example_username")},  // std::string
@@ -857,35 +705,40 @@ Value result = client->contactsgroup()->create(vmap({
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
+
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->contactsgroup()->list(Value::undef(), Value::undef());
-for (const auto& contactsgroup : *results.as_list()) {
-  std::cout << Struct::jsonify(contactsgroup) << std::endl;
+std::vector<SdkEntityPtr> results = client->contactsgroup()->list(Value::undef(), Value::undef());
+for (const auto& contactsgroup : results) {
+  std::cout << Struct::jsonify(contactsgroup->data()) << std::endl;
 }
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->contactsgroup()->remove(vmap({{"group_id", Value("group_id")}}), Value::undef());
+SdkEntityPtr result = client->contactsgroup()->remove(vmap({{"group_id", Value("group_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->contactsgroup()->update(vmap({
+SdkEntityPtr result = client->contactsgroup()->update(vmap({
     {"group_id", Value("group_id")},
     // Fields to update
 }), Value::undef());
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -916,20 +769,21 @@ auto contactstrash = client->contactstrash();
 
 ### Operations
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->contactstrash()->remove(Value::undef(), Value::undef());
+SdkEntityPtr result = client->contactstrash()->remove(Value::undef(), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->contactstrash()->update(vmap({
+SdkEntityPtr result = client->contactstrash()->update(vmap({
     // Fields to update
 }), Value::undef());
 ```
@@ -973,14 +827,14 @@ auto field_available = client->field_available();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->field_available()->list(Value::undef(), Value::undef());
-for (const auto& field_available : *results.as_list()) {
-  std::cout << Struct::jsonify(field_available) << std::endl;
+std::vector<SdkEntityPtr> results = client->field_available()->list(Value::undef(), Value::undef());
+for (const auto& field_available : results) {
+  std::cout << Struct::jsonify(field_available->data()) << std::endl;
 }
 ```
 
@@ -1028,24 +882,27 @@ auto group = client->group();
 
 ### Operations
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->group()->load(vmap({{"id", Value("group_id")}}), Value::undef());
+SdkEntityPtr result = client->group()->load(vmap({{"id", Value("group_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->group()->update(vmap({
+SdkEntityPtr result = client->group()->update(vmap({
     {"id", Value("group_id")},
     // Fields to update
 }), Value::undef());
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1085,15 +942,17 @@ auto mfa_code = client->mfa_code();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->mfa_code()->create(vmap({
+SdkEntityPtr result = client->mfa_code()->create(vmap({
     {"phone_number", Value("example_phone_number")},  // std::string
 }), Value::undef());
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1133,23 +992,24 @@ auto opt_out = client->opt_out();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->opt_out()->list(Value::undef(), Value::undef());
-for (const auto& opt_out : *results.as_list()) {
-  std::cout << Struct::jsonify(opt_out) << std::endl;
+std::vector<SdkEntityPtr> results = client->opt_out()->list(Value::undef(), Value::undef());
+for (const auto& opt_out : results) {
+  std::cout << Struct::jsonify(opt_out->data()) << std::endl;
 }
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->opt_out()->remove(vmap({{"id", Value("id")}}), Value::undef());
+SdkEntityPtr result = client->opt_out()->remove(vmap({{"id", Value("id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
 ### Common Methods
@@ -1187,20 +1047,21 @@ auto opt_out_setting = client->opt_out_setting();
 
 ### Operations
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->opt_out_setting()->load(Value::undef(), Value::undef());
+SdkEntityPtr result = client->opt_out_setting()->load(Value::undef(), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->opt_out_setting()->update(vmap({
+SdkEntityPtr result = client->opt_out_setting()->update(vmap({
     // Fields to update
 }), Value::undef());
 ```
@@ -1245,12 +1106,12 @@ auto permission = client->permission();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->permission()->create(vmap({
+SdkEntityPtr result = client->permission()->create(vmap({
     {"group_id", Value("example_group_id")},  // std::string
     {"read", Value(true)},  // bool
     {"send", Value(true)},  // bool
@@ -1259,12 +1120,15 @@ Value result = client->permission()->create(vmap({
 }), Value::undef());
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->permission()->load(vmap({{"id", Value("permission_id")}, {"group_id", Value("group_id")}, {"username", Value("username")}}), Value::undef());
+SdkEntityPtr result = client->permission()->load(vmap({{"id", Value("permission_id")}, {"group_id", Value("group_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
 ### Common Methods
@@ -1303,14 +1167,14 @@ auto ping = client->ping();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->ping()->list(Value::undef(), Value::undef());
-for (const auto& ping : *results.as_list()) {
-  std::cout << Struct::jsonify(ping) << std::endl;
+std::vector<SdkEntityPtr> results = client->ping()->list(Value::undef(), Value::undef());
+for (const auto& ping : results) {
+  std::cout << Struct::jsonify(ping->data()) << std::endl;
 }
 ```
 
@@ -1355,23 +1219,24 @@ auto profile = client->profile();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->profile()->list(Value::undef(), Value::undef());
-for (const auto& profile : *results.as_list()) {
-  std::cout << Struct::jsonify(profile) << std::endl;
+std::vector<SdkEntityPtr> results = client->profile()->list(Value::undef(), Value::undef());
+for (const auto& profile : results) {
+  std::cout << Struct::jsonify(profile->data()) << std::endl;
 }
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->profile()->load(Value::undef(), Value::undef());
+SdkEntityPtr result = client->profile()->load(Value::undef(), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
 ### Common Methods
@@ -1403,14 +1268,14 @@ auto rcs = client->rcs();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->rcs()->list(Value::undef(), Value::undef());
-for (const auto& rcs : *results.as_list()) {
-  std::cout << Struct::jsonify(rcs) << std::endl;
+std::vector<SdkEntityPtr> results = client->rcs()->list(Value::undef(), Value::undef());
+for (const auto& rcs : results) {
+  std::cout << Struct::jsonify(rcs->data()) << std::endl;
 }
 ```
 
@@ -1453,32 +1318,35 @@ auto sendername = client->sendername();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->sendername()->create(vmap({
+SdkEntityPtr result = client->sendername()->create(vmap({
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
+
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->sendername()->list(Value::undef(), Value::undef());
-for (const auto& sendername : *results.as_list()) {
-  std::cout << Struct::jsonify(sendername) << std::endl;
+std::vector<SdkEntityPtr> results = client->sendername()->list(Value::undef(), Value::undef());
+for (const auto& sendername : results) {
+  std::cout << Struct::jsonify(sendername->data()) << std::endl;
 }
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->sendername()->load(vmap({{"id", Value("sendername_id")}}), Value::undef());
+SdkEntityPtr result = client->sendername()->load(vmap({{"id", Value("sendername_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
 ### Common Methods
@@ -1518,14 +1386,14 @@ auto sendername_statement = client->sendername_statement();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->sendername_statement()->list(Value::undef(), Value::undef());
-for (const auto& sendername_statement : *results.as_list()) {
-  std::cout << Struct::jsonify(sendername_statement) << std::endl;
+std::vector<SdkEntityPtr> results = client->sendername_statement()->list(Value::undef(), Value::undef());
+for (const auto& sendername_statement : results) {
+  std::cout << Struct::jsonify(sendername_statement->data()) << std::endl;
 }
 ```
 
@@ -1562,19 +1430,19 @@ auto sent_rcs_message = client->sent_rcs_message();
 | --- | --- | --- | --- |
 | `content` | `std::map<std::string, Value>` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `std::string` | Yes | Recipient phone number (e.g. |
-| `sender` | `Value` | Yes |  |
+| `sender` | `std::string` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `std::string` | No | Plain text message content. |
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->sent_rcs_message()->create(vmap({
+SdkEntityPtr result = client->sent_rcs_message()->create(vmap({
     {"phone_number", Value("example_phone_number")},  // std::string
-    {"sender", Value("example_sender")},  // Value
+    {"sender", Value("example_sender")},  // std::string
 }), Value::undef());
 ```
 
@@ -1616,14 +1484,14 @@ auto shipment_country_volume = client->shipment_country_volume();
 
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->shipment_country_volume()->list(Value::undef(), Value::undef());
-for (const auto& shipment_country_volume : *results.as_list()) {
-  std::cout << Struct::jsonify(shipment_country_volume) << std::endl;
+std::vector<SdkEntityPtr> results = client->shipment_country_volume()->list(Value::undef(), Value::undef());
+for (const auto& shipment_country_volume : results) {
+  std::cout << Struct::jsonify(shipment_country_volume->data()) << std::endl;
 }
 ```
 
@@ -1671,52 +1539,56 @@ auto short_url = client->short_url();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->short_url()->create(vmap({
+SdkEntityPtr result = client->short_url()->create(vmap({
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->short_url()->list(Value::undef(), Value::undef());
-for (const auto& short_url : *results.as_list()) {
-  std::cout << Struct::jsonify(short_url) << std::endl;
+std::vector<SdkEntityPtr> results = client->short_url()->list(Value::undef(), Value::undef());
+for (const auto& short_url : results) {
+  std::cout << Struct::jsonify(short_url->data()) << std::endl;
 }
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->short_url()->load(vmap({{"id", Value("short_url_id")}}), Value::undef());
+SdkEntityPtr result = client->short_url()->load(vmap({{"id", Value("short_url_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->short_url()->remove(vmap({{"id", Value("short_url_id")}}), Value::undef());
+SdkEntityPtr result = client->short_url()->remove(vmap({{"id", Value("short_url_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->short_url()->update(vmap({
+SdkEntityPtr result = client->short_url()->update(vmap({
     {"id", Value("short_url_id")},
     // Fields to update
 }), Value::undef());
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1773,12 +1645,12 @@ auto smsdo = client->smsdo();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->smsdo()->create(vmap({
+SdkEntityPtr result = client->smsdo()->create(vmap({
 }), Value::undef());
 ```
 
@@ -1811,22 +1683,23 @@ auto smssendername = client->smssendername();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->smssendername()->create(vmap({
-    {"sendername_id", Value("example_sendername_id")},  // std::string
+SdkEntityPtr result = client->smssendername()->create(vmap({
+    {"sender", Value("example_sender")},  // std::string
 }), Value::undef());
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->smssendername()->remove(vmap({{"sender", Value("sender")}}), Value::undef());
+SdkEntityPtr result = client->smssendername()->remove(vmap({{"sender", Value("sender")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
 ### Common Methods
@@ -1864,12 +1737,13 @@ auto smstemplate = client->smstemplate();
 
 ### Operations
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->smstemplate()->remove(vmap({{"id", Value("id")}}), Value::undef());
+SdkEntityPtr result = client->smstemplate()->remove(vmap({{"id", Value("id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
 ### Common Methods
@@ -1923,49 +1797,51 @@ auto subuser = client->subuser();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->subuser()->create(vmap({
+SdkEntityPtr result = client->subuser()->create(vmap({
     {"credentials", vmap()},  // std::map<std::string, Value>
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->subuser()->list(Value::undef(), Value::undef());
-for (const auto& subuser : *results.as_list()) {
-  std::cout << Struct::jsonify(subuser) << std::endl;
+std::vector<SdkEntityPtr> results = client->subuser()->list(Value::undef(), Value::undef());
+for (const auto& subuser : results) {
+  std::cout << Struct::jsonify(subuser->data()) << std::endl;
 }
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->subuser()->load(vmap({{"id", Value("subuser_id")}}), Value::undef());
+SdkEntityPtr result = client->subuser()->load(vmap({{"id", Value("subuser_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `remove(reqmatch, ctrl) -> Value`
+#### `remove(reqmatch, ctrl) -> SdkEntityPtr`
 
-Remove the entity matching the given criteria. Throws on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and throws on error.
 
 ```cpp
-Value result = client->subuser()->remove(vmap({{"id", Value("subuser_id")}}), Value::undef());
+SdkEntityPtr result = client->subuser()->remove(vmap({{"id", Value("subuser_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->subuser()->update(vmap({
+SdkEntityPtr result = client->subuser()->update(vmap({
     {"id", Value("subuser_id")},
     // Fields to update
 }), Value::undef());
@@ -2009,44 +1885,49 @@ auto template_ = client->template_();
 
 ### Operations
 
-#### `create(reqdata, ctrl) -> Value`
+#### `create(reqdata, ctrl) -> SdkEntityPtr`
 
-Create a new entity with the given data. Returns the created entity data and throws on error.
+Create a new entity with the given data. Returns the created entity and throws on error.
 
 ```cpp
-Value result = client->template_()->create(vmap({
+SdkEntityPtr result = client->template_()->create(vmap({
 }), Value::undef());
 ```
 
-#### `list(reqmatch, ctrl) -> Value`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
+
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->template_()->list(Value::undef(), Value::undef());
-for (const auto& template_ : *results.as_list()) {
-  std::cout << Struct::jsonify(template_) << std::endl;
+std::vector<SdkEntityPtr> results = client->template_()->list(Value::undef(), Value::undef());
+for (const auto& template_ : results) {
+  std::cout << Struct::jsonify(template_->data()) << std::endl;
 }
 ```
 
-#### `load(reqmatch, ctrl) -> Value`
+#### `load(reqmatch, ctrl) -> SdkEntityPtr`
 
-Load a single entity matching the given criteria. Returns the entity data and throws on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data()` reads, and throws on error.
 
 ```cpp
-Value result = client->template_()->load(vmap({{"id", Value("template_id")}}), Value::undef());
+SdkEntityPtr result = client->template_()->load(vmap({{"id", Value("template_id")}}), Value::undef());
+std::cout << Struct::jsonify(result->data()) << std::endl;
 ```
 
-#### `update(reqdata, ctrl) -> Value`
+#### `update(reqdata, ctrl) -> SdkEntityPtr`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and throws on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and throws on error.
 
 ```cpp
-Value result = client->template_()->update(vmap({
+SdkEntityPtr result = client->template_()->update(vmap({
     {"id", Value("template_id")},
     // Fields to update
 }), Value::undef());
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2075,31 +1956,16 @@ Return the entity name.
 auto user_rcs_sender_collection = client->user_rcs_sender_collection();
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `std::string` | No |  |
-| `expiredAt` | `std::string` | No |  |
-| `id` | `std::string` | No | Object ID |
-| `interface` | `std::string` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `std::string` | No | RCS message type (basic, single, ...). |
-| `readAt` | `std::string` | No |  |
-| `recipient` | `std::string` | No | Recipient phone number (without +). |
-| `sender` | `std::string` | No | Sender name |
-| `senderId` | `std::string` | No | Sender id |
-| `sentAt` | `std::string` | No |  |
-
 ### Operations
 
-#### `list(reqmatch, ctrl) -> Value`
+#### `list(reqmatch, ctrl) -> std::vector<SdkEntityPtr>`
 
-List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns a Value list and throws on error.
+List entities matching the given criteria. The match is optional — pass `Value::undef()` to list all records. Returns one entity per record and throws on error.
 
 ```cpp
-Value results = client->user_rcs_sender_collection()->list(Value::undef(), Value::undef());
-for (const auto& user_rcs_sender_collection : *results.as_list()) {
-  std::cout << Struct::jsonify(user_rcs_sender_collection) << std::endl;
+std::vector<SdkEntityPtr> results = client->user_rcs_sender_collection()->list(Value::undef(), Value::undef());
+for (const auto& user_rcs_sender_collection : results) {
+  std::cout << Struct::jsonify(user_rcs_sender_collection->data()) << std::endl;
 }
 ```
 
@@ -2779,6 +2645,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

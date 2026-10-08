@@ -12,7 +12,7 @@ It exposes the API as capitalised, semantic **Entities** — e.g. `client:Availa
 
 ## Install
 This package is not yet published to LuaRocks. Install it from the
-GitHub release tag (`lua/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)),
+GitHub release tag (`lua/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)),
 or add the source directory to your `LUA_PATH`:
 
 ```bash
@@ -37,15 +37,16 @@ local client = sdk.new({
 
 ### 2. List available records
 
-Entity operations return `(value, err)`. For `list`, `value` is the
-array of records itself — iterate it directly (there is no wrapper).
+Entity operations return `(value, err)`. For `list`, `value` is an
+array of entities, one per record — iterate it directly (there is no
+wrapper), and read each record with `data_get()`.
 
 ```lua
 local availables, err = client:Available():list()
 if err then error(err) end
 
 for _, item in ipairs(availables) do
-  print(item)
+  for k, val in pairs(item:data_get()) do print(k, val) end
 end
 ```
 
@@ -53,10 +54,13 @@ end
 
 Permission is nested under group, so provide the `group_id`.
 
+`load` returns the entity; `data_get()` reads its record.
+
 ```lua
-local permission, err = client:Permission():load({ group_id = "example_group_id", username = "example_username", id = "example_id" })
+local permission, err = client:Permission():load({ group_id = "example_group_id", id = "example_id" })
 if err then error(err) end
-print(permission)
+local rec = permission:data_get()
+print(rec["id"])
 ```
 
 
@@ -66,7 +70,7 @@ Entity operations return `(value, err)`. Check `err` before using
 the value:
 
 ```lua
-local permission, err = client:Permission():load({ group_id = "example", id = "example_id", username = "example" })
+local templates, err = client:Template():list()
 if err then error(err) end
 ```
 
@@ -124,8 +128,8 @@ Create a mock client for unit testing — no server required:
 ```lua
 local client = sdk.test()
 
-local result, err = client:Permission():load({ id = "test01", group_id = "example", username = "example" })
--- result is the returned data; err is set on failure
+local result, err = client:Template():list()
+-- result is an array of entities, one per mock record; err is set on failure
 ```
 
 ### Use a custom fetch function
@@ -240,11 +244,11 @@ All entities share the same interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `load` | `(reqmatch, ctrl) -> any, err` | Load a single entity by match criteria. |
-| `list` | `(reqmatch, ctrl) -> any, err` | List entities matching the criteria. |
-| `create` | `(reqdata, ctrl) -> any, err` | Create a new entity. |
-| `update` | `(reqdata, ctrl) -> any, err` | Update an existing entity. |
-| `remove` | `(reqmatch, ctrl) -> any, err` | Remove an entity. |
+| `load` | `(reqmatch, ctrl) -> any, err` | Load a single entity by match criteria, and return it. |
+| `list` | `(reqmatch, ctrl) -> any, err` | List entities matching the criteria, one per record. |
+| `create` | `(reqdata, ctrl) -> any, err` | Create a new entity, and return it. |
+| `update` | `(reqdata, ctrl) -> any, err` | Update an existing entity, and return it. |
+| `remove` | `(reqmatch, ctrl) -> any, err` | Remove an entity, and return it marked as deleted. |
 | `data_get` | `() -> table` | Get entity data. |
 | `data_set` | `(data)` | Set entity data. |
 | `match_get` | `() -> table` | Get entity match criteria. |
@@ -254,19 +258,19 @@ All entities share the same interface.
 
 ### Result shape
 
-Entity operations return `(value, err)`. The `value` is the operation's
-data **directly** — there is no wrapper:
+Entity operations return `(value, err)`. The `value` is the entity
+itself — there is no wrapper:
 
 | Operation | `value` |
 | --- | --- |
-| `load` / `create` / `update` / `remove` | the entity record (a `table`) |
-| `list` | an array (`table`) of entity records |
+| `load` / `create` / `update` / `remove` | the entity, whose `data_get()` reads its record (a `table`) |
+| `list` | an array (`table`) of entities, one per record |
 
 Check `err` first (it is non-`nil` on failure), then use `value`:
 
     local blacklist, err = client:Blacklist():load()
     if err then error(err) end
-    -- blacklist is the loaded record
+    -- blacklist is the loaded entity
 
 Only `direct()` returns a response envelope — a `table` with `ok`,
 `status`, `headers`, and `data` keys.
@@ -329,7 +333,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -337,14 +340,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -354,33 +351,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -390,33 +363,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -426,32 +372,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -619,7 +543,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -739,16 +663,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -894,7 +808,6 @@ Create an instance: `local contact = client:Contact(nil)`
 | `email` | `string` |  |
 | `first_name` | `string` |  |
 | `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
 | `groups` | `table` |  |
 | `id` | `string` | Object ID |
 | `idx` | `string` | User provided resource id |
@@ -902,14 +815,8 @@ Create an instance: `local contact = client:Contact(nil)`
 | `name` | `string` | Group name |
 | `permissions` | `table` |  |
 | `phone_number` | `string` |  |
-| `read` | `boolean` | Has read permission |
-| `send` | `boolean` | Has send permission |
 | `size` | `number` |  |
 | `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` | Has write permission |
 
 #### Example: Load
 
@@ -959,33 +866,9 @@ Create an instance: `local contacts_field = client:ContactsField(nil)`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `number` | Contact expire after days |
-| `contacts_count` | `number` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `table` |  |
 | `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `table` |  |
-| `phone_number` | `string` |  |
-| `read` | `boolean` | Has read permission |
-| `send` | `boolean` | Has send permission |
-| `source` | `string` |  |
+| `name` | `string` |  |
 | `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` | Has write permission |
 
 #### Example: List
 
@@ -997,12 +880,6 @@ local contacts_fields, err = client:ContactsField():list()
 
 ```lua
 local contacts_field, err = client:ContactsField():create({
-  contact_expire_after = 1, -- number
-  created_by = "example_created_by", -- string
-  date_created = "example_date_created", -- string
-  date_updated = "example_date_updated", -- string
-  gender = "example_gender", -- string
-  groups = {}, -- table
 })
 ```
 
@@ -1017,42 +894,10 @@ Create an instance: `local contacts_field_option = client:ContactsFieldOption(ni
 | --- | --- |
 | `list(match)` | List entities matching the criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `number` | Contact expire after days |
-| `contacts_count` | `number` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `table` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `table` |  |
-| `phone_number` | `string` |  |
-| `read` | `boolean` | Has read permission |
-| `send` | `boolean` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` | Has write permission |
-
 #### Example: List
 
 ```lua
-local contacts_field_options, err = client:ContactsFieldOption():list()
+local contacts_field_options, err = client:ContactsFieldOption():list({ field_id = "example" })
 ```
 
 
@@ -1073,32 +918,10 @@ Create an instance: `local contactsgroup = client:Contactsgroup(nil)`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `number` | Contact expire after days |
-| `contacts_count` | `number` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
 | `group_id` | `string` | Object ID |
-| `groups` | `table` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `table` |  |
-| `phone_number` | `string` |  |
 | `read` | `boolean` | Has read permission |
 | `send` | `boolean` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
 | `username` | `string` |  |
-| `value` | `string` |  |
 | `write` | `boolean` | Has write permission |
 
 #### Example: List
@@ -1111,14 +934,7 @@ local contactsgroups, err = client:Contactsgroup():list()
 
 ```lua
 local contactsgroup, err = client:Contactsgroup():create({
-  contact_expire_after = 1, -- number
-  created_by = "example_created_by", -- string
-  date_created = "example_date_created", -- string
-  date_updated = "example_date_updated", -- string
-  gender = "example_gender", -- string
   group_id = "example_group_id", -- string
-  groups = {}, -- table
-  id = "example_id", -- string
   read = true, -- boolean
   send = true, -- boolean
   username = "example_username", -- string
@@ -1303,7 +1119,7 @@ Create an instance: `local permission = client:Permission(nil)`
 #### Example: Load
 
 ```lua
-local permission, err = client:Permission():load({ id = "permission_id", group_id = "group_id", username = "username" })
+local permission, err = client:Permission():load({ id = "permission_id", group_id = "group_id" })
 ```
 
 #### Example: Create
@@ -1479,7 +1295,7 @@ Create an instance: `local sent_rcs_message = client:SentRcsMessage(nil)`
 | --- | --- | --- |
 | `content` | `table` | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Recipient phone number (e.g. |
-| `sender` | `any` |  |
+| `sender` | `string` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | Plain text message content. |
 
 #### Example: Create
@@ -1487,7 +1303,7 @@ Create an instance: `local sent_rcs_message = client:SentRcsMessage(nil)`
 ```lua
 local sent_rcs_message, err = client:SentRcsMessage():create({
   phone_number = "example_phone_number", -- string
-  sender = "example_sender", -- any
+  sender = "example_sender", -- string
 })
 ```
 
@@ -1626,7 +1442,7 @@ Create an instance: `local smssendername = client:Smssendername(nil)`
 
 ```lua
 local smssendername, err = client:Smssendername():create({
-  sendername_id = "example_sendername_id", -- string
+  sender = "example_sender", -- string
 })
 ```
 
@@ -1745,21 +1561,6 @@ Create an instance: `local user_rcs_sender_collection = client:UserRcsSenderColl
 | Method | Description |
 | --- | --- |
 | `list(match)` | List entities matching the criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `string` |  |
-| `expiredAt` | `string` |  |
-| `id` | `string` | Object ID |
-| `interface` | `string` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | RCS message type (basic, single, ...). |
-| `readAt` | `string` |  |
-| `recipient` | `string` | Recipient phone number (without +). |
-| `sender` | `string` | Sender name |
-| `senderId` | `string` | Sender id |
-| `sentAt` | `string` |  |
 
 #### Example: List
 
@@ -2207,15 +2008,15 @@ when needed.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally.
 
 ```lua
-local permission = client:Permission()
-permission:load({ group_id = "example", id = "example_id", username = "example" })
+local template = client:Template()
+template:list()
 
--- permission:data_get() now returns the permission data from the last load
--- permission:match_get() returns the last match criteria
+-- template:data_get() now returns the template data from the last list
+-- template:match_get() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

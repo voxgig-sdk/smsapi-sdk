@@ -71,5 +71,7 @@ public final class TemplateEntity: SmsapiEntityBase {
     }
   }
 
+  // (patch not defined by this API - base class throws unsupportedOp)
+
   // (remove not defined by this API - base class throws unsupportedOp)
 }

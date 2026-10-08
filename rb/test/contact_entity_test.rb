@@ -6,10 +6,34 @@ require_relative "../Smsapi_sdk"
 require_relative "runner"
 
 class ContactEntityTest < Minitest::Test
+  # main.kit.test.live.strict is true (the default is true): a live
+  # request that fails, or a live test missing an input it needs,
+  # fails the test.
+  # An account with no record for a test to read skips it either way.
+  LIVE_STRICT = true
+
   def test_create_instance
     testsdk = SmsapiSDK.test(nil, nil)
     ent = testsdk.Contact(nil)
     assert !ent.nil?
+  end
+
+  def test_list_entities
+    seed = {
+      "entity" => {
+        "contact" => {
+          "l1" => { "id" => "l1" },
+          "l2" => { "id" => "l2" },
+        },
+      },
+    }
+    items = SmsapiSDK.test(seed, nil).Contact(nil).list(nil, nil)
+    # list resolves to one entity per record; data_get reads the record.
+    assert_equal 2, items.length
+    items.each do |item|
+      assert item.respond_to?(:data_get)
+      assert item.data_get.is_a?(Hash)
+    end
   end
 
   # Feature #4: the entity stream(action, ...) method runs the op pipeline and
@@ -48,6 +72,80 @@ class ContactEntityTest < Minitest::Test
     end
   end
 
+  class FailHook < SmsapiBaseFeature
+    attr_reader :unexpected
+
+    def initialize
+      super()
+      @name = "failhook"
+      @unexpected = 0
+    end
+
+    def PreSpec(ctx)
+      raise "contact hook failed"
+    end
+
+    def PreUnexpected(ctx)
+      @unexpected += 1
+    end
+  end
+
+  def test_stream_error
+    offline = { "net" => { "offline" => true } }
+    err = assert_raises(StandardError) do
+      SmsapiSDK.test(offline, nil).Contact(nil).stream("list", nil, nil).to_a
+    end
+    assert_match(/offline/, err.message)
+
+    SmsapiSDK.test(offline, nil).Contact(nil)
+      .stream("list", nil, { "ctrl" => { "throw" => false } }).to_a
+
+    cfg = SmsapiConfig.shared_config
+    if cfg["feature"].is_a?(Hash) && cfg["feature"].key?("rbac")
+      denied = SmsapiSDK.test(nil, { "feature" => { "rbac" => { "active" => true, "deny" => true } } })
+      err = assert_raises(StandardError) do
+        denied.Contact(nil).stream("list", nil, nil).to_a
+      end
+      assert_equal "rbac_denied", err.code
+    end
+  end
+
+  def test_stream_ctrl
+    explain = {}
+    ctrl = { "explain" => explain }
+    SmsapiSDK.test(nil, nil).Contact(nil).stream("list", nil, { "ctrl" => ctrl }).to_a
+    assert_equal ["explain"], ctrl.keys
+    assert_same explain, ctrl["explain"]
+    refute_empty explain
+  end
+
+  def test_unexpected
+    hook = FailHook.new
+    client = SmsapiSDK.new({ "feature" => { "test" => { "active" => true } }, "extend" => [hook] })
+
+    err = assert_raises(StandardError) do
+      client.Contact(nil).list(nil, nil)
+    end
+    assert_match(/hook failed/, err.message)
+    assert_operator hook.unexpected, :>, 0
+
+    fired = hook.unexpected
+    assert_nil client.Contact(nil).list(nil, { "throw" => false })
+    assert_operator hook.unexpected, :>, fired
+  end
+
+  def test_validate
+    cfg = SmsapiConfig.shared_config
+    unless cfg["feature"].is_a?(Hash) && cfg["feature"].key?("validate")
+      skip("feature not present in this SDK: validate")
+    end
+    client = SmsapiSDK.test(nil, { "feature" => { "validate" => { "active" => true } } })
+    err = assert_raises(StandardError) do
+      client.Contact(nil).list({ "gender" => 1 }, nil)
+    end
+    assert_equal "validate_failed", err.code
+  end
+
   def test_basic_flow
     setup = contact_basic_setup(nil)
     # Per-op sdk-test-control.json skip.
@@ -59,11 +157,12 @@ class ContactEntityTest < Minitest::Test
         return
       end
     end
-    # The basic flow consumes synthetic IDs from the fixture. In live mode
-    # without an *_ENTID env override, those IDs hit the live API and 4xx.
-    if setup[:synthetic_only]
-      skip "live entity test uses synthetic IDs from fixture — set SMSAPI_TEST_CONTACT_ENTID JSON to run live"
-      return
+    if setup[:live]
+      ["group01"].each do |_live_key|
+        if setup[:synthetic_only] || setup[:idmap][_live_key].nil?
+          Runner.live_miss(LIVE_STRICT, "Live entity test blocked: needs #{_live_key} via SMSAPI_TEST_CONTACT_ENTID")
+        end
+      end
     end
     client = setup[:client]
 
@@ -79,9 +178,7 @@ class ContactEntityTest < Minitest::Test
     assert !contact_ref01_data["id"].nil?
 
     # LIST
-    contact_ref01_match = {
-      "contact_id" => setup[:idmap]["contact01"],
-    }
+    contact_ref01_match = {}
 
     contact_ref01_list_result = contact_ref01_ent.list(contact_ref01_match, nil)
     assert contact_ref01_list_result.is_a?(Array)
@@ -122,9 +219,7 @@ class ContactEntityTest < Minitest::Test
     contact_ref01_ent.remove(contact_ref01_match_rm0, nil)
 
     # LIST
-    contact_ref01_match_rt0 = {
-      "contact_id" => setup[:idmap]["contact01"],
-    }
+    contact_ref01_match_rt0 = {}
 
     contact_ref01_list_rt0_result = contact_ref01_ent.list(contact_ref01_match_rt0, nil)
     assert contact_ref01_list_rt0_result.is_a?(Array)
@@ -141,7 +236,7 @@ def contact_basic_setup(extra)
   Runner.load_env_local
 
   entity_data_file = File.join(__dir__, "..", "..", ".sdk", "test", "entity", "contact", "ContactTestData.json")
-  entity_data_source = File.read(entity_data_file)
+  entity_data_source = File.read(entity_data_file, encoding: "UTF-8")
   entity_data = JSON.parse(entity_data_source)
 
   options = {}
@@ -160,9 +255,8 @@ def contact_basic_setup(extra)
     }
   )
 
-  # Detect ENTID env override before envOverride consumes it. When live
-  # mode is on without a real override, the basic test runs against synthetic
-  # IDs from the fixture and 4xx's. Surface this so the test can skip.
+  # Whether *_ENTID supplied the idmap, read before env_override consumes
+  # it: without it, the ids a live flow binds are the fixture's synthetic ones.
   entid_env_raw = ENV["SMSAPI_TEST_CONTACT_ENTID"]
   idmap_overridden = !entid_env_raw.nil? && entid_env_raw.strip.start_with?("{")
 

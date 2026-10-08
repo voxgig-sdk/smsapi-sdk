@@ -13,18 +13,17 @@ exception Op_return of value
 
 (* The catch path every entity call leaves through: an error that never
  * passed through make_error leaves cleaned, and so does the explain record
- * it interrupted. An SDK error fires PreUnexpected here, and whatever that
- * hook raises is cleaned in its place. *)
-let unexpected (ctx : ctx) (e : exn) : 'a =
-  let e = match e with
-    | Sdk_error_exc _ ->
-      (try
-         feature_hook ctx "PreUnexpected";
-         e
-       with hookerr -> hookerr)
-    | _ -> e in
+ * it interrupted. PreUnexpected fires here, and whatever that hook raises is
+ * cleaned in its place. Noval when the caller switched throwing off. *)
+let unexpected (ctx : ctx) (e : exn) : value =
+  let e =
+    (try
+       feature_hook ctx "PreUnexpected";
+       e
+     with hookerr -> hookerr) in
   clean_explain ctx;
-  raise (clean_exn ctx e)
+  if ctx.c_ctrl.ctrl_throw = Some false then Noval
+  else raise (clean_exn ctx e)
 
 (* Run the operation pipeline, firing feature hooks between stages via the
  * generated hook-marker lines. post_done runs after the PreDone stage, just
@@ -82,6 +81,7 @@ let rec make (client : sdk_client) (entopts_in : value) : entity_obj =
     e_list = (fun _ _ -> failwith "op not installed");
     e_create = (fun _ _ -> failwith "op not installed");
     e_update = (fun _ _ -> failwith "op not installed");
+    e_patch = (fun _ _ -> failwith "op not installed");
     e_remove = (fun _ _ -> failwith "op not installed");
     e_deleted = false;
     e_mark_deleted = (fun () -> ());
@@ -115,7 +115,11 @@ let rec make (client : sdk_client) (entopts_in : value) : entity_obj =
    * and signal (a 0-arity fn -> Bool; iteration stops when it returns true). *)
   ent.e_stream <- (fun action args callopts ->
       let callopts = match to_map callopts with Map _ as m -> m | _ -> empty_map () in
-      let ctrl = match to_map (getp callopts "ctrl") with Map _ as m -> m | _ -> empty_map () in
+      (* A copy: the caller's ctrl gains no key, and explain stays its own record. *)
+      let ctrl = empty_map () in
+      (match to_map (getp callopts "ctrl") with
+       | Map _ as given -> List.iter (fun k -> setp ctrl k (getp given k)) (keysof given)
+       | _ -> ());
       setp ctrl "stream" callopts;
       let reqmatch = match to_map args with Map _ as m -> m | _ -> empty_map () in
       let ctx = utility.u_make_context
@@ -141,7 +145,7 @@ let rec make (client : sdk_client) (entopts_in : value) : entity_obj =
             (match result.rt_stream with
              | Some fn -> fn ()
              | None -> (match result.rt_resdata with List r -> !r | v when is_nullish v -> [] | v -> [v]))
-          | None -> []) with e -> unexpected ctx e) in
+          | None -> []) with e -> ignore (unexpected ctx e); []) in
       let rec seq_of l () = match l with
         | [] -> Seq.Nil
         | x :: rest -> if aborted () then Seq.Nil else Seq.Cons (x, seq_of rest) in
@@ -179,6 +183,9 @@ let rec make (client : sdk_client) (entopts_in : value) : entity_obj =
   ent.e_update <- (fun _ _ ->
       raise (Sdk_error_exc (mk_error "unsupported_op"
         "Operation \"update\" not supported by entity \"rcs\".")));
+  ent.e_patch <- (fun _ _ ->
+      raise (Sdk_error_exc (mk_error "unsupported_op"
+        "Operation \"patch\" not supported by entity \"rcs\".")));
   ent.e_remove <- (fun _ _ ->
       raise (Sdk_error_exc (mk_error "unsupported_op"
         "Operation \"remove\" not supported by entity \"rcs\".")));

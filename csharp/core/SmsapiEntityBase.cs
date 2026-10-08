@@ -114,6 +114,10 @@ public abstract class SmsapiEntityBase : IEntity
         Dictionary<string, object?>? ctrl = null)
         => throw Helpers.UnsupportedOp("update", name);
 
+    public virtual object? Patch(Dictionary<string, object?>? reqdata,
+        Dictionary<string, object?>? ctrl = null)
+        => throw Helpers.UnsupportedOp("patch", name);
+
     public virtual object? Remove(Dictionary<string, object?>? reqmatch,
         Dictionary<string, object?>? ctrl = null)
         => throw Helpers.UnsupportedOp("remove", name);
@@ -258,13 +262,18 @@ public abstract class SmsapiEntityBase : IEntity
     {
         callopts ??= new Dictionary<string, object?>();
 
+        // Read between yields only: the request itself is not cancelled,
+        // where ts and js cancel it in flight.
         var signal =
             StructUtils.GetProp(callopts, "signal") is CancellationToken sigTok
                 ? sigTok
                 : CancellationToken.None;
 
-        var ctrl = Helpers.ToMapAny(StructUtils.GetProp(callopts, "ctrl"))
-            ?? new Dictionary<string, object?>();
+        // A copy: the caller's ctrl gains no key, and explain stays its own record.
+        var callerCtrl = Helpers.ToMapAny(StructUtils.GetProp(callopts, "ctrl"));
+        var ctrl = callerCtrl == null
+            ? new Dictionary<string, object?>()
+            : new Dictionary<string, object?>(callerCtrl);
         ctrl["stream"] = callopts;
 
         var ctxmap = new Dictionary<string, object?>

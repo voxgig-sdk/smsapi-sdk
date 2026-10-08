@@ -1,7 +1,7 @@
 # Smsapi SDK Smstemplate entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Smstemplate do
@@ -34,9 +34,12 @@ defmodule Smsapi.Entity.Smstemplate do
   
 
   
-  # Returns the removed smstemplate entity map (Smsapi.Types.smstemplate/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+
+  
+  # Returns the removed smstemplate entity, marked as deleted, whose data_get/1
+  # reads the record it held (Smsapi.Types.smstemplate/0), on success;
+  # pipeline errors surface as the error value built by Utility.make_error
+  # (shape is utility-configurable), hence term().
   @spec remove(map(), Smsapi.Types.smstemplate_remove_match() | nil, map() | nil) :: term()
   def remove(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch

@@ -27,15 +27,7 @@ private val METHOD_MAP: Map<String, String> = mapOf(
   "patch" to "PATCH",
 )
 
-@Suppress("UNCHECKED_CAST")
 fun param(ctx: Context, paramdef: Any?): Any? {
-  val point = ctx.point
-  val spec = ctx.spec
-  val match = ctx.match
-  val reqmatch = ctx.reqmatch
-  val data = ctx.data
-  val reqdata = ctx.reqdata
-
   val pt = Struct.typify(paramdef)
 
   val key: String
@@ -46,50 +38,94 @@ fun param(ctx: Context, paramdef: Any?): Any? {
     key = if (k is String) k else ""
   }
 
-  var akey = ""
+  val akey = paramAlias(ctx.point, key)
+  val spec = ctx.spec
+  if (spec != null && "" != akey &&
+    Struct.getprop(ctx.reqmatch, key, null) == null && Struct.getprop(ctx.match, key, null) == null
+  ) {
+    spec.alias[akey] = key
+  }
+
+  return paramValue(ctx, ctx.point, key)
+}
+
+// The name a point gives a parameter in the call, if it renames it.
+private fun paramAlias(point: Map<String, Any?>?, key: String): String {
   if (point != null) {
     val alias = Helpers.toMapAny(Struct.getprop(point, "alias"))
     if (alias != null) {
       val ak = Struct.getprop(alias, key)
       if (ak is String) {
-        akey = ak
+        return ak
       }
     }
   }
+  return ""
+}
 
-  var v = Struct.getprop(reqmatch, key, null)
+// The value the call or its entity gives a point's parameter, under its name
+// or the point's alias for it.
+fun paramValue(ctx: Context, point: Map<String, Any?>?, key: String): Any? {
+  val akey = paramAlias(point, key)
+
+  var v = Struct.getprop(ctx.reqmatch, key, null)
 
   if (v == null) {
-    v = Struct.getprop(match, key, null)
+    v = Struct.getprop(ctx.match, key, null)
   }
 
   if (v == null && "" != akey) {
-    if (spec != null) {
-      spec.alias[akey] = key
-    }
-    v = Struct.getprop(reqmatch, akey, null)
+    v = Struct.getprop(ctx.reqmatch, akey, null)
   }
 
   if (v == null) {
-    v = Struct.getprop(reqdata, key, null)
+    v = Struct.getprop(ctx.reqdata, key, null)
   }
 
   if (v == null) {
-    v = Struct.getprop(data, key, null)
+    v = Struct.getprop(ctx.data, key, null)
   }
 
   if (v == null && "" != akey) {
-    v = Struct.getprop(reqdata, akey, null)
+    v = Struct.getprop(ctx.reqdata, akey, null)
     if (v == null) {
-      v = Struct.getprop(data, akey, null)
+      v = Struct.getprop(ctx.data, akey, null)
     }
   }
 
   return v
 }
 
+// One argument a point declares, with the name it travels under and the
+// value the call passes for it.
+internal data class CallArg(val name: String, val wire: String, val v: Any?)
+
+// The arguments a point declares in one location, query or header, each with
+// the name it travels under and the value this call passes in its match or
+// else its data. Unlike a path parameter, the entity's stored match and data
+// never supply one.
+internal fun callArgs(ctx: Context, kind: String): List<CallArg> {
+  val point = ctx.point ?: return emptyList()
+  val defs = Struct.getpath(point, listOf("args", kind)) as? List<*> ?: return emptyList()
+  val out = mutableListOf<CallArg>()
+  for (ad in defs) {
+    val name = Struct.getprop(ad, "name")
+    if (name !is String || name.isEmpty()) {
+      continue
+    }
+    val orig = Struct.getprop(ad, "orig")
+    val wire = if (orig is String && orig.isNotEmpty()) orig else name
+    val v = Struct.getprop(ctx.reqmatch, name, null) ?: Struct.getprop(ctx.reqdata, name, null)
+    out.add(CallArg(name, wire, v))
+  }
+  return out
+}
+
 fun prepareBody(ctx: Context): Any? {
   if ("data" == ctx.op.input) {
+    if (Media.isRawRequest(ctx.point)) {
+      return Media.rawBody(ctx.reqdata)
+    }
     return ctx.utility!!.transformRequest(ctx)
   }
   return null
@@ -100,32 +136,51 @@ fun prepareHeaders(ctx: Context): MutableMap<String, Any?> {
   val options = ctx.client!!.optionsMap()
 
   val headers = Struct.getprop(options, "headers", null)
-  val out: MutableMap<String, Any?> =
-    (if (headers == null) null else Helpers.toMapAny(Struct.clone(headers))) ?: linkedMapOf()
+  val out: MutableMap<String, Any?> = Media.headers(ctx.point,
+    (if (headers == null) null else Helpers.toMapAny(Struct.clone(headers))) ?: linkedMapOf())
 
-  // A header parameter travels as a header, under the name the definition
-  // gives it, and only from this call's own arguments. It replaces a default
-  // of the same name, whatever its case.
-  val point = ctx.point
-  val hl = if (point == null) null else Struct.getpath(point, listOf("args", "header"))
-  if (hl is List<*>) {
-    for (hd in hl) {
-      val name = Struct.getprop(hd, "name")
-      if (name !is String || name.isEmpty()) {
-        continue
-      }
-      val orig = Struct.getprop(hd, "orig")
-      val wire = if (orig is String && orig.isNotEmpty()) orig else name
-      val v = Struct.getprop(ctx.reqmatch, name, null) ?: Struct.getprop(ctx.reqdata, name, null)
-      if (v != null) {
-        val key = wire.lowercase()
-        out.keys.removeAll { it.lowercase() == key }
-        out[key] = Struct.stringify(v)
-      }
+  // A header argument replaces a default of the same name, whatever its case.
+  for (arg in callArgs(ctx, "header")) {
+    if (arg.v != null) {
+      val key = arg.wire.lowercase()
+      out.keys.removeAll { it.lowercase() == key }
+      out[key] = Struct.stringify(arg.v)
     }
   }
 
+  // A cookie argument travels in the cookie header, form serialized and
+  // percent-encoded, replacing a cookie of the same name among those the
+  // caller's headers already send.
+  val sent = callArgs(ctx, "cookie").filter { it.v != null }
+  if (sent.isNotEmpty()) {
+    val names = sent.flatMap {
+      if (it.v is Map<*, *>) Struct.keysof(it.v).map { key -> Struct.escurl(key) } else listOf(it.wire)
+    }
+    val kept = mutableListOf<String>()
+    for (key in out.keys.filter { it.lowercase() == "cookie" }) {
+      val given = out.remove(key)
+      if (given is String) kept.addAll(cookieKeep(given, names))
+    }
+    for (arg in sent) {
+      val pair = cookiePair(arg.wire, arg.v)
+      if (pair.isNotEmpty()) kept.add(pair)
+    }
+    if (kept.isNotEmpty()) out["cookie"] = kept.joinToString("; ")
+  }
+
   return out
+}
+
+// The form style of a cookie parameter: a list repeats the name, a map sends
+// its own keys, and every value is percent-encoded.
+private fun cookiePair(wire: String, v: Any?): String {
+  val esc = { x: Any? -> Struct.escurl(Struct.stringify(x)) }
+  val pairs = when (v) {
+    is List<*> -> v.map { wire + "=" + esc(it) }
+    is Map<*, *> -> Struct.keysof(v).map { Struct.escurl(it) + "=" + esc(Struct.getprop(v, it)) }
+    else -> listOf(wire + "=" + esc(v))
+  }
+  return pairs.joinToString("; ")
 }
 
 fun prepareMethod(ctx: Context): String? {
@@ -216,13 +271,19 @@ fun prepareQuery(ctx: Context): MutableMap<String, Any?> {
         }
       }
     }
-    // A header parameter travels in the headers, which prepareHeaders fills.
-    val hl = Struct.getpath(point, listOf("args", "header"))
-    if (hl is List<*>) {
-      for (hd in hl) {
-        val name = Struct.getprop(hd, "name")
-        if (name is String) {
-          params.add(name)
+    // A header or cookie parameter travels in the headers, which prepareHeaders
+    // fills, unless a query parameter shares its name: then both are sent.
+    val declared = (Struct.getpath(point, listOf("args", "query")) as? List<*>)
+      ?.map { Struct.getprop(it, "name") } ?: emptyList()
+    val located = listOf(Struct.getpath(point, listOf("args", "header")),
+      Struct.getpath(point, listOf("args", "cookie")))
+    for (hl in located) {
+      if (hl is List<*>) {
+        for (hd in hl) {
+          val name = Struct.getprop(hd, "name")
+          if (name is String && name !in declared) {
+            params.add(name)
+          }
         }
       }
     }
@@ -253,6 +314,13 @@ fun prepareQuery(ctx: Context): MutableMap<String, Any?> {
     }
   }
 
+  // A create or update passes its query arguments in its data.
+  for (arg in callArgs(ctx, "query")) {
+    if (arg.v != null && !containsStr(params, arg.name)) {
+      out[arg.wire] = arg.v
+    }
+  }
+
   return out
 }
 
@@ -263,4 +331,15 @@ private fun containsStr(list: List<Any?>, s: String): Boolean {
     }
   }
   return false
+}
+
+// The caller's cookie pieces with the named cookies removed: a cookie is one
+// ;-delimited piece, whatever its value holds.
+internal fun cookieKeep(header: String, names: List<String>): MutableList<String> {
+  val kept = mutableListOf<String>()
+  for (piece in header.split(";")) {
+    val cookie = piece.trim()
+    if (cookie.isNotEmpty() && cookie.substringBefore("=").trim() !in names) kept.add(cookie)
+  }
+  return kept
 }

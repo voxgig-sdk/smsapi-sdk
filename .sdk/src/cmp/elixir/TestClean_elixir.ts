@@ -7,6 +7,8 @@ import {
   isHttpBasicAuth,
   resolveAuthIn,
   resolveAuthName,
+  elixirAccessor,
+  entityCollection,
 } from '@voxgig/sdkgen'
 
 
@@ -33,7 +35,7 @@ const TestClean = cmp(function TestClean(props: any) {
 
 
 const OP_ORDER: Record<string, number> = { list: 0, load: 1 }
-const OPS = ['list', 'load', 'create', 'update', 'remove']
+const OPS = ['list', 'load', 'create', 'update', 'patch', 'remove']
 
 
 // The path parameters an operation's points declare, as the runtime config
@@ -54,14 +56,14 @@ function pointParams(opdef: any): string[] {
 
 // The operations to try, list and load first: a required path parameter is
 // what usually stops a candidate, and the read ops need none.
-function candidates(Name: string, entity: any[]): string {
+function candidates(Name: string, entity: any[], model: any): string {
   const rows: { rank: number, text: string }[] = []
   each(entity, (e: any) => {
     for (const op of Object.keys(e.op || {})) {
       if (!OPS.includes(op)) continue
       rows.push({
         rank: OP_ORDER[op] ?? 2,
-        text: `      {${elixirString(e.name + '.' + op)}, fn sdk -> ${Name}.${e.name}(sdk) end,
+        text: `      {${elixirString(e.name + '.' + op)}, fn sdk -> ${Name}.${elixirAccessor(e, entityCollection(model))}(sdk) end,
        fn ent, match, ctrl -> ${Name}.Entity.${e.Name}.${op}(ent, args(match), ctrl) end,
        [${pointParams(e.op[op]).map((p) => elixirString(p)).join(', ')}]}`,
       })
@@ -238,7 +240,22 @@ defmodule ${Name}.CleanTest do
     ]
   end
 
-  defp make_sdk(respond, sinks, cleanopts, extra \\\\ []) do
+  # Offline, as every generated suite is: the test OPTION resolves a required
+  # server variable to test-<name>, and installs no transport.
+  defp offline(opts), do: S.setprop(opts, "test", S.jm(["active", true]))
+
+  # A client the sweep cannot build leaves nothing swept: a harness error, not
+  # a leak.
+  defp construct(opts) do
+    ${Name}.new(offline(opts))
+  rescue
+    e ->
+      reraise "clean harness: the client could not be constructed, so nothing was swept: " <>
+                Exception.message(e),
+              __STACKTRACE__
+  end
+
+  defp make_sdk(respond, sinks, cleanopts, extra \\\\ [], auth \\\\ nil) do
     capture = fn name -> fn rec -> add(sinks, data_forms(name, rec)) end end
     feature = S.jm([])
 
@@ -257,7 +274,7 @@ defmodule ${Name}.CleanTest do
     clean = S.jm(["values", @canary.value])
     Enum.each(cleanopts, fn {k, v} -> S.setprop(clean, k, v) end)
 
-    ${Name}.new(
+    opts =
       S.jm([
         "apikey", @canary.apikey,
         "secret", @canary.secret,
@@ -267,7 +284,9 @@ defmodule ${Name}.CleanTest do
         "extend", S.jt([capture_feature(sinks) | extra]),
         "utility", S.jm(["fetcher", fn _ctx, url, fd -> respond.(url, fd) end])
       ])
-    )
+
+    if auth != nil, do: S.setprop(opts, "auth", auth)
+    construct(opts)
   end
 
   # A fresh struct node of the match, since an operation may keep what it is
@@ -277,7 +296,7 @@ defmodule ${Name}.CleanTest do
   # The operations this SDK generated, read ops first.
   defp candidates do
     [
-${candidates(Name, entity)}
+${candidates(Name, entity, model)}
     ]
   end
 
@@ -285,7 +304,7 @@ ${candidates(Name, entity)}
   # arguments, else with every path parameter its points declare filled in.
   defp usable_op do
     plain =
-      ${Name}.new(
+      construct(
         S.jm([
           "apikey", @canary.apikey,
           "utility", S.jm(["fetcher", fn _c, _u, _f -> {response(200, S.jm(["id", "i1"]), []), nil} end])
@@ -395,6 +414,8 @@ ${candidates(Name, entity)}
 
     if err != nil, do: add(sinks, error_forms(err))
     if out != nil, do: add(sinks, result_forms(out))
+    # Raw, as a caller copying the match into another query reads it.
+    add(sinks, data_forms("match", ${Name}.EntityBase.match_get(ent)))
     explain = S.getprop(ctrl, "explain")
     if explain != nil, do: add(sinks, data_forms("explain", explain))
     if held != nil and held != explain, do: add(sinks, data_forms("explain:held", held))
@@ -442,11 +463,16 @@ ${candidates(Name, entity)}
         end)
       end)
 
+    # A name given at run time replaces the declared one: the match leaves
+    # out whichever name prepare_auth placed.
+    [{_ok, ok_respond} | _] = scenarios()
+    drive(make_sdk(ok_respond, sinks, [], [], S.jm(["name", "zzcred"])), target, S.jm([]), sinks)
+
     # A credential mistyped as a map is rejected by validation, whose message
     # quotes the value it rejected.
     rejected =
       try do
-        ${Name}.new(S.jm(["apikey", S.jm(["value", @canary.apikey]), "clean", S.jm(["values", @canary.value])]))
+        ${Name}.new(offline(S.jm(["apikey", S.jm(["value", @canary.apikey]), "clean", S.jm(["values", @canary.value])])))
         nil
       rescue
         e -> e
@@ -501,7 +527,7 @@ ${candidates(Name, entity)}
     [_ok, {_nf, notfound_respond} | _] = scenarios()
 
     bare =
-      ${Name}.new(
+      construct(
         S.jm([
           "apikey", @canary.apikey,
           "secret", @canary.secret,
@@ -601,17 +627,19 @@ ${candidates(Name, entity)}
 
   # A feature's name is not a field name: a feature called secrets does not
   # make its settings secret, though a sensitive field inside it still is. An
-  # entity block, of entity settings or seeded records, is not read at all.
+  # entity block, of entity settings or seeded records, is not read at all, and
+  # nor are rbac's rules, keyed by entity and operation names.
   test "a feature's name is read as a name" do
     record = S.jm(["zztoken", S.jm(["ZZTOKEN01", S.jm(["note", "PLAINRECORD-t5r3e1w9"])])])
 
     client =
-      ${Name}.new(
+      construct(
         S.jm([
           "apikey", @canary.apikey,
           "feature",
           S.jm([
             "secrets", S.jm(["active", false, "name", "ZZNAME-feat123", "token", "ZZTOKEN-feat456"]),
+            "rbac", S.jm(["active", false, "rules", S.jm(["zztoken.load", "PLAINRULE-k7j5h3g1"])]),
             "test", S.jm(["active", false, "entity", record])
           ]),
           "entity", S.jm(["zztoken", S.jm(["alias", S.jm(["zzkey", "PLAINALIAS-m2n4b6v8"])])])
@@ -622,6 +650,7 @@ ${candidates(Name, entity)}
     assert ${Name}.Utility.clean_impl(ctx, "ZZNAME-feat123 ZZTOKEN-feat456") == "ZZNAME-feat123 " <> @mask
     assert ${Name}.Utility.clean_impl(ctx, "record PLAINRECORD-t5r3e1w9") == "record PLAINRECORD-t5r3e1w9"
     assert ${Name}.Utility.clean_impl(ctx, "alias PLAINALIAS-m2n4b6v8") == "alias PLAINALIAS-m2n4b6v8"
+    assert ${Name}.Utility.clean_impl(ctx, "rule PLAINRULE-k7j5h3g1") == "rule PLAINRULE-k7j5h3g1"
   end
 
   test "the generated config's own clean block is honoured" do

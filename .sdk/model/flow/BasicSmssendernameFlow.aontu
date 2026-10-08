@@ -12,7 +12,7 @@ main: kit: flow: BasicSmssendernameFlow:
       }
 
       m: {
-        sendername_id: "sendername01"
+        sender: "sender01"
       }
 
       o: "create"

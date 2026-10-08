@@ -207,7 +207,7 @@ local available = client:Available(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Available():list()
@@ -259,16 +259,18 @@ local blacklist = client:Blacklist(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Blacklist():create({
 })
 ```
 
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Blacklist():load()
@@ -276,7 +278,7 @@ local result, err = client:Blacklist():load()
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Blacklist():remove({ id = "id" })
@@ -348,7 +350,7 @@ local callback = client:Callback(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Callback():create({
@@ -357,7 +359,7 @@ local result, err = client:Callback():create({
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Callback():list()
@@ -365,7 +367,7 @@ local results, err = client:Callback():list()
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Callback():load({ id = "callback_id" })
@@ -373,7 +375,7 @@ local result, err = client:Callback():load({ id = "callback_id" })
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Callback():remove({ id = "callback_id" })
@@ -381,7 +383,7 @@ local result, err = client:Callback():remove({ id = "callback_id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Callback():update({
@@ -443,7 +445,6 @@ local contact = client:Contact(nil)
 | `email` | `string` | No |  |
 | `first_name` | `string` | No |  |
 | `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
 | `groups` | `table` | Yes |  |
 | `id` | `string` | Yes | Object ID |
 | `idx` | `string` | No | User provided resource id |
@@ -451,14 +452,8 @@ local contact = client:Contact(nil)
 | `name` | `string` | Yes | Group name |
 | `permissions` | `table` | No |  |
 | `phone_number` | `string` | No |  |
-| `read` | `boolean` | No | Has read permission |
-| `send` | `boolean` | No | Has send permission |
 | `size` | `number` | Yes |  |
 | `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `boolean` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -466,9 +461,9 @@ local contact = client:Contact(nil)
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -477,28 +472,21 @@ local contact = client:Contact(nil)
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contact():create({
@@ -516,9 +504,11 @@ local result, err = client:Contact():create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Contact():list()
@@ -526,7 +516,7 @@ local results, err = client:Contact():list()
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contact():load({ id = "contact_id" })
@@ -534,7 +524,7 @@ local result, err = client:Contact():load({ id = "contact_id" })
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contact():remove({ id = "contact_id" })
@@ -542,7 +532,7 @@ local result, err = client:Contact():remove({ id = "contact_id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contact():update({
@@ -550,6 +540,8 @@ local result, err = client:Contact():update({
   -- Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -591,86 +583,26 @@ local contacts_field = client:ContactsField(nil)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `number` | Yes | Contact expire after days |
-| `contacts_count` | `number` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `table` | Yes |  |
 | `id` | `string` | No | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `table` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `boolean` | No | Has read permission |
-| `send` | `boolean` | No | Has send permission |
-| `source` | `string` | No |  |
+| `name` | `string` | No |  |
 | `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `boolean` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:ContactsField():create({
-  contact_expire_after = --[[ number ]],
-  created_by = --[[ string ]],
-  date_created = --[[ string ]],
-  date_updated = --[[ string ]],
-  gender = --[[ string ]],
-  groups = --[[ table ]],
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:ContactsField():list()
@@ -678,7 +610,7 @@ local results, err = client:ContactsField():list()
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:ContactsField():remove({ id = "id" })
@@ -686,7 +618,7 @@ local result, err = client:ContactsField():remove({ id = "id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:ContactsField():update({
@@ -694,6 +626,8 @@ local result, err = client:ContactsField():update({
   -- Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -731,46 +665,14 @@ Return the entity name.
 local contacts_field_option = client:ContactsFieldOption(nil)
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `number` | Yes | Contact expire after days |
-| `contacts_count` | `number` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `table` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `table` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `boolean` | No | Has read permission |
-| `send` | `boolean` | No | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `boolean` | No | Has write permission |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
-local results, err = client:ContactsFieldOption():list()
+local results, err = client:ContactsFieldOption():list({ field_id = "example" })
 ```
 
 ### Common Methods
@@ -813,82 +715,21 @@ local contactsgroup = client:Contactsgroup(nil)
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `number` | Yes | Contact expire after days |
-| `contacts_count` | `number` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
 | `group_id` | `string` | Yes | Object ID |
-| `groups` | `table` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `table` | No |  |
-| `phone_number` | `string` | No |  |
 | `read` | `boolean` | Yes | Has read permission |
 | `send` | `boolean` | Yes | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
 | `username` | `string` | Yes |  |
-| `value` | `string` | No |  |
 | `write` | `boolean` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contactsgroup():create({
-  contact_expire_after = --[[ number ]],
-  created_by = --[[ string ]],
-  date_created = --[[ string ]],
-  date_updated = --[[ string ]],
-  gender = --[[ string ]],
   group_id = --[[ string ]],
-  groups = --[[ table ]],
-  id = --[[ string ]],
   read = --[[ boolean ]],
   send = --[[ boolean ]],
   username = --[[ string ]],
@@ -896,9 +737,11 @@ local result, err = client:Contactsgroup():create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Contactsgroup():list()
@@ -906,7 +749,7 @@ local results, err = client:Contactsgroup():list()
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contactsgroup():remove({ group_id = "group_id" })
@@ -914,7 +757,7 @@ local result, err = client:Contactsgroup():remove({ group_id = "group_id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contactsgroup():update({
@@ -922,6 +765,8 @@ local result, err = client:Contactsgroup():update({
   -- Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -963,7 +808,7 @@ local contactstrash = client:Contactstrash(nil)
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contactstrash():remove()
@@ -971,7 +816,7 @@ local result, err = client:Contactstrash():remove()
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Contactstrash():update({
@@ -1029,7 +874,7 @@ local field_available = client:FieldAvailable(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:FieldAvailable():list()
@@ -1090,7 +935,7 @@ local group = client:Group(nil)
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Group():load({ id = "group_id" })
@@ -1098,7 +943,7 @@ local result, err = client:Group():load({ id = "group_id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Group():update({
@@ -1106,6 +951,8 @@ local result, err = client:Group():update({
   -- Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1156,13 +1003,15 @@ local mfa_code = client:MfaCode(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:MfaCode():create({
   phone_number = --[[ string ]],
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1213,7 +1062,7 @@ local opt_out = client:OptOut(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:OptOut():list()
@@ -1221,7 +1070,7 @@ local results, err = client:OptOut():list()
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:OptOut():remove({ id = "id" })
@@ -1273,7 +1122,7 @@ local opt_out_setting = client:OptOutSetting(nil)
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:OptOutSetting():load()
@@ -1281,7 +1130,7 @@ local result, err = client:OptOutSetting():load()
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:OptOutSetting():update({
@@ -1340,7 +1189,7 @@ local permission = client:Permission(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Permission():create({
@@ -1352,12 +1201,14 @@ local result, err = client:Permission():create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
-local result, err = client:Permission():load({ id = "permission_id", group_id = "group_id", username = "username" })
+local result, err = client:Permission():load({ id = "permission_id", group_id = "group_id" })
 ```
 
 ### Common Methods
@@ -1407,7 +1258,7 @@ local ping = client:Ping(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Ping():list()
@@ -1465,7 +1316,7 @@ local profile = client:Profile(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Profile():list()
@@ -1473,7 +1324,7 @@ local results, err = client:Profile():list()
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Profile():load()
@@ -1519,7 +1370,7 @@ local rcs = client:Rcs(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Rcs():list()
@@ -1575,16 +1426,18 @@ local sendername = client:Sendername(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Sendername():create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Sendername():list()
@@ -1592,7 +1445,7 @@ local results, err = client:Sendername():list()
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Sendername():load({ id = "sendername_id" })
@@ -1646,7 +1499,7 @@ local sendername_statement = client:SendernameStatement(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:SendernameStatement():list()
@@ -1694,19 +1547,19 @@ local sent_rcs_message = client:SentRcsMessage(nil)
 | --- | --- | --- | --- |
 | `content` | `table` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Yes | Recipient phone number (e.g. |
-| `sender` | `any` | Yes |  |
+| `sender` | `string` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | No | Plain text message content. |
 
 ### Operations
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:SentRcsMessage():create({
   phone_number = --[[ string ]],
-  sender = --[[ any ]],
+  sender = --[[ string ]],
 })
 ```
 
@@ -1759,7 +1612,7 @@ local shipment_country_volume = client:ShipmentCountryVolume(nil)
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:ShipmentCountryVolume():list()
@@ -1820,7 +1673,7 @@ local short_url = client:ShortUrl(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:ShortUrl():create({
@@ -1829,7 +1682,7 @@ local result, err = client:ShortUrl():create({
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:ShortUrl():list()
@@ -1837,7 +1690,7 @@ local results, err = client:ShortUrl():list()
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:ShortUrl():load({ id = "short_url_id" })
@@ -1845,7 +1698,7 @@ local result, err = client:ShortUrl():load({ id = "short_url_id" })
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:ShortUrl():remove({ id = "short_url_id" })
@@ -1853,7 +1706,7 @@ local result, err = client:ShortUrl():remove({ id = "short_url_id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:ShortUrl():update({
@@ -1861,6 +1714,8 @@ local result, err = client:ShortUrl():update({
   -- Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1928,7 +1783,7 @@ local smsdo = client:Smsdo(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Smsdo():create({
@@ -1975,17 +1830,17 @@ local smssendername = client:Smssendername(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Smssendername():create({
-  sendername_id = --[[ string ]],
+  sender = --[[ string ]],
 })
 ```
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Smssendername():remove({ sender = "sender" })
@@ -2037,7 +1892,7 @@ local smstemplate = client:Smstemplate(nil)
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Smstemplate():remove({ id = "id" })
@@ -2105,7 +1960,7 @@ local subuser = client:Subuser(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Subuser():create({
@@ -2115,7 +1970,7 @@ local result, err = client:Subuser():create({
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Subuser():list()
@@ -2123,7 +1978,7 @@ local results, err = client:Subuser():list()
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Subuser():load({ id = "subuser_id" })
@@ -2131,7 +1986,7 @@ local result, err = client:Subuser():load({ id = "subuser_id" })
 
 #### `remove(reqmatch, ctrl) -> any, err`
 
-Remove the entity matching the given criteria.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Subuser():remove({ id = "subuser_id" })
@@ -2139,7 +1994,7 @@ local result, err = client:Subuser():remove({ id = "subuser_id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Subuser():update({
@@ -2197,16 +2052,18 @@ local template = client:Template(nil)
 
 #### `create(reqdata, ctrl) -> any, err`
 
-Create a new entity with the given data.
+Create a new entity with the given data. Returns the created entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Template():create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:Template():list()
@@ -2214,7 +2071,7 @@ local results, err = client:Template():list()
 
 #### `load(reqmatch, ctrl) -> any, err`
 
-Load a single entity matching the given criteria.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Template():load({ id = "template_id" })
@@ -2222,7 +2079,7 @@ local result, err = client:Template():load({ id = "template_id" })
 
 #### `update(reqdata, ctrl) -> any, err`
 
-Update an existing entity. The data must include the entity `id`.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity, or `nil` and an error on failure.
 
 ```lua
 local result, err = client:Template():update({
@@ -2230,6 +2087,8 @@ local result, err = client:Template():update({
   -- Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2267,26 +2126,11 @@ Return the entity name.
 local user_rcs_sender_collection = client:UserRcsSenderCollection(nil)
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `string` | No |  |
-| `expiredAt` | `string` | No |  |
-| `id` | `string` | No | Object ID |
-| `interface` | `string` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | No | RCS message type (basic, single, ...). |
-| `readAt` | `string` | No |  |
-| `recipient` | `string` | No | Recipient phone number (without +). |
-| `sender` | `string` | No | Sender name |
-| `senderId` | `string` | No | Sender id |
-| `sentAt` | `string` | No |  |
-
 ### Operations
 
 #### `list(reqmatch, ctrl) -> any, err`
 
-List entities matching the given criteria. Returns an array.
+List entities matching the given criteria. Returns an array of entities, one per record, or `nil` and an error on failure.
 
 ```lua
 local results, err = client:UserRcsSenderCollection():list()
@@ -2977,6 +2821,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

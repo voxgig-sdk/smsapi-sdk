@@ -41,9 +41,9 @@ call directly, instead of assembling URL paths and query strings. See the [Entit
 **Capitalised** to mark them as the primary surface, each with the operations they
 support (`list`, `load`, `create`, `update`, `remove`):
 
-```ts
-const client = new SmsapiSDK()
-const items = await client.Available().list()
+```python
+client = SmsapiSDK()
+availables = client.Available().list()
 ```
 
 Thinking in entities keeps the mental model small — for people and AI agents alike —
@@ -59,16 +59,16 @@ network, and no credentials:
 
 ```python
 client = SmsapiSDK.test()
-permission = client.Permission().load({"id": "test01", "group_id": "example", "username": "example"})
-print(permission)
+templates = client.Template().list()
+print([item.data_get() for item in templates])
 ```
 
 ### Golang
 
 ```go
 client := sdk.Test()
-result, err := client.Permission(nil).Load(
-    map[string]any{"id": "test01"}, nil,
+result, err := client.Template(nil).List(
+    nil, nil,
 )
 ```
 
@@ -77,44 +77,49 @@ result, err := client.Permission(nil).Load(
 ```ruby
 # Seed fixture data so offline calls resolve without a live server.
 client = SmsapiSDK.test({
-  "entity" => { "permission" => { "test01" => { "id" => "test01" } } },
+  "entity" => { "template" => { "test01" => { "id" => "test01" } } },
 })
-permission = client.Permission.load({ "id" => "test01", "group_id" => "example", "username" => "example" })
+templates = client.Template.list()
 ```
 
 ### Lua
 
 ```lua
 local client = sdk.test()
-local result, err = client:Permission():load({ id = "test01", group_id = "example", username = "example" })
+local results, err = client:Template():list()
 ```
 
 ### Clojure
 
 ```clojure
 (require '[sdk.api :as api]
-         '[sdk.entity.permission :as e-permission]
+         '[sdk.entity.template :as e-template]
          '[voxgig.struct :as vs])
 
 (def client (api/test-sdk nil nil))
-(def permission (e-permission/load (api/permission client nil) (vs/jm "id" "test01" "group_id" "example" "username" "example") nil))
-(println permission)
+(def templates (e-template/list (api/template client nil) nil nil))
+(doseq [item templates]
+  (println ((:data-get item))))
 ```
 
 ### C++
 
 ```cpp
 auto client = SmsapiSDK::testSDK();
-Value permission = client->permission()->load(vmap({{"id", Value("test01")}, {"group_id", Value("example")}, {"username", Value("example")}}), Value::undef());
-std::cout << Struct::jsonify(permission) << std::endl;
+for (const auto& template_ : client->template_()->list(Value::undef(), Value::undef())) {
+  std::cout << Struct::jsonify(template_->data()) << std::endl;
+}
 ```
 
 ### C#
 
 ```csharp
 var client = SmsapiSDK.TestSDK(null, null);
-var permission = client.Permission().Load(new Dictionary<string, object?> { ["id"] = "test01", ["group_id"] = "example", ["username"] = "example" });
-Console.WriteLine(permission);
+var templateList = (List<object?>)client.Template().List(null)!;
+foreach (var templateItem in templateList)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)templateItem!).Data()));
+}
 ```
 
 ### Elixir
@@ -123,25 +128,31 @@ Console.WriteLine(permission);
 alias Smsapi.Helpers, as: H
 
 sdk = Smsapi.test()
-permission = Smsapi.permission(sdk)
-record = Smsapi.Entity.Permission.load(permission, H.deep(%{"id" => "test01", "group_id" => "example", "username" => "example"}))
-IO.inspect(record)
+template = Smsapi.template(sdk)
+templates = Smsapi.Entity.Template.list(template, H.deep(%{}))
+for i <- 0..(Voxgig.Struct.size(templates) - 1)//1 do
+  IO.puts(Voxgig.Struct.jsonify(Smsapi.Entity.Template.data_get(Voxgig.Struct.getelem(templates, i))))
+end
 ```
 
 ### Java
 
 ```java
 SmsapiSDK client = SmsapiSDK.testSDK(null, null);
-Object permission = client.permission(null).load(Map.of("id", "test01", "group_id", "example", "username", "example"), null);
-System.out.println(permission);
+List<?> templateList = (List<?>) client.template(null).list(null, null);
+for (Object templateItem : templateList) {
+    System.out.println(((SdkEntity) templateItem).data());
+}
 ```
 
 ### Kotlin
 
 ```kotlin
 val client = SmsapiSDK.testSDK(null, null)
-val permission = client.permission(null).load(mutableMapOf<String, Any?>("id" to "test01", "group_id" to "example", "username" to "example"), null)
-println(permission)
+val templateList = client.template(null).list(null, null) as List<*>
+for (templateItem in templateList) {
+    println((templateItem as SdkEntity).data())
+}
 ```
 
 ### OCaml
@@ -149,16 +160,20 @@ println(permission)
 ```ocaml
 let () =
   let client = Sdk_client.test () in
-  let result = (Sdk_client.permission client Noval).e_load (jo [("id", (Str "test01")); ("group_id", (Str "example")); ("username", (Str "example"))]) Noval in
-  print_endline (stringify (result.e_data_get ()))
+  let results = (Sdk_client.template client Noval).e_list (empty_map ()) Noval in
+  List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 ```
 
 ### Swift
 
 ```swift
 let client = SmsapiSDK.testSDK(nil, nil)
-let permission = try client.Permission().load(VMap([("id", .string("test01")), ("group_id", .string("example")), ("username", .string("example"))]), nil)
-print(permission)
+let templateList = try client.Template().list(nil, nil)
+for templateItem in templateList.asList?.items ?? [] {
+    if let templateEntity = templateItem.asNative as? Entity {
+        print(templateEntity.data())
+    }
+}
 ```
 
 ### Zig
@@ -169,9 +184,13 @@ const sdk = @import("sdk");
 const h = sdk.h;
 
 const client = sdk.test_sdk(h.vnull(), h.vnull());
-switch (client.permission(h.vnull()).load(h.jo(&.{.{ "id", h.vstr("test01") }, .{ "group_id", h.vstr("example") }, .{ "username", h.vstr("example") }}), h.vnull())) {
-    .ok => |permission| std.debug.print("{s}\n", .{h.stringify(permission)}),
-    .err => |e| std.debug.print("load failed: {s}\n", .{e.msg}),
+switch (client.template(h.vnull()).list(h.vnull(), h.vnull())) {
+    .ok => |templates| {
+        for (templates) |template| {
+            std.debug.print("{s}\n", .{h.stringify(template.asEntity().data(null))});
+        }
+    },
+    .err => |e| std.debug.print("list failed: {s}\n", .{e.msg}),
 }
 ```
 
@@ -208,10 +227,10 @@ client = SmsapiSDK({
     "apikey": os.environ.get("SMSAPI_APIKEY"),
 })
 
-# List all availables (returns a list, raises on error)
+# List all availables (a list of entities, one per record; raises on error)
 availables = client.Available().list()
 for available in availables:
-    print(available)
+    print(available.data_get())
 ```
 
 See the [Python README](py/README.md) for the full guide.
@@ -226,9 +245,10 @@ See the [Python README](py/README.md) for the full guide.
 
 ## Use it from an AI agent (MCP)
 
-The generated MCP server exposes every operation in this SDK as an
-[MCP](https://modelcontextprotocol.io) tool that Claude, Cursor or Cline
-can call directly. Build and register it:
+The generated MCP server exposes this SDK's list and load operations as
+[MCP](https://modelcontextprotocol.io) tools that Claude, Cursor or Cline
+can call directly. It only reads: create, update, patch and remove become tools when the SDK's model sets
+`main: kit: target: 'go-mcp': tool: write: true`. Build and register it:
 
 ```bash
 cd go-mcp && go build -o smsapi-mcp .
@@ -258,7 +278,7 @@ The API exposes 28 entities:
 | **Contact** | The Contact entity (create, list, load, remove, update). | `/contacts` |
 | **ContactsField** | The ContactsField entity (create, list, remove, update). | `/contacts/fields` |
 | **ContactsFieldOption** | The ContactsFieldOption entity (list). | `/contacts/fields/{fieldId}/options` |
-| **Contactsgroup** | The Contactsgroup entity (create, list, remove, update). | `/contacts/groups` |
+| **Contactsgroup** | The Contactsgroup entity (create, list, remove, update). | `/contacts/groups/{groupId}/permissions` |
 | **Contactstrash** | The Contactstrash entity (remove, update). | `/contacts/trash/restore` |
 | **FieldAvailable** | The FieldAvailable entity (list). | `/contacts/fields/available` |
 | **Group** | The Group entity (load, update). | `/contacts/groups/{groupId}` |
@@ -295,21 +315,23 @@ client := sdk.NewSmsapiSDK(map[string]any{
     "apikey": os.Getenv("SMSAPI_APIKEY"),
 })
 
-// List all availables
+// List all availables (one entity per record; err is non-nil on failure)
 availables, err := client.Available(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(availables)
+for _, available := range availables.([]any) {
+    fmt.Println(available.(sdk.Entity).Data())
+}
 
-// Load a specific permission
+// Load a specific permission (returns the entity; err is non-nil on failure)
 permission, err := client.Permission(nil).Load(
-    map[string]any{"group_id": "example_group_id", "username": "example_username", "id": "example_id"}, nil,
+    map[string]any{"group_id": "example_group_id", "id": "example_id"}, nil,
 )
 if err != nil {
     panic(err)
 }
-fmt.Println(permission)
+fmt.Println(permission.(sdk.Entity).Data())
 ```
 
 ### Ruby
@@ -321,23 +343,27 @@ client = SmsapiSDK.new({
   "apikey" => ENV["SMSAPI_APIKEY"],
 })
 
-# List all availables (returns an Array; raises on error)
+# List all availables (an Array of entities, one per record; raises on error)
 availables = client.Available.list
-puts availables
+availables.each { |item| puts item.data_get }
 ```
 
 ### Lua
 
 ```lua
 local sdk = require("smsapi_sdk")
+local json = require("dkjson")
 
 local client = sdk.new({
   apikey = os.getenv("SMSAPI_APIKEY"),
 })
 
--- List all availables
+-- List all availables (an array of entities, one per record; err on failure)
 local availables, err = client:Available():list()
-print(availables)
+if err then error(err) end
+for _, available in ipairs(availables) do
+  print(json.encode(available:data_get()))
+end
 ```
 
 ### Clojure
@@ -349,9 +375,9 @@ print(availables)
 
 (def client (api/make-sdk (vs/jm "apikey" (System/getenv "SMSAPI_APIKEY"))))
 
-;; List all availables (returns a vector, raises on error)
+;; List all availables (a vector of entities, one per record; raises on error)
 (doseq [available (e-available/list (api/available client nil) nil nil)]
-  (println available))
+  (println ((:data-get available))))
 ```
 
 ### C++
@@ -367,10 +393,10 @@ auto client = std::make_shared<SmsapiSDK>(vmap({
     {"apikey", Value(apikey ? apikey : "")},
 }));
 
-// List all availables (returns a Value list, throws on error)
-Value availables = client->available()->list(Value::undef(), Value::undef());
-for (const auto& available : *availables.as_list()) {
-  std::cout << Struct::jsonify(available) << std::endl;
+// List all availables (one entity per record, throws on error)
+std::vector<SdkEntityPtr> availables = client->available()->list(Value::undef(), Value::undef());
+for (const auto& available : availables) {
+  std::cout << Struct::jsonify(available->data()) << std::endl;
 }
 ```
 
@@ -378,15 +404,19 @@ for (const auto& available : *availables.as_list()) {
 
 ```csharp
 using SmsapiSdk;
+using Voxgig.Struct;
 
 var client = new SmsapiSDK(new Dictionary<string, object?>
 {
     ["apikey"] = Environment.GetEnvironmentVariable("SMSAPI_APIKEY"),
 });
 
-// List all availables (returns object?, an aggregate list; raises on error)
-var availableList = client.Available().List(null);
-Console.WriteLine(availableList);
+// List all availables (a list of entities, one per record, as object?; raises on error)
+var availableList = (List<object?>)client.Available().List(null)!;
+foreach (var availableItem in availableList)
+{
+    Console.WriteLine(StructUtils.Jsonify(((IEntity)availableItem!).Data()));
+}
 ```
 
 ### Elixir
@@ -398,37 +428,47 @@ sdk = Smsapi.new(H.deep(%{"apikey" => System.get_env("SMSAPI_APIKEY")}))
 
 available = Smsapi.available(sdk)
 
-# List all available records (raises on error)
-records = Smsapi.Entity.Available.list(available)
-IO.inspect(records)
+# List all availables (a list of entities, one per record; raises on error)
+availables = Smsapi.Entity.Available.list(available)
+for i <- 0..(Voxgig.Struct.size(availables) - 1)//1 do
+  IO.puts(Voxgig.Struct.jsonify(Smsapi.Entity.Available.data_get(Voxgig.Struct.getelem(availables, i))))
+end
 ```
 
 ### Java
 
 ```java
+import java.util.List;
+import java.util.Map;
 import voxgig.smsapisdk.core.SmsapiSDK;
+import voxgig.smsapisdk.core.SdkEntity;
 
 Map<String, Object> options = new java.util.LinkedHashMap<>();
 options.put("apikey", System.getenv("SMSAPI_APIKEY"));
 SmsapiSDK client = new SmsapiSDK(options);
 
-// List all availables (returns Object, an aggregate list; raises on error)
-Object availableList = client.available(null).list(null, null);
-System.out.println(availableList);
+// List all availables (a list of entities, one per record; raises on error)
+List<?> availableList = (List<?>) client.available(null).list(null, null);
+for (Object availableItem : availableList) {
+    System.out.println(((SdkEntity) availableItem).data());
+}
 ```
 
 ### Kotlin
 
 ```kotlin
 import voxgig.smsapisdk.core.SmsapiSDK
+import voxgig.smsapisdk.core.SdkEntity
 
 val client = SmsapiSDK(mutableMapOf<String, Any?>(
     "apikey" to System.getenv("SMSAPI_APIKEY"),
 ))
 
-// List all availables (returns Any?, an aggregate list; raises on error)
-val availableList = client.available(null).list(null, null)
-println(availableList)
+// List all availables (a list of entities, one per record; raises on error)
+val availableList = client.available(null).list(null, null) as List<*>
+for (availableItem in availableList) {
+    println((availableItem as SdkEntity).data())
+}
 ```
 
 ### OCaml
@@ -436,6 +476,7 @@ println(availableList)
 ```ocaml
 open Voxgig_struct
 open Sdk_helpers
+open Sdk_types
 
 let () =
   let client = Sdk_client.make (jo [("apikey", Str (Sys.getenv "SMSAPI_APIKEY"))]) in
@@ -454,10 +495,12 @@ options.entries["apikey"] = .string(
     ProcessInfo.processInfo.environment["SMSAPI_APIKEY"] ?? "")
 let client = SmsapiSDK(options)
 
-// List all availables (returns a Value list, throws on error)
+// List all availables (a Value list of entities, one per record; throws on error)
 let availableList = try client.Available().list(nil, nil)
-for available in availableList.asList?.items ?? [] {
-    print(available)
+for availableItem in availableList.asList?.items ?? [] {
+    if let availableEntity = availableItem.asNative as? Entity {
+        print(availableEntity.data())
+    }
 }
 ```
 
@@ -472,9 +515,13 @@ const client = sdk.SmsapiSDK.new(h.jo(&.{
     .{ "apikey", h.vstr(std.posix.getenv("SMSAPI_APIKEY") orelse "") },
 }));
 
-// List all availables (Ok is a Value array, .err on failure)
+// List all availables (one entity per record, .err on failure)
 switch (client.available(h.vnull()).list(h.vnull(), h.vnull())) {
-    .ok => |availables| std.debug.print("{s}\n", .{h.stringify(availables)}),
+    .ok => |availables| {
+        for (availables) |available| {
+            std.debug.print("{s}\n", .{h.stringify(available.asEntity().data(null))});
+        }
+    },
     .err => |e| std.debug.print("list failed: {s}\n", .{e.msg}),
 }
 ```
@@ -674,10 +721,12 @@ customizable without forking any upstream tool:
 - **Templates** (`.sdk/tm/`) and **components** (`.sdk/src/cmp/`) are
   the two layers of generation, copied into this repo: templates are the
   literal per-language source, components generate the API-shaped parts.
-- **Regeneration merges.** By default, newly generated content is
-  three-way merged into existing files, so generator updates and local
-  edits usually converge without manual conflict handling. A project can
-  opt for plain overwrite instead.
+- **Regeneration overwrites.** Each run rewrites every generated file from
+  the model, the templates and the components, so an edit made to
+  generated output is lost. Say what this project needs in its own model
+  (`.sdk/model/sdk.aontu`), or extend a target with a component of its
+  own in `.sdk/src/cmp/<target>/`, registered with `registerComponent`,
+  which `voxgig-sdkgen doctor` reports as an addition rather than drift.
 - **Custom features and entire custom targets** arrive through sdkgen
   packages (`voxgig-sdkgen package add`), on the same rails as the
   bundled languages, and `voxgig-sdkgen doctor` reports any drift from

@@ -32,6 +32,10 @@ main: kit: entity: ping: {
           }
           m: "GET"
           o: "/ping"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "ping"

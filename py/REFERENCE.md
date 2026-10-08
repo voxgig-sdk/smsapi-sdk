@@ -202,14 +202,14 @@ available = client.Available()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[AvailableEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Available().list()
 for available in results:
-    print(available)
+    print(available.data_get())
 ```
 
 ### Common Methods
@@ -255,26 +255,28 @@ blacklist = client.Blacklist()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> BlacklistEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Blacklist().create({
 })
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+#### `load(reqmatch, ctrl=None) -> BlacklistEntity`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Blacklist().load()
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> BlacklistEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Blacklist().remove({"id": "id"})
@@ -343,44 +345,44 @@ callback = client.Callback()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> CallbackEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Callback().create({
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[CallbackEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Callback().list()
 for callback in results:
-    print(callback)
+    print(callback.data_get())
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> CallbackEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Callback().load({"id": "callback_id"})
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> CallbackEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Callback().remove({"id": "callback_id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> CallbackEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.Callback().update({
@@ -441,7 +443,6 @@ contact = client.Contact()
 | `email` | `str` | No |  |
 | `first_name` | `str` | No |  |
 | `gender` | `str` | Yes |  |
-| `group_id` | `str` | No | Object ID |
 | `groups` | `list` | Yes |  |
 | `id` | `str` | Yes | Object ID |
 | `idx` | `str` | No | User provided resource id |
@@ -449,14 +450,8 @@ contact = client.Contact()
 | `name` | `str` | Yes | Group name |
 | `permissions` | `list` | No |  |
 | `phone_number` | `str` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
 | `size` | `int` | Yes |  |
 | `source` | `str` | No |  |
-| `type` | `str` | No |  |
-| `username` | `str` | No |  |
-| `value` | `str` | No |  |
-| `write` | `bool` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -464,9 +459,9 @@ contact = client.Contact()
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -475,28 +470,21 @@ contact = client.Contact()
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> ContactEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Contact().create({
@@ -514,35 +502,37 @@ result = client.Contact().create({
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+#### `list(reqmatch=None, ctrl=None) -> list[ContactEntity]`
+
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Contact().list()
 for contact in results:
-    print(contact)
+    print(contact.data_get())
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> ContactEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Contact().load({"id": "contact_id"})
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> ContactEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Contact().remove({"id": "contact_id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> ContactEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.Contact().update({
@@ -550,6 +540,8 @@ result = client.Contact().update({
     # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -590,104 +582,44 @@ contacts_field = client.ContactsField()
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `str` | No |  |
-| `city` | `str` | No |  |
-| `contact_expire_after` | `int` | Yes | Contact expire after days |
-| `contacts_count` | `int` | No |  |
-| `country` | `str` | No |  |
-| `created_by` | `str` | Yes |  |
-| `date_created` | `str` | Yes |  |
-| `date_updated` | `str` | Yes |  |
-| `description` | `str` | No |  |
-| `email` | `str` | No |  |
-| `first_name` | `str` | No |  |
-| `gender` | `str` | Yes |  |
-| `group_id` | `str` | No | Object ID |
-| `groups` | `list` | Yes |  |
 | `id` | `str` | No | Object ID |
-| `idx` | `str` | No | User provided resource id |
-| `last_name` | `str` | No |  |
-| `name` | `str` | No | Group name |
-| `permissions` | `list` | No |  |
-| `phone_number` | `str` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `str` | No |  |
+| `name` | `str` | No |  |
 | `type` | `str` | No |  |
-| `username` | `str` | No |  |
-| `value` | `str` | No |  |
-| `write` | `bool` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> ContactsFieldEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.ContactsField().create({
-    "contact_expire_after": 1,  # int
-    "created_by": "example_created_by",  # str
-    "date_created": "example_date_created",  # str
-    "date_updated": "example_date_updated",  # str
-    "gender": "example_gender",  # str
-    "groups": [],  # list
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+#### `list(reqmatch=None, ctrl=None) -> list[ContactsFieldEntity]`
+
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.ContactsField().list()
 for contacts_field in results:
-    print(contacts_field)
+    print(contacts_field.data_get())
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> ContactsFieldEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.ContactsField().remove({"id": "id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> ContactsFieldEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.ContactsField().update({
@@ -695,6 +627,8 @@ result = client.ContactsField().update({
     # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -731,48 +665,16 @@ Return the entity name.
 contacts_field_option = client.ContactsFieldOption()
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `str` | No |  |
-| `city` | `str` | No |  |
-| `contact_expire_after` | `int` | Yes | Contact expire after days |
-| `contacts_count` | `int` | No |  |
-| `country` | `str` | No |  |
-| `created_by` | `str` | Yes |  |
-| `date_created` | `str` | Yes |  |
-| `date_updated` | `str` | Yes |  |
-| `description` | `str` | No |  |
-| `email` | `str` | No |  |
-| `first_name` | `str` | No |  |
-| `gender` | `str` | Yes |  |
-| `group_id` | `str` | No | Object ID |
-| `groups` | `list` | Yes |  |
-| `id` | `str` | Yes | Object ID |
-| `idx` | `str` | No | User provided resource id |
-| `last_name` | `str` | No |  |
-| `name` | `str` | No | Group name |
-| `permissions` | `list` | No |  |
-| `phone_number` | `str` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `str` | No |  |
-| `type` | `str` | No |  |
-| `username` | `str` | No |  |
-| `value` | `str` | No |  |
-| `write` | `bool` | No | Has write permission |
-
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[ContactsFieldOptionEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.ContactsFieldOption().list({"field_id": "example"})
 for contacts_field_option in results:
-    print(contacts_field_option)
+    print(contacts_field_option.data_get())
 ```
 
 ### Common Methods
@@ -814,82 +716,21 @@ contactsgroup = client.Contactsgroup()
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `str` | No |  |
-| `city` | `str` | No |  |
-| `contact_expire_after` | `int` | Yes | Contact expire after days |
-| `contacts_count` | `int` | No |  |
-| `country` | `str` | No |  |
-| `created_by` | `str` | Yes |  |
-| `date_created` | `str` | Yes |  |
-| `date_updated` | `str` | Yes |  |
-| `description` | `str` | No |  |
-| `email` | `str` | No |  |
-| `first_name` | `str` | No |  |
-| `gender` | `str` | Yes |  |
 | `group_id` | `str` | Yes | Object ID |
-| `groups` | `list` | Yes |  |
-| `id` | `str` | Yes | Object ID |
-| `idx` | `str` | No | User provided resource id |
-| `last_name` | `str` | No |  |
-| `name` | `str` | No | Group name |
-| `permissions` | `list` | No |  |
-| `phone_number` | `str` | No |  |
 | `read` | `bool` | Yes | Has read permission |
 | `send` | `bool` | Yes | Has send permission |
-| `source` | `str` | No |  |
-| `type` | `str` | No |  |
 | `username` | `str` | Yes |  |
-| `value` | `str` | No |  |
 | `write` | `bool` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> ContactsgroupEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Contactsgroup().create({
-    "contact_expire_after": 1,  # int
-    "created_by": "example_created_by",  # str
-    "date_created": "example_date_created",  # str
-    "date_updated": "example_date_updated",  # str
-    "gender": "example_gender",  # str
     "group_id": "example_group_id",  # str
-    "groups": [],  # list
-    "id": "example_id",  # str
     "read": True,  # bool
     "send": True,  # bool
     "username": "example_username",  # str
@@ -897,27 +738,29 @@ result = client.Contactsgroup().create({
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+#### `list(reqmatch=None, ctrl=None) -> list[ContactsgroupEntity]`
+
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Contactsgroup().list()
 for contactsgroup in results:
-    print(contactsgroup)
+    print(contactsgroup.data_get())
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> ContactsgroupEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Contactsgroup().remove({"group_id": "group_id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> ContactsgroupEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.Contactsgroup().update({
@@ -925,6 +768,8 @@ result = client.Contactsgroup().update({
     # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -963,17 +808,17 @@ contactstrash = client.Contactstrash()
 
 ### Operations
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> ContactstrashEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Contactstrash().remove()
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> ContactstrashEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.Contactstrash().update({
@@ -1028,14 +873,14 @@ field_available = client.FieldAvailable()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[FieldAvailableEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.FieldAvailable().list()
 for field_available in results:
-    print(field_available)
+    print(field_available.data_get())
 ```
 
 ### Common Methods
@@ -1090,17 +935,17 @@ group = client.Group()
 
 ### Operations
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> GroupEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Group().load({"id": "group_id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> GroupEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.Group().update({
@@ -1108,6 +953,8 @@ result = client.Group().update({
     # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1155,15 +1002,17 @@ mfa_code = client.MfaCode()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> MfaCodeEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.MfaCode().create({
     "phone_number": "example_phone_number",  # str
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1211,19 +1060,19 @@ opt_out = client.OptOut()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[OptOutEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.OptOut().list()
 for opt_out in results:
-    print(opt_out)
+    print(opt_out.data_get())
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> OptOutEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.OptOut().remove({"id": "id"})
@@ -1272,17 +1121,17 @@ opt_out_setting = client.OptOutSetting()
 
 ### Operations
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> OptOutSettingEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.OptOutSetting().load()
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> OptOutSettingEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.OptOutSetting().update({
@@ -1338,9 +1187,9 @@ permission = client.Permission()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> PermissionEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Permission().create({
@@ -1352,12 +1201,14 @@ result = client.Permission().create({
 })
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+#### `load(reqmatch, ctrl=None) -> PermissionEntity`
+
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
-result = client.Permission().load({"id": "permission_id", "group_id": "group_id", "username": "username"})
+result = client.Permission().load({"id": "permission_id", "group_id": "group_id"})
 ```
 
 ### Common Methods
@@ -1404,14 +1255,14 @@ ping = client.Ping()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[PingEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Ping().list()
 for ping in results:
-    print(ping)
+    print(ping.data_get())
 ```
 
 ### Common Methods
@@ -1463,19 +1314,19 @@ profile = client.Profile()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[ProfileEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Profile().list()
 for profile in results:
-    print(profile)
+    print(profile.data_get())
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> ProfileEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Profile().load()
@@ -1518,14 +1369,14 @@ rcs = client.Rcs()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[RcsEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Rcs().list()
 for rcs in results:
-    print(rcs)
+    print(rcs.data_get())
 ```
 
 ### Common Methods
@@ -1575,28 +1426,30 @@ sendername = client.Sendername()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> SendernameEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Sendername().create({
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+#### `list(reqmatch=None, ctrl=None) -> list[SendernameEntity]`
+
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Sendername().list()
 for sendername in results:
-    print(sendername)
+    print(sendername.data_get())
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> SendernameEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Sendername().load({"id": "sendername_id"})
@@ -1647,14 +1500,14 @@ sendername_statement = client.SendernameStatement()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[SendernameStatementEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.SendernameStatement().list()
 for sendername_statement in results:
-    print(sendername_statement)
+    print(sendername_statement.data_get())
 ```
 
 ### Common Methods
@@ -1698,19 +1551,19 @@ sent_rcs_message = client.SentRcsMessage()
 | --- | --- | --- | --- |
 | `content` | `dict` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `str` | Yes | Recipient phone number (e.g. |
-| `sender` | `Any` | Yes |  |
+| `sender` | `str` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `str` | No | Plain text message content. |
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> SentRcsMessageEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.SentRcsMessage().create({
     "phone_number": "example_phone_number",  # str
-    "sender": "example_sender",  # Any
+    "sender": "example_sender",  # str
 })
 ```
 
@@ -1760,14 +1613,14 @@ shipment_country_volume = client.ShipmentCountryVolume()
 
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[ShipmentCountryVolumeEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.ShipmentCountryVolume().list()
 for shipment_country_volume in results:
-    print(shipment_country_volume)
+    print(shipment_country_volume.data_get())
 ```
 
 ### Common Methods
@@ -1822,44 +1675,44 @@ short_url = client.ShortUrl()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> ShortUrlEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.ShortUrl().create({
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[ShortUrlEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.ShortUrl().list()
 for short_url in results:
-    print(short_url)
+    print(short_url.data_get())
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> ShortUrlEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.ShortUrl().load({"id": "short_url_id"})
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> ShortUrlEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.ShortUrl().remove({"id": "short_url_id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> ShortUrlEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.ShortUrl().update({
@@ -1867,6 +1720,8 @@ result = client.ShortUrl().update({
     # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1931,9 +1786,9 @@ smsdo = client.Smsdo()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> SmsdoEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Smsdo().create({
@@ -1977,19 +1832,19 @@ smssendername = client.Smssendername()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> SmssendernameEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Smssendername().create({
-    "sendername_id": "example_sendername_id",  # str
+    "sender": "example_sender",  # str
 })
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> SmssendernameEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Smssendername().remove({"sender": "sender"})
@@ -2038,9 +1893,9 @@ smstemplate = client.Smstemplate()
 
 ### Operations
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> SmstemplateEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Smstemplate().remove({"id": "id"})
@@ -2105,9 +1960,9 @@ subuser = client.Subuser()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> SubuserEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Subuser().create({
@@ -2115,35 +1970,35 @@ result = client.Subuser().create({
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[SubuserEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Subuser().list()
 for subuser in results:
-    print(subuser)
+    print(subuser.data_get())
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> SubuserEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Subuser().load({"id": "subuser_id"})
 ```
 
-#### `remove(reqmatch, ctrl=None) -> dict`
+#### `remove(reqmatch, ctrl=None) -> SubuserEntity`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```python
 result = client.Subuser().remove({"id": "subuser_id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> SubuserEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.Subuser().update({
@@ -2198,36 +2053,38 @@ template = client.Template()
 
 ### Operations
 
-#### `create(reqdata, ctrl=None) -> dict`
+#### `create(reqdata, ctrl=None) -> TemplateEntity`
 
-Create a new entity with the given data. Returns the created entity data and raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```python
 result = client.Template().create({
 })
 ```
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+#### `list(reqmatch=None, ctrl=None) -> list[TemplateEntity]`
+
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.Template().list()
 for template in results:
-    print(template)
+    print(template.data_get())
 ```
 
-#### `load(reqmatch, ctrl=None) -> dict`
+#### `load(reqmatch, ctrl=None) -> TemplateEntity`
 
-Load a single entity matching the given criteria. Returns the entity data and raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get()` reads, and raises on error.
 
 ```python
 result = client.Template().load({"id": "template_id"})
 ```
 
-#### `update(reqdata, ctrl=None) -> dict`
+#### `update(reqdata, ctrl=None) -> TemplateEntity`
 
-Update an existing entity. The data must include the entity `id`. Returns the updated entity data and raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```python
 result = client.Template().update({
@@ -2235,6 +2092,8 @@ result = client.Template().update({
     # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2271,31 +2130,16 @@ Return the entity name.
 user_rcs_sender_collection = client.UserRcsSenderCollection()
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `str` | No |  |
-| `expiredAt` | `str` | No |  |
-| `id` | `str` | No | Object ID |
-| `interface` | `str` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `str` | No | RCS message type (basic, single, ...). |
-| `readAt` | `str` | No |  |
-| `recipient` | `str` | No | Recipient phone number (without +). |
-| `sender` | `str` | No | Sender name |
-| `senderId` | `str` | No | Sender id |
-| `sentAt` | `str` | No |  |
-
 ### Operations
 
-#### `list(reqmatch=None, ctrl=None) -> list`
+#### `list(reqmatch=None, ctrl=None) -> list[UserRcsSenderCollectionEntity]`
 
-List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list and raises on error.
+List entities matching the given criteria. The match is optional — call `list()` with no argument to list all records. Returns a list of entities, one per record, and raises on error.
 
 ```python
 results = client.UserRcsSenderCollection().list()
 for user_rcs_sender_collection in results:
-    print(user_rcs_sender_collection)
+    print(user_rcs_sender_collection.data_get())
 ```
 
 ### Common Methods
@@ -2982,6 +2826,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

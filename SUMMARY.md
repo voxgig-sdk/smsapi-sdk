@@ -63,9 +63,9 @@ Key fields to recognise:
 
 - `collection`: Always empty
 - `contact_expire_after`: Contact expire after days
-- `group_id`: Object ID
 - `id`: Object ID
 - `idx`: User provided resource id
+- `name`: Group name
 
 ### ContactsField
 
@@ -75,11 +75,7 @@ SDK operations: `create`, `list`, `remove`, `update`.
 
 Key fields to recognise:
 
-- `contact_expire_after`: Contact expire after days
-- `group_id`: Object ID
 - `id`: Object ID
-- `idx`: User provided resource id
-- `name`: Group name
 
 ### ContactsFieldOption
 
@@ -87,27 +83,18 @@ Results: Field options collection.
 
 SDK operations: `list`.
 
-Key fields to recognise:
-
-- `contact_expire_after`: Contact expire after days
-- `group_id`: Object ID
-- `id`: Object ID
-- `idx`: User provided resource id
-- `name`: Group name
-
 ### Contactsgroup
 
-Results: Command accepted; Command executed; Groups collection; Group permissions collection; Contact to group association deleted; Permission deleted; Group deleted; Groups deleted.
+Results: Command accepted; Command executed; Group permissions collection; Groups collection; Contact to group association deleted; Permission deleted; Group deleted; Groups deleted.
 
 SDK operations: `create`, `list`, `remove`, `update`.
 
 Key fields to recognise:
 
-- `contact_expire_after`: Contact expire after days
 - `group_id`: Object ID
-- `id`: Object ID
-- `idx`: User provided resource id
-- `name`: Group name
+- `read`: Has read permission
+- `send`: Has send permission
+- `write`: Has write permission
 
 ### Contactstrash
 
@@ -204,6 +191,7 @@ Key fields to recognise:
 
 - `content`: RCS message content in RCS JSON format.
 - `phone_number`: Recipient phone number (for example
+- `sender`: RCS sender ID (object ID of the agent/sender the user has access to).
 - `text`: Plain text message content.
 
 ### ShipmentCountryVolume
@@ -267,14 +255,6 @@ SDK operations: `create`, `list`, `load`, `update`.
 
 SDK operations: `list`.
 
-Key fields to recognise:
-
-- `id`: Object ID
-- `interface`: Interface through which the message was sent (www, api, ...).
-- `messageType`: RCS message type (basic, single, ...).
-- `recipient`: Recipient phone number (without +).
-- `sender`: Sender name
-
 ### Route map
 
 Use this map to locate a capability. Consult the entity reference before supplying request data; routes for the same operation can require different fields.
@@ -297,8 +277,8 @@ Use this map to locate a capability. Consult the entity reference before supplyi
 | Callback | `update` | `PUT /callbacks/{id}/commands/deactivate` | Required |
 | Contact | `create` | `POST /contacts/{contactId}/groups` | Required |
 | Contact | `create` | `POST /contacts` | Required |
-| Contact | `list` | `GET /contacts` | Required |
 | Contact | `list` | `GET /contacts/{contactId}/groups` | Required |
+| Contact | `list` | `GET /contacts` | Required |
 | Contact | `load` | `GET /contacts/groups/{groupId}/members/{contactId}` | Required |
 | Contact | `load` | `GET /contacts/{contactId}/groups/{groupId}` | Required |
 | Contact | `load` | `GET /contacts/{contactId}` | Required |
@@ -315,8 +295,8 @@ Use this map to locate a capability. Consult the entity reference before supplyi
 | ContactsFieldOption | `list` | `GET /contacts/fields/{fieldId}/options` | Required |
 | Contactsgroup | `create` | `POST /contacts/groups/{groupId}/members` | Required |
 | Contactsgroup | `create` | `POST /contacts/groups` | Required |
-| Contactsgroup | `list` | `GET /contacts/groups` | Required |
 | Contactsgroup | `list` | `GET /contacts/groups/{groupId}/permissions` | Required |
+| Contactsgroup | `list` | `GET /contacts/groups` | Required |
 | Contactsgroup | `remove` | `DELETE /contacts/groups/{groupId}/members/{contactId}` | Required |
 | Contactsgroup | `remove` | `DELETE /contacts/groups/{groupId}/permissions/{username}` | Required |
 | Contactsgroup | `remove` | `DELETE /contacts/groups/{groupId}` | Required |

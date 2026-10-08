@@ -72,12 +72,15 @@ main: kit: entity: shipment_country_volume: {
           }
           m: "GET"
           o: "/shipment/country_volumes"
-          q: {
-            exist: [
-              "accept"
-              "month"
-              "year"
+          rs: {
+            alternatives: [
+              {
+                kind: "raw"
+                media: "text/csv"
+              }
             ]
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

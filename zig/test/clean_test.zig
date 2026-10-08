@@ -179,7 +179,7 @@ const ThrowFeature = struct {
 };
 
 // A stream that succeeds, so the pipeline's terminal step never runs. A zig
-// stream producer has no error channel, so no stream fails.
+// stream producer has no error channel; a stream fails only at a step.
 const StreamOkFeature = struct {
     var instance: u8 = 0;
 
@@ -319,7 +319,18 @@ const Transport = struct {
     }
 };
 
+// Offline, as every generated suite is: the test OPTION resolves a required
+// server variable to test-<name>, and installs no transport.
+fn offline(options: Value) Value {
+    h.setp(options, "test", h.jo(&.{.{ "active", h.vbool(true) }}));
+    return options;
+}
+
 fn makeSdk(scenario: Scenario, sinks: *Sinks, clean_active: bool, extra: ?sdk.Feature) *sdk.SDK {
+    return makeSdkWith(scenario, sinks, clean_active, extra, vnull());
+}
+
+fn makeSdkWith(scenario: Scenario, sinks: *Sinks, clean_active: bool, extra: ?sdk.Feature, auth: Value) *sdk.SDK {
     const feature = h.omap();
     if (fh.fh_has_feature("log")) h.setp(feature, "log", h.jo(&.{.{ "active", h.vbool(true) }}));
     if (fh.fh_has_feature("debug")) h.setp(feature, "debug", h.jo(&.{
@@ -344,14 +355,15 @@ fn makeSdk(scenario: Scenario, sinks: *Sinks, clean_active: bool, extra: ?sdk.Fe
     const clean = h.jo(&.{.{ "values", h.vstr(CANARY_VALUE) }});
     if (!clean_active) h.setp(clean, "active", h.vbool(false));
 
-    const options = h.jo(&.{
+    const options = offline(h.jo(&.{
         .{ "apikey", h.vstr(CANARY_APIKEY) },
         .{ "secret", h.vstr(CANARY_SECRET) },
         .{ "headers", h.jo(&.{.{ "X-Custom-Token", h.vstr(CANARY_HEADER) }}) },
         .{ "clean", clean },
         .{ "feature", feature },
         .{ "system", h.jo(&.{.{ "fetch", Transport.make(scenario) }}) },
-    });
+    }));
+    if (auth == .object) h.setp(options, "auth", auth);
 
     if (extra) |f| return sdk.SDK.new_with(options, &.{ CaptureFeature.make(sinks), f });
     return sdk.SDK.new_with(options, &.{CaptureFeature.make(sinks)});
@@ -363,784 +375,850 @@ const Outcome = struct {
     ok: bool,
     err: ?*sdk.h.SdkError,
     result: Value,
+    // The match the entity holds once the operation returns.
+    match: Value,
 };
 
 const Candidate = *const fn (client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome;
-const Streamer = *const fn (client: *sdk.SDK, mtch: Value, callopts: Value) []Value;
+const Streamer = *const fn (client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult;
 
 fn try_available_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.available(vnull()).list(mtch, ctrl)) {
+    const ent = client.available(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_blacklist_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.blacklist(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.blacklist(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_blacklist_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.blacklist(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.blacklist(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_blacklist_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.blacklist(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.blacklist(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_callback_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.callback(vnull()).list(mtch, ctrl)) {
+    const ent = client.callback(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_callback_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.callback(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.callback(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_callback_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.callback(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.callback(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_callback_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.callback(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.callback(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_callback_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.callback(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.callback(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contact_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contact(vnull()).list(mtch, ctrl)) {
+    const ent = client.contact(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contact_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contact(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contact(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contact_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contact(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contact(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contact_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contact(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contact(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contact_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contact(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contact(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contacts_field_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contacts_field(vnull()).list(mtch, ctrl)) {
+    const ent = client.contacts_field(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contacts_field_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contacts_field(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contacts_field(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contacts_field_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contacts_field(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contacts_field(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contacts_field_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contacts_field(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contacts_field(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contacts_field_option_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contacts_field_option(vnull()).list(mtch, ctrl)) {
+    const ent = client.contacts_field_option(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contactsgroup_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contactsgroup(vnull()).list(mtch, ctrl)) {
+    const ent = client.contactsgroup(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contactsgroup_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contactsgroup(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contactsgroup(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contactsgroup_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contactsgroup(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contactsgroup(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contactsgroup_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contactsgroup(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contactsgroup(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contactstrash_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contactstrash(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contactstrash(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_contactstrash_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.contactstrash(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.contactstrash(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_field_available_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.field_available(vnull()).list(mtch, ctrl)) {
+    const ent = client.field_available(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_group_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.group(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.group(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_group_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.group(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.group(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_mfa_code_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.mfa_code(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.mfa_code(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_opt_out_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.opt_out(vnull()).list(mtch, ctrl)) {
+    const ent = client.opt_out(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_opt_out_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.opt_out(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.opt_out(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_opt_out_setting_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.opt_out_setting(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.opt_out_setting(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_opt_out_setting_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.opt_out_setting(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.opt_out_setting(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_permission_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.permission(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.permission(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_permission_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.permission(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.permission(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_ping_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.ping(vnull()).list(mtch, ctrl)) {
+    const ent = client.ping(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_profile_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.profile(vnull()).list(mtch, ctrl)) {
+    const ent = client.profile(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_profile_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.profile(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.profile(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_rcs_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.rcs(vnull()).list(mtch, ctrl)) {
+    const ent = client.rcs(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_sendername_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.sendername(vnull()).list(mtch, ctrl)) {
+    const ent = client.sendername(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_sendername_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.sendername(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.sendername(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_sendername_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.sendername(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.sendername(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_sendername_statement_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.sendername_statement(vnull()).list(mtch, ctrl)) {
+    const ent = client.sendername_statement(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_sent_rcs_message_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.sent_rcs_message(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.sent_rcs_message(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_shipment_country_volume_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.shipment_country_volume(vnull()).list(mtch, ctrl)) {
+    const ent = client.shipment_country_volume(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_short_url_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.short_url(vnull()).list(mtch, ctrl)) {
+    const ent = client.short_url(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_short_url_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.short_url(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.short_url(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_short_url_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.short_url(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.short_url(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_short_url_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.short_url(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.short_url(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_short_url_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.short_url(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.short_url(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_smsdo_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.smsdo(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.smsdo(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_smssendername_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.smssendername(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.smssendername(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_smssendername_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.smssendername(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.smssendername(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_smstemplate_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.smstemplate(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.smstemplate(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_subuser_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.subuser(vnull()).list(mtch, ctrl)) {
+    const ent = client.subuser(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_subuser_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.subuser(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.subuser(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_subuser_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.subuser(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.subuser(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_subuser_remove(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.subuser(vnull()).remove(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.subuser(vnull());
+    switch (ent.remove(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_subuser_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.subuser(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.subuser(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_template_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.template(vnull()).list(mtch, ctrl)) {
+    const ent = client.template(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_template_load(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.template(vnull()).load(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.template(vnull());
+    switch (ent.load(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_template_create(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.template(vnull()).create(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.template(vnull());
+    switch (ent.create(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_template_update(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.template(vnull()).update(mtch, ctrl)) {
-        .ok => |ent| return .{ .ok = true, .err = null, .result = ent.asEntity().data(null) },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+    const ent = client.template(vnull());
+    switch (ent.update(mtch, ctrl)) {
+        .ok => |res| return .{ .ok = true, .err = null, .result = res.asEntity().data(null), .match = ent.asEntity().matchv(null) },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
 fn try_user_rcs_sender_collection_list(client: *sdk.SDK, mtch: Value, ctrl: Value) Outcome {
-    switch (client.user_rcs_sender_collection(vnull()).list(mtch, ctrl)) {
+    const ent = client.user_rcs_sender_collection(vnull());
+    switch (ent.list(mtch, ctrl)) {
         .ok => |ents| {
             const records = h.olist();
             for (ents) |e| records.array.append(e.asEntity().data(null)) catch {};
-            return .{ .ok = true, .err = null, .result = records };
+            return .{ .ok = true, .err = null, .result = records, .match = ent.asEntity().matchv(null) };
         },
-        .err => |e| return .{ .ok = false, .err = e, .result = vnull() },
+        .err => |e| return .{ .ok = false, .err = e, .result = vnull(), .match = ent.asEntity().matchv(null) },
     }
 }
 
-fn stream_available_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_available_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.available(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_blacklist_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_blacklist_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.blacklist(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_blacklist_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_blacklist_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.blacklist(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_blacklist_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_blacklist_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.blacklist(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_callback_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_callback_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.callback(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_callback_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_callback_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.callback(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_callback_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_callback_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.callback(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_callback_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_callback_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.callback(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_callback_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_callback_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.callback(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_contact_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contact_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contact(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_contact_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contact_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contact(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_contact_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contact_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contact(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_contact_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contact_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contact(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_contact_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contact_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contact(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_contacts_field_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contacts_field_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contacts_field(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_contacts_field_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contacts_field_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contacts_field(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_contacts_field_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contacts_field_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contacts_field(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_contacts_field_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contacts_field_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contacts_field(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_contacts_field_option_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contacts_field_option_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contacts_field_option(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_contactsgroup_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contactsgroup_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contactsgroup(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_contactsgroup_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contactsgroup_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contactsgroup(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_contactsgroup_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contactsgroup_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contactsgroup(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_contactsgroup_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contactsgroup_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contactsgroup(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_contactstrash_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contactstrash_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contactstrash(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_contactstrash_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_contactstrash_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.contactstrash(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_field_available_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_field_available_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.field_available(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_group_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_group_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.group(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_group_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_group_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.group(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_mfa_code_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_mfa_code_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.mfa_code(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_opt_out_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_opt_out_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.opt_out(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_opt_out_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_opt_out_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.opt_out(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_opt_out_setting_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_opt_out_setting_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.opt_out_setting(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_opt_out_setting_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_opt_out_setting_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.opt_out_setting(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_permission_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_permission_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.permission(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_permission_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_permission_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.permission(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_ping_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_ping_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.ping(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_profile_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_profile_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.profile(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_profile_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_profile_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.profile(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_rcs_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_rcs_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.rcs(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_sendername_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_sendername_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.sendername(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_sendername_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_sendername_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.sendername(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_sendername_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_sendername_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.sendername(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_sendername_statement_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_sendername_statement_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.sendername_statement(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_sent_rcs_message_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_sent_rcs_message_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.sent_rcs_message(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_shipment_country_volume_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_shipment_country_volume_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.shipment_country_volume(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_short_url_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_short_url_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.short_url(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_short_url_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_short_url_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.short_url(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_short_url_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_short_url_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.short_url(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_short_url_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_short_url_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.short_url(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_short_url_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_short_url_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.short_url(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_smsdo_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_smsdo_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.smsdo(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_smssendername_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_smssendername_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.smssendername(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_smssendername_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_smssendername_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.smssendername(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_smstemplate_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_smstemplate_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.smstemplate(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_subuser_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_subuser_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.subuser(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_subuser_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_subuser_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.subuser(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_subuser_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_subuser_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.subuser(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_subuser_remove(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_subuser_remove(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.subuser(vnull()).stream("remove", mtch, callopts);
 }
 
-fn stream_subuser_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_subuser_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.subuser(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_template_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_template_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.template(vnull()).stream("list", mtch, callopts);
 }
 
-fn stream_template_load(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_template_load(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.template(vnull()).stream("load", mtch, callopts);
 }
 
-fn stream_template_create(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_template_create(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.template(vnull()).stream("create", mtch, callopts);
 }
 
-fn stream_template_update(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_template_update(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.template(vnull()).stream("update", mtch, callopts);
 }
 
-fn stream_user_rcs_sender_collection_list(client: *sdk.SDK, mtch: Value, callopts: Value) []Value {
+fn stream_user_rcs_sender_collection_list(client: *sdk.SDK, mtch: Value, callopts: Value) sdk.StreamResult {
     return client.user_rcs_sender_collection(vnull()).stream("list", mtch, callopts);
 }
 
@@ -1200,7 +1278,7 @@ const CANDIDATES = [_]CandidateDef{
     .{ .run = try_short_url_remove, .stream = stream_short_url_remove, .params = &.{"id"} },
     .{ .run = try_short_url_update, .stream = stream_short_url_update, .params = &.{"id"} },
     .{ .run = try_smsdo_create, .stream = stream_smsdo_create, .params = &.{} },
-    .{ .run = try_smssendername_create, .stream = stream_smssendername_create, .params = &.{"sendername_id"} },
+    .{ .run = try_smssendername_create, .stream = stream_smssendername_create, .params = &.{"sender"} },
     .{ .run = try_smssendername_remove, .stream = stream_smssendername_remove, .params = &.{"sender"} },
     .{ .run = try_smstemplate_remove, .stream = stream_smstemplate_remove, .params = &.{"id"} },
     .{ .run = try_subuser_list, .stream = stream_subuser_list, .params = &.{"id"} },
@@ -1224,10 +1302,10 @@ fn usableOp() ?Target {
         const filled = h.omap();
         for (cand.params) |p| h.setp(filled, p, h.vstr("p1"));
         for ([_]Value{ h.omap(), filled }) |mtch| {
-            const plain = sdk.SDK.new(h.jo(&.{
+            const plain = sdk.SDK.new(offline(h.jo(&.{
                 .{ "apikey", h.vstr(CANARY_APIKEY) },
                 .{ "system", h.jo(&.{.{ "fetch", Transport.make(.ok) }}) },
-            }));
+            })));
             if (cand.run(plain, h.clone(mtch), h.omap()).ok) {
                 return .{ .run = cand.run, .stream = cand.stream, .mtch = mtch };
             }
@@ -1244,6 +1322,8 @@ fn drive(client: *sdk.SDK, target: Target, ctrl: Value, sinks: *Sinks) ?*sdk.h.S
     const out = target.run(client, h.clone(target.mtch), ctrl);
     if (out.err) |e| sinks.err("error", e);
     if (out.ok) sinks.value("result", out.result);
+    // Raw, as a caller copying the match into another query reads it.
+    sinks.value("match", out.match);
     const explain = h.getp(ctrl, "explain");
     if (explain == .object) sinks.value("explain", explain);
     if (held == .object and (explain != .object or held.object != explain.object)) {
@@ -1305,14 +1385,19 @@ test "clean: no credential leaves the SDK in any form" {
         }
     }
 
+    // A name given at run time replaces the declared one: the match leaves
+    // out whichever name prepare_auth placed.
+    _ = drive(makeSdkWith(.ok, &sinks, true, null, h.jo(&.{.{ "name", h.vstr("zzcred") }})),
+        target, h.omap(), &sinks);
+
     // A credential mistyped as a map. The zig validator's failure is not
     // raised (make_options keeps its input), so what the constructor produced
     // is swept instead: a string quoting the value, cleaned the way a
     // validation message is.
-    const mistyped = sdk.SDK.new(h.jo(&.{
+    const mistyped = sdk.SDK.new(offline(h.jo(&.{
         .{ "apikey", h.jo(&.{.{ "value", h.vstr(CANARY_APIKEY) }}) },
         .{ "clean", h.jo(&.{.{ "values", h.vstr(CANARY_VALUE) }}) },
-    }));
+    })));
     sinks.push("mistyped:quoted", sdk.utilmod.clean_str_util(
         mistyped.get_root_ctx(),
         fmt("apikey: expected string, got {{\"value\":\"{s}\"}}", .{CANARY_APIKEY}),
@@ -1324,12 +1409,22 @@ test "clean: no credential leaves the SDK in any form" {
     try testing.expect(hookerr != null);
 
     // The explain record a stream call is passed is cleaned however the
-    // stream ends: from a feature's producer, or materialised by done. A zig
-    // stream hands no error back, so the record is what is asserted on.
-    for ([_]?sdk.Feature{ StreamOkFeature.make(), null }, [_][]const u8{ "stream-ok", "stream-plain" }) |extra, name| {
+    // stream ends: from a feature's producer, materialised by done, or
+    // failed, when the error it returns is swept as well.
+    for (
+        [_]?sdk.Feature{ StreamOkFeature.make(), null, null },
+        [_]Scenario{ .ok, .ok, .notfound },
+        [_][]const u8{ "stream-ok", "stream-plain", "stream-fail" },
+    ) |extra, scenario, name| {
         const explain = h.omap();
         const callopts = h.jo(&.{.{ "ctrl", h.jo(&.{.{ "explain", explain }}) }});
-        _ = target.stream(makeSdk(.ok, &sinks, true, extra), h.clone(target.mtch), callopts);
+        switch (target.stream(makeSdk(scenario, &sinks, true, extra), h.clone(target.mtch), callopts)) {
+            .ok => try testing.expect(scenario == .ok),
+            .err => |e| {
+                try testing.expect(scenario != .ok);
+                sinks.err(fmt("{s}:error", .{name}), e);
+            },
+        }
         try testing.expect(0 < explain.object.count());
         sinks.value(fmt("{s}:explain", .{name}), explain);
     }
@@ -1340,12 +1435,12 @@ test "clean: no credential leaves the SDK in any form" {
     try testing.expect(denied != null);
 
     // A client given no clean block at all masks by the schema defaults.
-    const bare = sdk.SDK.new(h.jo(&.{
+    const bare = sdk.SDK.new(offline(h.jo(&.{
         .{ "apikey", h.vstr(CANARY_APIKEY) },
         .{ "secret", h.vstr(CANARY_SECRET) },
         .{ "headers", h.jo(&.{.{ "X-Custom-Token", h.vstr(CANARY_HEADER) }}) },
         .{ "system", h.jo(&.{.{ "fetch", Transport.make(.notfound) }}) },
-    }));
+    })));
     const barerr = drive(bare, target, h.omap(), &sinks);
     try testing.expect(barerr != null);
 
@@ -1429,9 +1524,9 @@ test "clean: the sweep can see a leak: clean switched off shows the credential" 
 }
 
 test "clean: a registered value used as a property name is masked, collisions kept" {
-    const client = sdk.SDK.new(h.jo(&.{
+    const client = sdk.SDK.new(offline(h.jo(&.{
         .{ "clean", h.jo(&.{.{ "values", h.vstr("ZZVAL-abc123,ZZVAL-xyz789") }}) },
-    }));
+    })));
     const out = sdk.utilmod.clean_util(client.get_root_ctx(), h.jo(&.{
         .{ "ZZVAL-abc123", h.vnum(1) },
         .{ "ZZVAL-xyz789", h.vnum(2) },
@@ -1472,15 +1567,20 @@ test "clean: the generated config's own clean block is honoured" {
 // A feature's name is not a field name: a feature called secrets does not
 // make its settings secret, though a sensitive field inside it still is. An
 // entity block, of per-entity settings or seeded records keyed by entity name
-// and id, is not read at all.
+// and id, is not read at all, and nor are rbac's rules, keyed by entity and
+// operation names.
 test "clean: a feature's name is read as a name" {
-    const client = sdk.SDK.new(h.jo(&.{
+    const client = sdk.SDK.new(offline(h.jo(&.{
         .{ "apikey", h.vstr(CANARY_APIKEY) },
         .{ "feature", h.jo(&.{
             .{ "secrets", h.jo(&.{
                 .{ "active", h.vbool(false) },
                 .{ "name", h.vstr("ZZNAME-feat123") },
                 .{ "token", h.vstr("ZZTOKEN-feat456") },
+            }) },
+            .{ "rbac", h.jo(&.{
+                .{ "active", h.vbool(false) },
+                .{ "rules", h.jo(&.{.{ "zztoken.load", h.vstr("PLAINRULE-k7j5h3g1") }}) },
             }) },
             .{ "test", h.jo(&.{
                 .{ "active", h.vbool(false) },
@@ -1492,7 +1592,7 @@ test "clean: a feature's name is read as a name" {
         .{ "entity", h.jo(&.{.{ "zztoken", h.jo(&.{.{ "alias", h.jo(&.{
             .{ "zzkey", h.vstr("PLAINALIAS-m2n4b6v8") },
         }) }}) }}) },
-    }));
+    })));
     const ctx = client.get_root_ctx();
     try testing.expectEqualStrings("ZZNAME-feat123 " ++ MASK,
         sdk.utilmod.clean_str_util(ctx, "ZZNAME-feat123 ZZTOKEN-feat456"));
@@ -1500,4 +1600,6 @@ test "clean: a feature's name is read as a name" {
         sdk.utilmod.clean_str_util(ctx, "record PLAINRECORD-t5r3e1w9"));
     try testing.expectEqualStrings("alias PLAINALIAS-m2n4b6v8",
         sdk.utilmod.clean_str_util(ctx, "alias PLAINALIAS-m2n4b6v8"));
+    try testing.expectEqualStrings("rule PLAINRULE-k7j5h3g1",
+        sdk.utilmod.clean_str_util(ctx, "rule PLAINRULE-k7j5h3g1"));
 }

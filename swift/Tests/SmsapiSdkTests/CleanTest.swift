@@ -248,8 +248,19 @@ final class SmsapiCleanTest: XCTestCase {
     gp(SdkConfig.makeConfig(), "feature").asMap?.entries[name] != nil
   }
 
+  // Offline, as every generated suite is: the test OPTION resolves a required
+  // server variable to test-<name>, and installs no transport. A construction
+  // that fails traps, which no harness can catch, so the option is the guard.
+  static func offline(_ opts: VMap) -> VMap {
+    let out = VMap()
+    for (k, v) in opts.entries { out.entries[k] = v }
+    out.entries["test"] = .map(vm(("active", .bool(true))))
+    return out
+  }
+
   static func makeSdk(
-    _ scenario: Scenario, _ box: SinkBox, _ cleanopts: VMap? = nil, _ extra: [BaseFeature] = []
+    _ scenario: Scenario, _ box: SinkBox, _ cleanopts: VMap? = nil, _ extra: [BaseFeature] = [],
+    auth: VMap? = nil
   ) -> SmsapiSDK {
     func capture(_ name: String) -> (VMap) -> Void {
       return { rec in box.sinks += formsOf(name, rec) }
@@ -300,7 +311,8 @@ final class SmsapiCleanTest: XCTestCase {
     for f in extra { extend.append(.nat(f)) }
     opts.entries["extend"] = .list(VList(extend))
     opts.entries["utility"] = .map(vm(("fetcher", .nat(fetch))))
-    return SmsapiSDK(opts)
+    if let a = auth { opts.entries["auth"] = .map(a) }
+    return SmsapiSDK(SmsapiCleanTest.offline(opts))
   }
 
   // Emitted from the model: every active entity with the operations it
@@ -329,7 +341,7 @@ final class SmsapiCleanTest: XCTestCase {
     Candidate(name: "shipment_country_volume", accessor: { $0.ShipmentCountryVolume(nil) }, ops: ["list"], params: ["list": []]),
     Candidate(name: "short_url", accessor: { $0.ShortUrl(nil) }, ops: ["list", "load", "create", "remove", "update"], params: ["list": [], "load": ["id"], "create": [], "remove": ["id"], "update": ["id"]]),
     Candidate(name: "smsdo", accessor: { $0.Smsdo(nil) }, ops: ["create"], params: ["create": []]),
-    Candidate(name: "smssendername", accessor: { $0.Smssendername(nil) }, ops: ["create", "remove"], params: ["create": ["sendername_id"], "remove": ["sender"]]),
+    Candidate(name: "smssendername", accessor: { $0.Smssendername(nil) }, ops: ["create", "remove"], params: ["create": ["sender"], "remove": ["sender"]]),
     Candidate(name: "smstemplate", accessor: { $0.Smstemplate(nil) }, ops: ["remove"], params: ["remove": ["id"]]),
     Candidate(name: "subuser", accessor: { $0.Subuser(nil) }, ops: ["list", "load", "create", "remove", "update"], params: ["list": ["id"], "load": ["id"], "create": [], "remove": ["id"], "update": ["id"]]),
     Candidate(name: "template", accessor: { $0.Template(nil) }, ops: ["list", "load", "create", "update"], params: ["list": [], "load": ["id"], "create": [], "update": ["id"]]),
@@ -346,6 +358,7 @@ final class SmsapiCleanTest: XCTestCase {
     case "load": return try ent.load(args, ctrl)
     case "create": return try ent.create(args, ctrl)
     case "update": return try ent.update(args, ctrl)
+    case "patch": return try ent.patch(args, ctrl)
     case "remove": return try ent.remove(args, ctrl)
     default: throw TransportError(message: "unknown operation: " + op)
     }
@@ -358,7 +371,7 @@ final class SmsapiCleanTest: XCTestCase {
     let opts = VMap()
     opts.entries["apikey"] = .string(canaryApikey)
     opts.entries["utility"] = .map(vm(("fetcher", .nat(fetch))))
-    let plain = SmsapiSDK(opts)
+    let plain = SmsapiSDK(SmsapiCleanTest.offline(opts))
     for candidate in candidates {
       for op in candidate.ops {
         let filled: [String] = candidate.params[op] ?? []
@@ -375,15 +388,18 @@ final class SmsapiCleanTest: XCTestCase {
   static func drive(_ sdk: SmsapiSDK, _ target: Target, _ ctrl: VMap, _ box: SinkBox) -> Error? {
     // A caller may keep the record it passed rather than read ctrl["explain"].
     let held = ctrl.entries["explain"]?.asMap
+    let entity = target.candidate.accessor(sdk)
     var out: Value = .noval
     var err: Error? = nil
     do {
-      out = try invoke(target.candidate.accessor(sdk), target.op, target.params, ctrl)
+      out = try invoke(entity, target.op, target.params, ctrl)
     } catch {
       err = error
     }
     if let e = err { box.sinks += formsOf("error", e) }
     if !isNil(out) { box.sinks += formsOf("result", out) }
+    // Raw, as a caller copying the match into another query reads it.
+    box.sinks += formsOf("match", entity.matchv(nil))
     if let explain = ctrl.entries["explain"]?.asMap { box.sinks += formsOf("explain", explain) }
     if let h = held, h !== ctrl.entries["explain"]?.asMap { box.sinks += formsOf("explain:held", h) }
     return err
@@ -416,13 +432,19 @@ final class SmsapiCleanTest: XCTestCase {
       }
     }
 
+    // A name given at run time replaces the declared one: the match leaves
+    // out whichever name prepareAuth placed.
+    _ = SmsapiCleanTest.drive(
+      SmsapiCleanTest.makeSdk(SmsapiCleanTest.scenarios[0], box, auth: vm(("name", .string("zzcred")))),
+      target, VMap(), box)
+
     // A credential mistyped as a map. This struct port's validate collects
     // its errors instead of throwing, so nothing rejects it: the client it
     // produced is swept instead.
     let mistyped = VMap()
     mistyped.entries["apikey"] = .map(vm(("value", .string(canaryApikey))))
     mistyped.entries["clean"] = .map(vm(("values", .string(canaryValue))))
-    box.sinks += SmsapiCleanTest.formsOf("mistyped", SmsapiSDK(mistyped))
+    box.sinks += SmsapiCleanTest.formsOf("mistyped", SmsapiSDK(SmsapiCleanTest.offline(mistyped)))
 
     // An error a feature hook raises, quoting the request, skips makeError.
     // A swift hook cannot throw, so no variant fails from PreUnexpected.
@@ -478,13 +500,15 @@ final class SmsapiCleanTest: XCTestCase {
       if !isNil(clean) {
         bareopts.entries["clean"] = clean
       }
-      let bareerr = SmsapiCleanTest.drive(SmsapiSDK(bareopts), target, vm(("explain", .map(VMap()))), box)
+      let bareerr = SmsapiCleanTest.drive(
+        SmsapiSDK(SmsapiCleanTest.offline(bareopts)), target, vm(("explain", .map(VMap()))), box)
       XCTAssertNotNil(bareerr, "the 404 should fail with clean: " + stringify(clean))
     }
 
     // A feature's name is not a field name: only the sensitive names inside
     // its settings register. An entity block, of entity settings or seeded
-    // records keyed by entity name and id, is not read at all.
+    // records keyed by entity name and id, is not read at all, and nor are
+    // rbac's rules, keyed by entity and operation names.
     let record = vm(("zztoken", .map(vm(("ZZTOKEN01", .map(vm(("note", .string("PLAINRECORD-t5r3e1w9")))))))))
     let alias = vm(("zztoken", .map(vm(("alias", .map(vm(("zzkey", .string("PLAINALIAS-m2n4b6v8")))))))))
     let featopts = VMap()
@@ -492,6 +516,8 @@ final class SmsapiCleanTest: XCTestCase {
     featopts.entries["feature"] = .map(vm(
       ("zzsecrets", .map(vm(("active", .bool(false)), ("kind", .string("PLAINSETTING-q8w2e4r6"))))),
       ("zzfeat", .map(vm(("active", .bool(false)), ("apitoken", .string("FEATTOKEN-z9y8x7w6"))))),
+      ("rbac", .map(vm(("active", .bool(false)),
+        ("rules", .map(vm(("zztoken.load", .string("PLAINRULE-k7j5h3g1")))))))),
       ("test", .map(vm(("active", .bool(false)), ("entity", .map(record)))))))
     featopts.entries["entity"] = .map(alias)
     let fctx = Context(["options": makeOptionsUtil(Context(["options": featopts], nil))], nil)
@@ -499,6 +525,7 @@ final class SmsapiCleanTest: XCTestCase {
     let ftoken = cleanUtil(fctx, .string("token FEATTOKEN-z9y8x7w6")).asString
     let frecord = cleanUtil(fctx, .string("record PLAINRECORD-t5r3e1w9")).asString
     let falias = cleanUtil(fctx, .string("alias PLAINALIAS-m2n4b6v8")).asString
+    let frule = cleanUtil(fctx, .string("rule PLAINRULE-k7j5h3g1")).asString
 
     // direct() returns its error rather than throwing it. Only the SDK's own
     // error can be cleaned in place, so the coded transport is the one used.
@@ -543,6 +570,7 @@ final class SmsapiCleanTest: XCTestCase {
     XCTAssertEqual(ftoken, "token " + mask)
     XCTAssertEqual(frecord, "record PLAINRECORD-t5r3e1w9")
     XCTAssertEqual(falias, "alias PLAINALIAS-m2n4b6v8")
+    XCTAssertEqual(frule, "rule PLAINRULE-k7j5h3g1")
     XCTAssertEqual(rawerr?.code, "denied_" + mask)
 
     let explained = explains["ok/explain"] ?? VMap()

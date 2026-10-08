@@ -16,7 +16,7 @@ go get github.com/voxgig-sdk/smsapi-sdk/go@latest
 ```
 
 The Go module proxy resolves the version from the `go/vX.Y.Z` GitHub
-release tag — see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases) for the available versions.
+release tag — see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags) for the available versions.
 
 To vendor from a local checkout instead, clone this repo alongside your
 project and add a `replace` directive pointing at the checked-out
@@ -35,9 +35,10 @@ loading a specific record.
 ### Quickstart
 
 A complete program: create a client, then call the entity operations.
-Each operation returns `(value, error)` — the value is the data itself
-(there is no `{ok, data}` wrapper), so check `err` and use the value
-directly.
+Each operation returns `(value, error)` — the value is the entity, and for
+`List` a `[]any` of entities, one per record (there is no `{ok, data}`
+wrapper), so check `err` and read a record through the entity's
+`Data()`.
 
 ```go
 package main
@@ -53,13 +54,13 @@ func main() {
         "apikey": os.Getenv("SMSAPI_APIKEY"),
     })
 
-    // List available records — the value is the array of records itself.
+    // List available records — the value is a []any of entities, one per record.
     availables, err := client.Available(nil).List(nil, nil)
     if err != nil {
         panic(err)
     }
     for _, item := range availables.([]any) {
-        fmt.Println(item)
+        fmt.Println(item.(sdk.Entity).Data())
     }
 }
 ```
@@ -71,12 +72,12 @@ Every entity operation returns `(value, error)`. Check `err` before
 using the value — there is no exception to catch:
 
 ```go
-permission, err := client.Permission(nil).Load(map[string]any{"group_id": "example", "id": "example_id", "username": "example"}, nil)
+templates, err := client.Template(nil).List(nil, nil)
 if err != nil {
     // handle err
     return
 }
-_ = permission
+_ = templates
 ```
 
 `Direct` follows the same `(value, error)` convention:
@@ -140,13 +141,16 @@ Create a mock client for unit testing — no server required:
 ```go
 client := sdk.Test()
 
-permission, err := client.Permission(nil).Load(
-    map[string]any{"id": "test01", "group_id": "example", "username": "example"}, nil,
+templates, err := client.Template(nil).List(
+    nil, nil,
 )
 if err != nil {
     panic(err)
 }
-fmt.Println(permission) // the returned mock data
+// A []any of entities, one per mock record.
+for _, item := range templates.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 ### Use a custom fetch function
@@ -260,11 +264,11 @@ All entities implement the `SmsapiEntity` interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `Load` | `(reqmatch, ctrl map[string]any) (any, error)` | Load a single entity by match criteria. |
-| `List` | `(reqmatch, ctrl map[string]any) (any, error)` | List entities matching the criteria. |
-| `Create` | `(reqdata, ctrl map[string]any) (any, error)` | Create a new entity. |
-| `Update` | `(reqdata, ctrl map[string]any) (any, error)` | Update an existing entity. |
-| `Remove` | `(reqmatch, ctrl map[string]any) (any, error)` | Remove an entity. |
+| `Load` | `(reqmatch, ctrl map[string]any) (any, error)` | Load a single entity by match criteria, and return it. |
+| `List` | `(reqmatch, ctrl map[string]any) (any, error)` | List entities matching the criteria, one per record. |
+| `Create` | `(reqdata, ctrl map[string]any) (any, error)` | Create a new entity, and return it. |
+| `Update` | `(reqdata, ctrl map[string]any) (any, error)` | Update an existing entity, and return it. |
+| `Remove` | `(reqmatch, ctrl map[string]any) (any, error)` | Remove an entity, and return it marked as deleted. |
 | `Data` | `(args ...any) any` | Get or set entity data. |
 | `Match` | `(args ...any) any` | Get or set entity match criteria. |
 | `Make` | `() Entity` | Create a new instance with the same options. |
@@ -272,21 +276,21 @@ All entities implement the `SmsapiEntity` interface.
 
 ### Result shape
 
-Entity operations return `(value, error)`. The `value` is the
-operation's data **directly** — there is no wrapper:
+Entity operations return `(value, error)`. The `value` is the entity
+itself — there is no wrapper:
 
 | Operation | `value` |
 | --- | --- |
-| `Load` / `Create` / `Update` / `Remove` | the entity record (`map[string]any`) |
-| `List` | a `[]any` of entity records |
+| `Load` / `Create` / `Update` / `Remove` | the entity, whose `Data()` reads its record (`map[string]any`) |
+| `List` | a `[]any` of entities, one per record |
 
 Check `err` first, then use the value directly (or the typed
 `...Typed` variants, which return the entity's model struct and a typed
 slice):
 
-    available, err := client.Available(nil).List(map[string]any{/* fields */}, nil)
+    available, err := client.Available(nil).List(nil, nil)
     if err != nil { /* handle */ }
-    // available is the returned record
+    // available is a []any of entities, one per record
 
 Only `Direct()` returns a response envelope — a `map[string]any` with
 `"ok"`, `"status"`, `"headers"`, and `"data"` keys.
@@ -349,7 +353,6 @@ API path: `/callbacks`
 | `"email"` |  |
 | `"first_name"` |  |
 | `"gender"` |  |
-| `"group_id"` | Object ID |
 | `"groups"` |  |
 | `"id"` | Object ID |
 | `"idx"` | User provided resource id |
@@ -357,14 +360,8 @@ API path: `/callbacks`
 | `"name"` | Group name |
 | `"permissions"` |  |
 | `"phone_number"` |  |
-| `"read"` | Has read permission |
-| `"send"` | Has send permission |
 | `"size"` |  |
 | `"source"` |  |
-| `"type"` |  |
-| `"username"` |  |
-| `"value"` |  |
-| `"write"` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -374,33 +371,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `"birthday_date"` |  |
-| `"city"` |  |
-| `"contact_expire_after"` | Contact expire after days |
-| `"contacts_count"` |  |
-| `"country"` |  |
-| `"created_by"` |  |
-| `"date_created"` |  |
-| `"date_updated"` |  |
-| `"description"` |  |
-| `"email"` |  |
-| `"first_name"` |  |
-| `"gender"` |  |
-| `"group_id"` | Object ID |
-| `"groups"` |  |
 | `"id"` | Object ID |
-| `"idx"` | User provided resource id |
-| `"last_name"` |  |
-| `"name"` | Group name |
-| `"permissions"` |  |
-| `"phone_number"` |  |
-| `"read"` | Has read permission |
-| `"send"` | Has send permission |
-| `"source"` |  |
+| `"name"` |  |
 | `"type"` |  |
-| `"username"` |  |
-| `"value"` |  |
-| `"write"` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -410,33 +383,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `"birthday_date"` |  |
-| `"city"` |  |
-| `"contact_expire_after"` | Contact expire after days |
-| `"contacts_count"` |  |
-| `"country"` |  |
-| `"created_by"` |  |
-| `"date_created"` |  |
-| `"date_updated"` |  |
-| `"description"` |  |
-| `"email"` |  |
-| `"first_name"` |  |
-| `"gender"` |  |
-| `"group_id"` | Object ID |
-| `"groups"` |  |
-| `"id"` | Object ID |
-| `"idx"` | User provided resource id |
-| `"last_name"` |  |
-| `"name"` | Group name |
-| `"permissions"` |  |
-| `"phone_number"` |  |
-| `"read"` | Has read permission |
-| `"send"` | Has send permission |
-| `"source"` |  |
-| `"type"` |  |
-| `"username"` |  |
-| `"value"` |  |
-| `"write"` | Has write permission |
 
 Operations: List.
 
@@ -446,32 +392,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `"birthday_date"` |  |
-| `"city"` |  |
-| `"contact_expire_after"` | Contact expire after days |
-| `"contacts_count"` |  |
-| `"country"` |  |
-| `"created_by"` |  |
-| `"date_created"` |  |
-| `"date_updated"` |  |
-| `"description"` |  |
-| `"email"` |  |
-| `"first_name"` |  |
-| `"gender"` |  |
 | `"group_id"` | Object ID |
-| `"groups"` |  |
-| `"id"` | Object ID |
-| `"idx"` | User provided resource id |
-| `"last_name"` |  |
-| `"name"` | Group name |
-| `"permissions"` |  |
-| `"phone_number"` |  |
 | `"read"` | Has read permission |
 | `"send"` | Has send permission |
-| `"source"` |  |
-| `"type"` |  |
 | `"username"` |  |
-| `"value"` |  |
 | `"write"` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -639,7 +563,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `"content"` | RCS message content in RCS JSON format. |
 | `"phone_number"` | Recipient phone number (e.g. |
-| `"sender"` |  |
+| `"sender"` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `"text"` | Plain text message content. |
 
 Operations: Create.
@@ -759,16 +683,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `"deliveredAt"` |  |
-| `"expiredAt"` |  |
-| `"id"` | Object ID |
-| `"interface"` | Interface through which the message was sent (www, api, ...). |
-| `"messageType"` | RCS message type (basic, single, ...). |
-| `"readAt"` |  |
-| `"recipient"` | Recipient phone number (without +). |
-| `"sender"` | Sender name |
-| `"senderId"` | Sender id |
-| `"sentAt"` |  |
 
 Operations: List.
 
@@ -804,7 +718,10 @@ availables, err := client.Available(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(availables) // the array of records
+// A []any of entities, one per record.
+for _, item := range availables.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -833,7 +750,7 @@ blacklist, err := client.Blacklist(nil).Load(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(blacklist) // the loaded record
+fmt.Println(blacklist.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: Create
@@ -844,7 +761,7 @@ result, err := client.Blacklist(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -882,7 +799,7 @@ callback, err := client.Callback(nil).Load(map[string]any{"id": "callback_id"}, 
 if err != nil {
     panic(err)
 }
-fmt.Println(callback) // the loaded record
+fmt.Println(callback.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: List
@@ -892,7 +809,10 @@ callbacks, err := client.Callback(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(callbacks) // the array of records
+// A []any of entities, one per record.
+for _, item := range callbacks.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
@@ -903,7 +823,7 @@ result, err := client.Callback(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -938,7 +858,6 @@ Create an instance: `contact := client.Contact(nil)`
 | `email` | `string` |  |
 | `first_name` | `string` |  |
 | `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
 | `groups` | `[]any` |  |
 | `id` | `string` | Object ID |
 | `idx` | `string` | User provided resource id |
@@ -946,14 +865,8 @@ Create an instance: `contact := client.Contact(nil)`
 | `name` | `string` | Group name |
 | `permissions` | `[]any` |  |
 | `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
 | `size` | `int` |  |
 | `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: Load
 
@@ -962,7 +875,7 @@ contact, err := client.Contact(nil).Load(map[string]any{"id": "contact_id"}, nil
 if err != nil {
     panic(err)
 }
-fmt.Println(contact) // the loaded record
+fmt.Println(contact.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: List
@@ -972,7 +885,10 @@ contacts, err := client.Contact(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(contacts) // the array of records
+// A []any of entities, one per record.
+for _, item := range contacts.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
@@ -994,7 +910,7 @@ result, err := client.Contact(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1015,33 +931,9 @@ Create an instance: `contactsField := client.ContactsField(nil)`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `[]any` |  |
 | `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `[]any` |  |
-| `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `string` |  |
+| `name` | `string` |  |
 | `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: List
 
@@ -1050,24 +942,21 @@ contactsFields, err := client.ContactsField(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(contactsFields) // the array of records
+// A []any of entities, one per record.
+for _, item := range contactsFields.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
 
 ```go
 result, err := client.ContactsField(nil).Create(map[string]any{
-    "contact_expire_after": 1,
-    "created_by": "example_created_by",
-    "date_created": "example_date_created",
-    "date_updated": "example_date_updated",
-    "gender": "example_gender",
-    "groups": []any{},
 }, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1081,46 +970,17 @@ Create an instance: `contactsFieldOption := client.ContactsFieldOption(nil)`
 | --- | --- |
 | `List(match, ctrl)` | List entities matching the criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
-| `group_id` | `string` | Object ID |
-| `groups` | `[]any` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `[]any` |  |
-| `phone_number` | `string` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `bool` | Has write permission |
-
 #### Example: List
 
 ```go
-contactsFieldOptions, err := client.ContactsFieldOption(nil).List(nil, nil)
+contactsFieldOptions, err := client.ContactsFieldOption(nil).List(map[string]any{"field_id": "example"}, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(contactsFieldOptions) // the array of records
+// A []any of entities, one per record.
+for _, item := range contactsFieldOptions.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1141,32 +1001,10 @@ Create an instance: `contactsgroup := client.Contactsgroup(nil)`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `string` |  |
-| `created_by` | `string` |  |
-| `date_created` | `string` |  |
-| `date_updated` | `string` |  |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` |  |
 | `group_id` | `string` | Object ID |
-| `groups` | `[]any` |  |
-| `id` | `string` | Object ID |
-| `idx` | `string` | User provided resource id |
-| `last_name` | `string` |  |
-| `name` | `string` | Group name |
-| `permissions` | `[]any` |  |
-| `phone_number` | `string` |  |
 | `read` | `bool` | Has read permission |
 | `send` | `bool` | Has send permission |
-| `source` | `string` |  |
-| `type` | `string` |  |
 | `username` | `string` |  |
-| `value` | `string` |  |
 | `write` | `bool` | Has write permission |
 
 #### Example: List
@@ -1176,21 +1014,17 @@ contactsgroups, err := client.Contactsgroup(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(contactsgroups) // the array of records
+// A []any of entities, one per record.
+for _, item := range contactsgroups.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
 
 ```go
 result, err := client.Contactsgroup(nil).Create(map[string]any{
-    "contact_expire_after": 1,
-    "created_by": "example_created_by",
-    "date_created": "example_date_created",
-    "date_updated": "example_date_updated",
-    "gender": "example_gender",
     "group_id": "example_group_id",
-    "groups": []any{},
-    "id": "example_id",
     "read": true,
     "send": true,
     "username": "example_username",
@@ -1199,7 +1033,7 @@ result, err := client.Contactsgroup(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1242,7 +1076,10 @@ fieldAvailables, err := client.FieldAvailable(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(fieldAvailables) // the array of records
+// A []any of entities, one per record.
+for _, item := range fieldAvailables.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1279,7 +1116,7 @@ group, err := client.Group(nil).Load(map[string]any{"id": "group_id"}, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(group) // the loaded record
+fmt.Println(group.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 
@@ -1311,7 +1148,7 @@ result, err := client.MfaCode(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1342,7 +1179,10 @@ optOuts, err := client.OptOut(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(optOuts) // the array of records
+// A []any of entities, one per record.
+for _, item := range optOuts.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1370,7 +1210,7 @@ optOutSetting, err := client.OptOutSetting(nil).Load(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(optOutSetting) // the loaded record
+fmt.Println(optOutSetting.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 
@@ -1399,11 +1239,11 @@ Create an instance: `permission := client.Permission(nil)`
 #### Example: Load
 
 ```go
-permission, err := client.Permission(nil).Load(map[string]any{"id": "permission_id", "group_id": "group_id", "username": "username"}, nil)
+permission, err := client.Permission(nil).Load(map[string]any{"id": "permission_id", "group_id": "group_id"}, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(permission) // the loaded record
+fmt.Println(permission.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: Create
@@ -1419,7 +1259,7 @@ result, err := client.Permission(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1447,7 +1287,10 @@ pings, err := client.Ping(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(pings) // the array of records
+// A []any of entities, one per record.
+for _, item := range pings.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1481,7 +1324,7 @@ profile, err := client.Profile(nil).Load(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(profile) // the loaded record
+fmt.Println(profile.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: List
@@ -1491,7 +1334,10 @@ profiles, err := client.Profile(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(profiles) // the array of records
+// A []any of entities, one per record.
+for _, item := range profiles.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1512,7 +1358,10 @@ rcss, err := client.Rcs(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(rcss) // the array of records
+// A []any of entities, one per record.
+for _, item := range rcss.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1545,7 +1394,7 @@ sendername, err := client.Sendername(nil).Load(map[string]any{"id": "sendername_
 if err != nil {
     panic(err)
 }
-fmt.Println(sendername) // the loaded record
+fmt.Println(sendername.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: List
@@ -1555,7 +1404,10 @@ sendernames, err := client.Sendername(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(sendernames) // the array of records
+// A []any of entities, one per record.
+for _, item := range sendernames.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
@@ -1566,7 +1418,7 @@ result, err := client.Sendername(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1595,7 +1447,10 @@ sendernameStatements, err := client.SendernameStatement(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(sendernameStatements) // the array of records
+// A []any of entities, one per record.
+for _, item := range sendernameStatements.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1615,7 +1470,7 @@ Create an instance: `sentRcsMessage := client.SentRcsMessage(nil)`
 | --- | --- | --- |
 | `content` | `map[string]any` | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Recipient phone number (e.g. |
-| `sender` | `any` |  |
+| `sender` | `string` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | Plain text message content. |
 
 #### Example: Create
@@ -1628,7 +1483,7 @@ result, err := client.SentRcsMessage(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1658,7 +1513,10 @@ shipmentCountryVolumes, err := client.ShipmentCountryVolume(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(shipmentCountryVolumes) // the array of records
+// A []any of entities, one per record.
+for _, item := range shipmentCountryVolumes.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 
@@ -1698,7 +1556,7 @@ shortUrl, err := client.ShortUrl(nil).Load(map[string]any{"id": "short_url_id"},
 if err != nil {
     panic(err)
 }
-fmt.Println(shortUrl) // the loaded record
+fmt.Println(shortUrl.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: List
@@ -1708,7 +1566,10 @@ shortUrls, err := client.ShortUrl(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(shortUrls) // the array of records
+// A []any of entities, one per record.
+for _, item := range shortUrls.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
@@ -1719,7 +1580,7 @@ result, err := client.ShortUrl(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1767,7 +1628,7 @@ result, err := client.Smsdo(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1786,12 +1647,12 @@ Create an instance: `smssendername := client.Smssendername(nil)`
 
 ```go
 result, err := client.Smssendername(nil).Create(map[string]any{
-    "sendername_id": "example_sendername_id",
+    "sender": "example_sender",
 }, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1844,7 +1705,7 @@ subuser, err := client.Subuser(nil).Load(map[string]any{"id": "subuser_id"}, nil
 if err != nil {
     panic(err)
 }
-fmt.Println(subuser) // the loaded record
+fmt.Println(subuser.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: List
@@ -1854,7 +1715,10 @@ subusers, err := client.Subuser(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(subusers) // the array of records
+// A []any of entities, one per record.
+for _, item := range subusers.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
@@ -1866,7 +1730,7 @@ result, err := client.Subuser(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1899,7 +1763,7 @@ template, err := client.Template(nil).Load(map[string]any{"id": "template_id"}, 
 if err != nil {
     panic(err)
 }
-fmt.Println(template) // the loaded record
+fmt.Println(template.(sdk.Entity).Data()) // the loaded entity's record
 ```
 
 #### Example: List
@@ -1909,7 +1773,10 @@ templates, err := client.Template(nil).List(nil, nil)
 if err != nil {
     panic(err)
 }
-fmt.Println(templates) // the array of records
+// A []any of entities, one per record.
+for _, item := range templates.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 #### Example: Create
@@ -1920,7 +1787,7 @@ result, err := client.Template(nil).Create(map[string]any{
 if err != nil {
     panic(err)
 }
-fmt.Println(result)
+fmt.Println(result.(sdk.Entity).Data()) // the created entity's record
 ```
 
 
@@ -1934,21 +1801,6 @@ Create an instance: `userRcsSenderCollection := client.UserRcsSenderCollection(n
 | --- | --- |
 | `List(match, ctrl)` | List entities matching the criteria. |
 
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `string` |  |
-| `expiredAt` | `string` |  |
-| `id` | `string` | Object ID |
-| `interface` | `string` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | RCS message type (basic, single, ...). |
-| `readAt` | `string` |  |
-| `recipient` | `string` | Recipient phone number (without +). |
-| `sender` | `string` | Sender name |
-| `senderId` | `string` | Sender id |
-| `sentAt` | `string` |  |
-
 #### Example: List
 
 ```go
@@ -1956,7 +1808,10 @@ userRcsSenderCollections, err := client.UserRcsSenderCollection(nil).List(nil, n
 if err != nil {
     panic(err)
 }
-fmt.Println(userRcsSenderCollections) // the array of records
+// A []any of entities, one per record.
+for _, item := range userRcsSenderCollections.([]any) {
+    fmt.Println(item.(sdk.Entity).Data())
+}
 ```
 
 ## Features
@@ -2375,7 +2230,9 @@ The Go SDK uses `map[string]any` throughout rather than typed structs.
 This mirrors the dynamic nature of the API and keeps the SDK
 flexible — no code generation is needed when the API schema changes.
 
-Use `core.ToMapAny()` to safely cast results and nested data.
+An operation returns the entity, and its `Data()` returns the record. Use
+`core.ToMapAny()` to safely cast that record, or data nested in it, to
+`map[string]any`: it returns `nil` for anything else, an entity included.
 
 ### Package structure
 
@@ -2395,15 +2252,15 @@ like `core.ToMapAny`.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `Load`, the entity
+Entity instances are stateful. After a successful `List`, the entity
 stores the returned data and match criteria internally.
 
 ```go
-permission := client.Permission(nil)
-permission.Load(map[string]any{"group_id": "example", "id": "example_id", "username": "example"}, nil)
+template := client.Template(nil)
+template.List(nil, nil)
 
-// permission.Data() now returns the permission data from the last load
-// permission.Match() returns the last match criteria
+// template.Data() now returns the template data from the last list
+// template.Match() returns the last match criteria
 ```
 
 Call `Make()` to create a fresh instance with the same configuration

@@ -316,8 +316,34 @@ public class CleanTest
         }),
     };
 
+    // Offline, as every generated suite is: the test OPTION resolves a
+    // required server variable to test-<name>, and installs no transport.
+    private static Dictionary<string, object?> Offline(Dictionary<string, object?> opts)
+    {
+        var copy = new Dictionary<string, object?>(opts);
+        copy["test"] = new Dictionary<string, object?> { ["active"] = true };
+        return copy;
+    }
+
+    // A client the sweep cannot build leaves nothing swept: a harness error,
+    // not a leak.
+    private static SmsapiSDK Construct(Dictionary<string, object?> opts)
+    {
+        try
+        {
+            return new SmsapiSDK(Offline(opts));
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException(
+                "clean harness: the client could not be constructed, so nothing was swept: " +
+                e.Message, e);
+        }
+    }
+
     private static SmsapiSDK MakeSdk(Scenario scenario, List<Sink> sinks,
-        Dictionary<string, object?>? cleanopts = null, BaseFeature? extra = null)
+        Dictionary<string, object?>? cleanopts = null, BaseFeature? extra = null,
+        Dictionary<string, object?>? auth = null)
     {
         Action<Dictionary<string, object?>> Capture(string name) =>
             rec => sinks.AddRange(FormsOf(name, rec));
@@ -385,7 +411,7 @@ public class CleanTest
             extend.Add(extra);
         }
 
-        return new SmsapiSDK(new Dictionary<string, object?>
+        var opts = new Dictionary<string, object?>
         {
             ["apikey"] = CanaryApikey,
             ["secret"] = CanarySecret,
@@ -394,7 +420,12 @@ public class CleanTest
             ["feature"] = feature,
             ["extend"] = extend,
             ["utility"] = new Dictionary<string, object?> { ["fetcher"] = fetcher },
-        });
+        };
+        if (null != auth)
+        {
+            opts["auth"] = auth;
+        }
+        return Construct(opts);
     }
 
     // Emitted from the model: every active entity with the operations it
@@ -441,6 +472,7 @@ public class CleanTest
             "load" => ent.Load(args, ctrl),
             "create" => ent.Create(args, ctrl),
             "update" => ent.Update(args, ctrl),
+            "patch" => ent.Patch(args, ctrl),
             "remove" => ent.Remove(args, ctrl),
             _ => throw new InvalidOperationException("unknown operation: " + op),
         };
@@ -472,7 +504,7 @@ public class CleanTest
     {
         var fetcher = (Context _ctx, string _url, Dictionary<string, object?> _def) =>
             (object?)Response(200, new Dictionary<string, object?> { ["id"] = "i1" });
-        var plain = new SmsapiSDK(new Dictionary<string, object?>
+        var plain = Construct(new Dictionary<string, object?>
         {
             ["apikey"] = CanaryApikey,
             ["utility"] = new Dictionary<string, object?> { ["fetcher"] = fetcher },
@@ -505,11 +537,12 @@ public class CleanTest
     {
         // A caller may keep the record it passed rather than read ctrl's entry.
         var held = ctrl.GetValueOrDefault("explain");
+        var entity = target.Candidate.Accessor(sdk);
         object? out_ = null;
         Exception? err = null;
         try
         {
-            out_ = Invoke(target.Candidate.Accessor(sdk), target.Op, target.Match, ctrl);
+            out_ = Invoke(entity, target.Op, target.Match, ctrl);
         }
         catch (Exception e)
         {
@@ -517,6 +550,8 @@ public class CleanTest
         }
         if (null != err) sinks.AddRange(FormsOf("error", err));
         if (null != out_) sinks.AddRange(FormsOf("result", out_));
+        // Raw, as a caller copying the match into another query reads it.
+        sinks.AddRange(FormsOf("match", entity.Match()));
         if (ctrl.TryGetValue("explain", out var explain) && null != explain)
         {
             sinks.AddRange(FormsOf("explain", explain));
@@ -581,16 +616,21 @@ public class CleanTest
             }
         }
 
+        // A name given at run time replaces the declared one: the match leaves
+        // out whichever name PrepareAuth placed.
+        Drive(MakeSdk(Scenarios[0], sinks, auth: new Dictionary<string, object?> { ["name"] = "zzcred" }),
+            target, new Dictionary<string, object?>(), sinks);
+
         // A credential mistyped as a map is rejected by validation, whose
         // message quotes the value it rejected.
         Exception? rejected = null;
         try
         {
-            new SmsapiSDK(new Dictionary<string, object?>
+            new SmsapiSDK(Offline(new Dictionary<string, object?>
             {
                 ["apikey"] = new Dictionary<string, object?> { ["value"] = CanaryApikey },
                 ["clean"] = new Dictionary<string, object?> { ["values"] = CanaryValue },
-            });
+            }));
         }
         catch (Exception e)
         {
@@ -749,11 +789,12 @@ public class CleanTest
 
     // A feature's name is not a field name: only the sensitive names inside
     // its settings register. An entity block, of per-entity settings or
-    // seeded records keyed by entity name and id, is not read at all.
+    // seeded records keyed by entity name and id, is not read at all, and nor
+    // are rbac's rules, keyed by entity and operation names.
     [Fact]
     public void AFeatureNameDoesNotMakeItsSettingsSecret()
     {
-        var sdk = new SmsapiSDK(new Dictionary<string, object?>
+        var sdk = Construct(new Dictionary<string, object?>
         {
             ["apikey"] = CanaryApikey,
             ["feature"] = new Dictionary<string, object?>
@@ -765,6 +806,11 @@ public class CleanTest
                 ["zzfeat"] = new Dictionary<string, object?>
                 {
                     ["active"] = false, ["apitoken"] = "FEATTOKEN-z9y8x7w6",
+                },
+                ["rbac"] = new Dictionary<string, object?>
+                {
+                    ["active"] = false,
+                    ["rules"] = new Dictionary<string, object?> { ["zztoken.load"] = "PLAINRULE-k7j5h3g1" },
                 },
                 ["test"] = new Dictionary<string, object?>
                 {
@@ -792,12 +838,13 @@ public class CleanTest
         Assert.Equal("token " + Mask, Cleaned("token FEATTOKEN-z9y8x7w6"));
         Assert.Equal("record PLAINRECORD-t5r3e1w9", Cleaned("record PLAINRECORD-t5r3e1w9"));
         Assert.Equal("alias PLAINALIAS-m2n4b6v8", Cleaned("alias PLAINALIAS-m2n4b6v8"));
+        Assert.Equal("rule PLAINRULE-k7j5h3g1", Cleaned("rule PLAINRULE-k7j5h3g1"));
     }
 
     [Fact]
     public void TheGeneratedConfigsOwnCleanBlockIsHonoured()
     {
-        var utility = new SmsapiSDK(new Dictionary<string, object?>()).GetUtility();
+        var utility = Construct(new Dictionary<string, object?>()).GetUtility();
         var config = new Dictionary<string, object?>
         {
             ["options"] = new Dictionary<string, object?>
@@ -835,7 +882,7 @@ public class CleanTest
     [Fact]
     public void WithNoCleanBlockTheSchemaDefaultsApply()
     {
-        var utility = new SmsapiSDK(new Dictionary<string, object?>()).GetUtility();
+        var utility = Construct(new Dictionary<string, object?>()).GetUtility();
         var ctx = utility.MakeContext(new Dictionary<string, object?>
         {
             ["utility"] = utility,

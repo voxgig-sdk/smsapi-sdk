@@ -6,18 +6,29 @@ import java.nio.file.Paths
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 
+import voxgig.smsapisdk.core.Config
+import voxgig.smsapisdk.core.Context
 import voxgig.smsapisdk.core.Helpers
 import voxgig.smsapisdk.core.SdkEntity
+import voxgig.smsapisdk.core.SdkError
 import voxgig.smsapisdk.core.SmsapiSDK
+import voxgig.smsapisdk.feature.BaseFeature
 import voxgig.smsapisdk.utility.Json
 import voxgig.smsapisdk.utility.struct.Struct
 
 @Suppress("UNCHECKED_CAST", "UNUSED_VARIABLE", "UNUSED_VALUE")
 class PermissionEntityTest {
+
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  private val LIVE_STRICT = true
 
   @Test
   fun instance() {
@@ -38,10 +49,13 @@ class PermissionEntityTest {
         if (reason == null || "" == reason) "skipped via sdk-test-control.json" else reason,
       )
     }
-    Assumptions.assumeFalse(
-      setup.syntheticOnly,
-      "live entity test uses synthetic IDs from fixture — set SMSAPI_TEST_PERMISSION_ENTID JSON to run live",
-    )
+    if (setup.live) {
+      for (liveKey in arrayOf<String>("group01")) {
+        if (setup.syntheticOnly || setup.idmap?.get(liveKey) == null) {
+          RunnerSupport.liveMiss(LIVE_STRICT, "Live entity test blocked: needs " + liveKey + " via SMSAPI_TEST_PERMISSION_ENTID")
+        }
+      }
+    }
     val client = setup.client
 
     // CREATE
@@ -64,6 +78,23 @@ class PermissionEntityTest {
     assertEquals(permissionRef01Data["id"], permissionRef01DataDt0LoadResult["id"],
         "expected load result id to match")
 
+  }
+
+  private fun hasFeature(name: String): Boolean {
+    val fm = Helpers.toMapAny(Config.sharedConfig()["feature"])
+    return fm != null && fm[name] != null
+  }
+
+  @Test
+  fun validate() {
+    Assumptions.assumeTrue(hasFeature("validate"), "feature not present in this SDK: validate")
+    val client = SmsapiSDK.testSDK(null, linkedMapOf<String, Any?>(
+      "feature" to linkedMapOf<String, Any?>(
+        "validate" to linkedMapOf<String, Any?>("active" to true))))
+    val err = assertThrows(SdkError::class.java) {
+      client.permission(null).load(linkedMapOf<String, Any?>("group_id" to 1, "id" to "x"), null)
+    }
+    assertEquals("validate_failed", err.code)
   }
 
   companion object {
@@ -98,7 +129,7 @@ class PermissionEntityTest {
           "\"`\$VAL`\": [\"`\$FORMAT`\", \"upper\", \"`\$COPY`\"]" +
           "}]}"))
 
-      // Detect ENTID env override before envOverride consumes it.
+      // Whether *_ENTID supplied the idmap, read before envOverride consumes it.
       val entidEnvRaw = RunnerSupport.getenv("SMSAPI_TEST_PERMISSION_ENTID")
       val idmapOverridden = entidEnvRaw != null && entidEnvRaw.trim().startsWith("{")
 

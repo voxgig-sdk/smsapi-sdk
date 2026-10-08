@@ -38,6 +38,10 @@ main: kit: entity: available: {
           }
           m: "GET"
           o: "/sms/templates/available"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "sms"

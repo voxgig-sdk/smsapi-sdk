@@ -24,3 +24,14 @@ let () =
       check "load data is a map" (ismap loaded_data);
       check_vstr "load id" (getp loaded_data "id") "blacklist01";
       ())
+
+let () =
+  test "blacklist.validate" (fun () ->
+      if Harness.has_feature "validate" then begin
+        let client = Sdk_client.test_with Noval
+            (jo [("feature", jo [("validate", jo [("active", Bool true)])])]) in
+        let ent = Sdk_client.blacklist client Noval in
+        let err = (try ignore (ent.e_load (jo [("limit", Str "x")]) Noval); None with e -> Some e) in
+        check_str "validate refuses an invalid request"
+          (match err with Some (Sdk_error_exc er) -> er.err_code | _ -> "<no SDK error>") "validate_failed"
+      end)

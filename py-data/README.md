@@ -52,10 +52,10 @@ os.environ["SMSAPI_APIKEY"] = "your-api-key"
 |---|---|---|---|
 | `availables()` | `available` | DataFrame | 3 |
 | `callbacks()` | `callback` | DataFrame | 8 |
-| `contacts()` | `contact` | DataFrame | 29 |
-| `contacts_fields()` | `contacts_field` | DataFrame | 27 |
-| `contacts_field_options()` | `contacts_field_option` | DataFrame | 27 |
-| `contactsgroups()` | `contactsgroup` | DataFrame | 27 |
+| `contacts()` | `contact` | DataFrame | 22 |
+| `contacts_fields()` | `contacts_field` | DataFrame | 3 |
+| `contacts_field_options()` | `contacts_field_option` | DataFrame | 0 |
+| `contactsgroups()` | `contactsgroup` | DataFrame | 5 |
 | `field_availables()` | `field_available` | DataFrame | 5 |
 | `opt_outs()` | `opt_out` | DataFrame | 4 |
 | `pings()` | `ping` | DataFrame | 2 |
@@ -67,9 +67,9 @@ os.environ["SMSAPI_APIKEY"] = "your-api-key"
 | `short_urls()` | `short_url` | DataFrame | 10 |
 | `subusers()` | `subuser` | DataFrame | 6 |
 | `templates()` | `template` | DataFrame | 4 |
-| `user_rcs_sender_collections()` | `user_rcs_sender_collection` | DataFrame | 10 |
+| `user_rcs_sender_collections()` | `user_rcs_sender_collection` | DataFrame | 0 |
 | `callback(id)` | `callback` | Series | 8 |
-| `contact(id)` | `contact` | Series | 29 |
+| `contact(id)` | `contact` | Series | 22 |
 | `group(id)` | `group` | Series | 10 |
 | `permission(id)` | `permission` | Series | 6 |
 | `sendername(id)` | `sendername` | Series | 5 |
@@ -129,7 +129,6 @@ Every frame accessor takes the same keyword arguments:
 | `email` | `string` |  |
 | `first_name` | `string` |  |
 | `gender` | `string` | yes |
-| `group_id` | `string` |  |
 | `groups` | `object` | yes |
 | `id` | `string` | yes |
 | `idx` | `string` |  |
@@ -137,109 +136,29 @@ Every frame accessor takes the same keyword arguments:
 | `name` | `string` | yes |
 | `permissions` | `object` |  |
 | `phone_number` | `string` |  |
-| `read` | `boolean` |  |
-| `send` | `boolean` |  |
 | `size` | `Int64` | yes |
 | `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` |  |
 
 ### contacts_field
 
 | Column | dtype | Required |
 |---|---|---|
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `Int64` | yes |
-| `contacts_count` | `Int64` |  |
-| `country` | `string` |  |
-| `created_by` | `string` | yes |
-| `date_created` | `string` | yes |
-| `date_updated` | `string` | yes |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` | yes |
-| `group_id` | `string` |  |
-| `groups` | `object` | yes |
 | `id` | `string` |  |
-| `idx` | `string` |  |
-| `last_name` | `string` |  |
 | `name` | `string` |  |
-| `permissions` | `object` |  |
-| `phone_number` | `string` |  |
-| `read` | `boolean` |  |
-| `send` | `boolean` |  |
-| `source` | `string` |  |
 | `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` |  |
 
 ### contacts_field_option
 
-| Column | dtype | Required |
-|---|---|---|
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `Int64` | yes |
-| `contacts_count` | `Int64` |  |
-| `country` | `string` |  |
-| `created_by` | `string` | yes |
-| `date_created` | `string` | yes |
-| `date_updated` | `string` | yes |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` | yes |
-| `group_id` | `string` |  |
-| `groups` | `object` | yes |
-| `id` | `string` | yes |
-| `idx` | `string` |  |
-| `last_name` | `string` |  |
-| `name` | `string` |  |
-| `permissions` | `object` |  |
-| `phone_number` | `string` |  |
-| `read` | `boolean` |  |
-| `send` | `boolean` |  |
-| `source` | `string` |  |
-| `type` | `string` |  |
-| `username` | `string` |  |
-| `value` | `string` |  |
-| `write` | `boolean` |  |
+No fields are declared for this entity in the API model.
 
 ### contactsgroup
 
 | Column | dtype | Required |
 |---|---|---|
-| `birthday_date` | `string` |  |
-| `city` | `string` |  |
-| `contact_expire_after` | `Int64` | yes |
-| `contacts_count` | `Int64` |  |
-| `country` | `string` |  |
-| `created_by` | `string` | yes |
-| `date_created` | `string` | yes |
-| `date_updated` | `string` | yes |
-| `description` | `string` |  |
-| `email` | `string` |  |
-| `first_name` | `string` |  |
-| `gender` | `string` | yes |
 | `group_id` | `string` | yes |
-| `groups` | `object` | yes |
-| `id` | `string` | yes |
-| `idx` | `string` |  |
-| `last_name` | `string` |  |
-| `name` | `string` |  |
-| `permissions` | `object` |  |
-| `phone_number` | `string` |  |
 | `read` | `boolean` | yes |
 | `send` | `boolean` | yes |
-| `source` | `string` |  |
-| `type` | `string` |  |
 | `username` | `string` | yes |
-| `value` | `string` |  |
 | `write` | `boolean` | yes |
 
 ### field_available
@@ -348,18 +267,7 @@ No fields are declared for this entity in the API model.
 
 ### user_rcs_sender_collection
 
-| Column | dtype | Required |
-|---|---|---|
-| `deliveredAt` | `string` |  |
-| `expiredAt` | `string` |  |
-| `id` | `string` |  |
-| `interface` | `string` |  |
-| `messageType` | `string` |  |
-| `readAt` | `string` |  |
-| `recipient` | `string` |  |
-| `sender` | `string` |  |
-| `senderId` | `string` |  |
-| `sentAt` | `string` |  |
+No fields are declared for this entity in the API model.
 
 ### group
 

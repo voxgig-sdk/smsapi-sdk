@@ -112,6 +112,16 @@
 
 (declare test-build-args make-netsim)
 
+;; The key a list's response transform
+;; ["`$EACH`", "body", {"`$MERGE`": "`.<key>`"}] reads each item's record under.
+(defn- item-envelope-key [spec]
+  (when (and (vs/islist spec) (= 3 (count spec))
+             (= "`$EACH`" (first spec)) (= "body" (second spec))
+             (vs/ismap (nth spec 2)))
+    (let [merge (vs/getprop (nth spec 2) "`$MERGE`")]
+      (when (string? merge)
+        (second (re-matches #"`\.([^.`$]+)`" merge))))))
+
 (defn test-feature []
   (let [fa (new-feature "test" true "0.0.1")]
     (swap! fa assoc
@@ -136,16 +146,20 @@
                        ;; scope here, so the point is the one being served.
                        (let [envelope (fn [data]
                                         (let [tm (vs/getprop (core/oget fctx :point) "transform")
-                                              spec (vs/getprop tm "res")]
-                                          ;; Rebuild whatever nesting the transform unwraps;
-                                          ;; GraphQL ops unwrap `body.data.<field>`.
-                                          (if (and (some? data) (string? spec))
+                                              spec (vs/getprop tm "res")
+                                              ikey (item-envelope-key spec)]
+                                          (cond
+                                            (and (some? ikey) (vs/islist data))
+                                            (apply vs/jt (map (fn [item] (vs/jm ikey item)) data))
+                                            ;; Rebuild whatever nesting the transform unwraps;
+                                            ;; GraphQL ops unwrap `body.data.<field>`.
+                                            (and (some? data) (string? spec))
                                             (if-let [m (re-matches #"`body\.(.+)`" spec)]
                                               (reduce (fn [out seg] (vs/jm seg out))
                                                       data
                                                       (reverse (str/split (second m) #"\." -1)))
                                               data)
-                                            data)))
+                                            :else data)))
                              respond (fn [status data extra]
                                        (let [payload (envelope data)
                                              out (vs/jm "status" status "statusText" "OK"
@@ -177,7 +191,7 @@
                              (if (nil? found) (respond 404 nil (vs/jm "statusText" "Not found"))
                                  (do (when (vs/islist found) (doseq [item (vec found)] (vs/delprop item "$KEY")))
                                      (respond 200 (vs/clone found) nil))))
-                           (= opn "update")
+                           (or (= opn "update") (= opn "patch"))
                            (let [update-match (vs/jm)
                                  reqdata (core/oget fctx :reqdata)]
                              (when (vs/ismap reqdata)
@@ -194,7 +208,8 @@
                                ;; update miss: 404, never another record
                                (if (nil? ent) (respond 404 nil (vs/jm "statusText" "Not found"))
                                    (do (when (and (vs/ismap ent) (vs/ismap reqdata))
-                                         (vs/merge (vs/jt ent reqdata)))
+                                         ;; `$body` travels on the wire alone; the record is the rest.
+                                         (vs/merge (vs/jt ent (doto (vs/clone reqdata) (vs/delprop "$body")))))
                                        (vs/delprop ent "$KEY")
                                        (respond 200 (vs/clone ent) nil)))))
                            (= opn "remove")
@@ -209,7 +224,8 @@
                                             (format "%04x%04x%04x%04x" (rand-int 0x10000) (rand-int 0x10000) (rand-int 0x10000) (rand-int 0x10000)))
                                      ent (vs/clone (core/oget fctx :reqdata))]
                                  (if (vs/ismap ent)
-                                   (do (.put ^java.util.Map ent "id" id)
+                                   (do (vs/delprop ent "$body")
+                                       (.put ^java.util.Map ent "id" id)
                                        (when (string? id) (.put ^java.util.Map entmap (str id) ent))
                                        (vs/delprop ent "$KEY")
                                        (respond 200 (vs/clone ent) nil))
@@ -380,18 +396,24 @@
         (fn [ctx url fetchdef inner]
           (let [ms (opt fa "ms" 30000)]
             (if (<= ms 0) (inner ctx url fetchdef)
-                (let [now (opt fa "now")]
-                  (if (fn? now)
-                    (let [start (now) r (inner ctx url fetchdef)]
-                      (if (> (- (now) start) ms)
-                        (do (track! ms) [nil (core/ctx-error ctx "timeout" (str "Request exceeded timeout of " ms "ms"))])
-                        r))
-                    (let [fut (future (inner ctx url fetchdef))
-                          r (deref fut (long ms) ::timeout)]
-                      (if (= r ::timeout)
-                        (do (future-cancel fut) (track! ms)
-                            [nil (core/ctx-error ctx "timeout" (str "Request exceeded timeout of " ms "ms"))])
-                        r)))))))]
+                ;; The deadline runs from here, not from the deref below: a
+                ;; caller paused between the two would otherwise find a late
+                ;; response complete and take it. The future notes when it
+                ;; finished, so a response or a failure after the deadline is
+                ;; a timeout however late the caller looks.
+                (let [now (let [n (opt fa "now")] (if (fn? n) n #(System/currentTimeMillis)))
+                      start (now)
+                      arrived (atom Long/MAX_VALUE)
+                      fut (future (try (inner ctx url fetchdef) (finally (reset! arrived (now)))))
+                      remaining (max 0 (- ms (- (now) start)))
+                      late? (fn [] (< ms (- @arrived start)))
+                      r (try (deref fut (long remaining) ::timeout)
+                             (catch java.util.concurrent.ExecutionException e
+                               (if (late?) ::timeout (throw (or (.getCause e) e)))))]
+                  (if (or (= r ::timeout) (late?))
+                    (do (future-cancel fut) (track! ms)
+                        [nil (core/ctx-error ctx "timeout" (str "Request exceeded timeout of " ms "ms"))])
+                    r)))))]
     (swap! fa assoc
            "init" (fn [ctx options]
                     (swap! fa assoc :client (core/oget ctx :client)
@@ -1471,6 +1493,8 @@
                     ;; call would be rejected for the one key that made it
                     ;; reachable.
                     (.remove ^java.util.Map out "$action")
+                    ;; Nor is `$body`, the raw request body.
+                    (.remove ^java.util.Map out "$body")
                     out))]
     (swap! fa assoc :spec (vs/jm) :request true :response false :mode "throw")
     (swap! fa assoc

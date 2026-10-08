@@ -46,5 +46,7 @@ public class AvailableEntity : SmsapiEntityBase
 
     // (update not defined by this API - base class throws UnsupportedOp)
 
+    // (patch not defined by this API - base class throws UnsupportedOp)
+
     // (remove not defined by this API - base class throws UnsupportedOp)
 }

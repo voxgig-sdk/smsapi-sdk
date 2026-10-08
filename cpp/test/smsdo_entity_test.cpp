@@ -66,6 +66,27 @@ static void smsdo_entity_instance() {
 }
 
 
+static bool smsdo_has_feature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
+
+static void smsdo_entity_validate() {
+  if (!smsdo_has_feature("validate")) {
+    std::cerr << "skip: feature not present in this SDK: validate\n";
+    return;
+  }
+  auto vsdk = SmsapiSDK::testSDK(Value::undef(), vmap({{"feature",
+      vmap({{"validate", vmap({{"active", Value(true)}})}})}}));
+  std::string code;
+  try {
+    vsdk->smsdo()->create(vmap({{"allow_duplicates", Value("x")}}), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    code = err->code;
+  }
+  ASSERT_EQ(code, std::string("validate_failed"), "an invalid request fails with validate_failed");
+}
+
 static void smsdo_entity_basic() {
   auto setup = smsdo_basic_setup(Value::undef());
   std::string mode = setup.live ? "live" : "unit";
@@ -89,6 +110,7 @@ static void smsdo_entity_basic() {
 
 int main() {
   T_RUN(smsdo_entity_instance);
+  T_RUN(smsdo_entity_validate);
   T_RUN(smsdo_entity_basic);
   return sdktest::summary("smsdo_entity_test");
 }

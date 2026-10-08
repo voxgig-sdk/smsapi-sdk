@@ -308,6 +308,7 @@ local function make_config()
         },
         ["optspec"] = {
           ["clearTimer"] = "`$FUNCTION`",
+          ["now"] = "`$FUNCTION`",
           ["setTimer"] = "`$FUNCTION`",
         },
         ["strict"] = false,
@@ -430,6 +431,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -481,6 +486,28 @@ local function make_config()
                 ["select"] = {
                   ["$action"] = "phone_number",
                 },
+                ["body"] = {
+                  ["alternatives"] = {
+                    {
+                      ["fields"] = {
+                        {
+                          ["name"] = "expire_at",
+                        },
+                        {
+                          ["name"] = "phone_number",
+                        },
+                      },
+                      ["kind"] = "form",
+                      ["media"] = "application/x-www-form-urlencoded",
+                    },
+                  },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -509,6 +536,21 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["alternatives"] = {
+                    {
+                      ["kind"] = "raw",
+                      ["media"] = "text/csv",
+                    },
+                  },
+                  ["fields"] = {
+                    {
+                      ["name"] = "import",
+                    },
+                  },
+                  ["kind"] = "multipart",
+                  ["media"] = "multipart/form-data",
+                },
               },
             },
           },
@@ -580,13 +622,16 @@ local function make_config()
                 },
                 ["select"] = {
                   ["$action"] = "phone_number",
-                  ["exist"] = {
-                    "accept",
-                    "limit",
-                    "offset",
-                    "q",
-                    "x_async",
+                },
+                ["response"] = {
+                  ["alternatives"] = {
+                    {
+                      ["kind"] = "raw",
+                      ["media"] = "text/csv",
+                    },
                   },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -671,9 +716,6 @@ local function make_config()
                 },
                 ["select"] = {
                   ["$action"] = "phone_number",
-                  ["exist"] = {
-                    "phone_number",
-                  },
                 },
               },
             },
@@ -766,6 +808,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -792,6 +838,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -836,6 +886,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
               {
@@ -884,6 +938,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -974,6 +1032,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
               {
@@ -1097,11 +1159,6 @@ local function make_config()
             ["title"] = "Collection",
             ["type"] = "`$ARRAY`",
             ["req"] = true,
-            ["op"] = {
-              ["update"] = {
-                ["type"] = "`$ARRAY`",
-              },
-            },
           },
           {
             ["name"] = "contact_expire_after",
@@ -1115,11 +1172,6 @@ local function make_config()
             ["title"] = "Contacts Count",
             ["type"] = "`$INTEGER`",
             ["req"] = true,
-            ["op"] = {
-              ["list"] = {
-                ["type"] = "`$INTEGER`",
-              },
-            },
           },
           {
             ["name"] = "country",
@@ -1175,13 +1227,6 @@ local function make_config()
             ["req"] = true,
           },
           {
-            ["name"] = "group_id",
-            ["title"] = "Group Id",
-            ["type"] = "`$STRING`",
-            ["short"] = "Object ID",
-            ["format"] = "oid",
-          },
-          {
             ["name"] = "groups",
             ["title"] = "Groups",
             ["type"] = "`$ARRAY`",
@@ -1211,11 +1256,6 @@ local function make_config()
             ["title"] = "Name",
             ["type"] = "`$STRING`",
             ["req"] = true,
-            ["op"] = {
-              ["list"] = {
-                ["type"] = "`$STRING`",
-              },
-            },
             ["short"] = "Group name",
           },
           {
@@ -1229,18 +1269,6 @@ local function make_config()
             ["type"] = "`$STRING`",
           },
           {
-            ["name"] = "read",
-            ["title"] = "Read",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has read permission",
-          },
-          {
-            ["name"] = "send",
-            ["title"] = "Send",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has send permission",
-          },
-          {
             ["name"] = "size",
             ["title"] = "Size",
             ["type"] = "`$INTEGER`",
@@ -1250,27 +1278,6 @@ local function make_config()
             ["name"] = "source",
             ["title"] = "Source",
             ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "type",
-            ["title"] = "Type",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "username",
-            ["title"] = "Username",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "value",
-            ["title"] = "Value",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "write",
-            ["title"] = "Write",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has write permission",
           },
         },
         ["id"] = {
@@ -1330,6 +1337,14 @@ local function make_config()
                     "id",
                   },
                 },
+                ["body"] = {
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -1350,6 +1365,61 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "birthday_date",
+                    },
+                    {
+                      ["name"] = "browser",
+                    },
+                    {
+                      ["name"] = "city",
+                    },
+                    {
+                      ["name"] = "country",
+                    },
+                    {
+                      ["name"] = "description",
+                    },
+                    {
+                      ["name"] = "device",
+                    },
+                    {
+                      ["name"] = "email",
+                    },
+                    {
+                      ["name"] = "first_name",
+                    },
+                    {
+                      ["name"] = "gender",
+                    },
+                    {
+                      ["name"] = "idx",
+                    },
+                    {
+                      ["name"] = "last_name",
+                    },
+                    {
+                      ["name"] = "operating_system",
+                    },
+                    {
+                      ["name"] = "phone_number",
+                    },
+                    {
+                      ["name"] = "source",
+                    },
+                    {
+                      ["name"] = "undelivered_messages",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -1357,112 +1427,6 @@ local function make_config()
             ["input"] = "data",
             ["name"] = "list",
             ["points"] = {
-              {
-                ["kind"] = "http",
-                ["method"] = "GET",
-                ["orig"] = "/contacts",
-                ["segments"] = {
-                  {
-                    ["lit"] = "contacts",
-                  },
-                },
-                ["parts"] = {
-                  "contacts",
-                },
-                ["rename"] = {},
-                ["transform"] = {
-                  ["req"] = "`reqdata`",
-                  ["res"] = "`body.collection`",
-                },
-                ["args"] = {
-                  ["query"] = {
-                    {
-                      ["name"] = "birthday_date",
-                      ["orig"] = "birthday_date",
-                      ["type"] = "`$ARRAY`",
-                      ["kind"] = "query",
-                      ["example"] = "2022-06-24",
-                    },
-                    {
-                      ["name"] = "email",
-                      ["orig"] = "email",
-                      ["type"] = "`$ARRAY`",
-                      ["kind"] = "query",
-                    },
-                    {
-                      ["name"] = "first_name",
-                      ["orig"] = "first_name",
-                      ["type"] = "`$ARRAY`",
-                      ["kind"] = "query",
-                    },
-                    {
-                      ["name"] = "gender",
-                      ["orig"] = "gender",
-                      ["type"] = "`$STRING`",
-                      ["kind"] = "query",
-                    },
-                    {
-                      ["name"] = "group_id",
-                      ["orig"] = "group_id",
-                      ["type"] = "`$ARRAY`",
-                      ["kind"] = "query",
-                    },
-                    {
-                      ["name"] = "last_name",
-                      ["orig"] = "last_name",
-                      ["type"] = "`$ARRAY`",
-                      ["kind"] = "query",
-                    },
-                    {
-                      ["name"] = "limit",
-                      ["orig"] = "limit",
-                      ["type"] = "`$INTEGER`",
-                      ["kind"] = "query",
-                      ["example"] = 5,
-                    },
-                    {
-                      ["name"] = "offset",
-                      ["orig"] = "offset",
-                      ["type"] = "`$INTEGER`",
-                      ["kind"] = "query",
-                      ["example"] = 0,
-                    },
-                    {
-                      ["name"] = "order_by",
-                      ["orig"] = "order_by",
-                      ["type"] = "`$STRING`",
-                      ["kind"] = "query",
-                    },
-                    {
-                      ["name"] = "phone_number",
-                      ["orig"] = "phone_number",
-                      ["type"] = "`$ARRAY`",
-                      ["kind"] = "query",
-                    },
-                    {
-                      ["name"] = "q",
-                      ["orig"] = "q",
-                      ["type"] = "`$STRING`",
-                      ["kind"] = "query",
-                    },
-                  },
-                },
-                ["select"] = {
-                  ["exist"] = {
-                    "birthday_date",
-                    "email",
-                    "first_name",
-                    "gender",
-                    "group_id",
-                    "last_name",
-                    "limit",
-                    "offset",
-                    "order_by",
-                    "phone_number",
-                    "q",
-                  },
-                },
-              },
               {
                 ["kind"] = "http",
                 ["method"] = "GET",
@@ -1509,6 +1473,112 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
+              },
+              {
+                ["kind"] = "http",
+                ["method"] = "GET",
+                ["orig"] = "/contacts",
+                ["segments"] = {
+                  {
+                    ["lit"] = "contacts",
+                  },
+                },
+                ["parts"] = {
+                  "contacts",
+                },
+                ["rename"] = {},
+                ["transform"] = {
+                  ["req"] = "`reqdata`",
+                  ["res"] = "`body.collection`",
+                },
+                ["args"] = {
+                  ["query"] = {
+                    {
+                      ["name"] = "birthday_date",
+                      ["orig"] = "birthday_date",
+                      ["type"] = "`$ARRAY`",
+                      ["kind"] = "query",
+                      ["example"] = "2022-06-24",
+                      ["field"] = true,
+                    },
+                    {
+                      ["name"] = "email",
+                      ["orig"] = "email",
+                      ["type"] = "`$ARRAY`",
+                      ["kind"] = "query",
+                      ["field"] = true,
+                    },
+                    {
+                      ["name"] = "first_name",
+                      ["orig"] = "first_name",
+                      ["type"] = "`$ARRAY`",
+                      ["kind"] = "query",
+                      ["field"] = true,
+                    },
+                    {
+                      ["name"] = "gender",
+                      ["orig"] = "gender",
+                      ["type"] = "`$STRING`",
+                      ["kind"] = "query",
+                      ["field"] = true,
+                    },
+                    {
+                      ["name"] = "group_id",
+                      ["orig"] = "group_id",
+                      ["type"] = "`$ARRAY`",
+                      ["kind"] = "query",
+                    },
+                    {
+                      ["name"] = "last_name",
+                      ["orig"] = "last_name",
+                      ["type"] = "`$ARRAY`",
+                      ["kind"] = "query",
+                      ["field"] = true,
+                    },
+                    {
+                      ["name"] = "limit",
+                      ["orig"] = "limit",
+                      ["type"] = "`$INTEGER`",
+                      ["kind"] = "query",
+                      ["example"] = 5,
+                    },
+                    {
+                      ["name"] = "offset",
+                      ["orig"] = "offset",
+                      ["type"] = "`$INTEGER`",
+                      ["kind"] = "query",
+                      ["example"] = 0,
+                    },
+                    {
+                      ["name"] = "order_by",
+                      ["orig"] = "order_by",
+                      ["type"] = "`$STRING`",
+                      ["kind"] = "query",
+                    },
+                    {
+                      ["name"] = "phone_number",
+                      ["orig"] = "phone_number",
+                      ["type"] = "`$ARRAY`",
+                      ["kind"] = "query",
+                      ["field"] = true,
+                    },
+                    {
+                      ["name"] = "q",
+                      ["orig"] = "q",
+                      ["type"] = "`$STRING`",
+                      ["kind"] = "query",
+                    },
+                  },
+                },
+                ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -1581,6 +1651,10 @@ local function make_config()
                     "group_id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -1642,6 +1716,10 @@ local function make_config()
                     "id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -1684,6 +1762,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -1886,6 +1968,10 @@ local function make_config()
                     "group_id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -1947,6 +2033,10 @@ local function make_config()
                     "id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -1990,6 +2080,43 @@ local function make_config()
                     "id",
                   },
                 },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "birthday_date",
+                    },
+                    {
+                      ["name"] = "city",
+                    },
+                    {
+                      ["name"] = "description",
+                    },
+                    {
+                      ["name"] = "email",
+                    },
+                    {
+                      ["name"] = "first_name",
+                    },
+                    {
+                      ["name"] = "gender",
+                    },
+                    {
+                      ["name"] = "last_name",
+                    },
+                    {
+                      ["name"] = "phone_number",
+                    },
+                    {
+                      ["name"] = "source",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -2008,165 +2135,21 @@ local function make_config()
       ["contacts_field"] = {
         ["fields"] = {
           {
-            ["name"] = "birthday_date",
-            ["title"] = "Birthday Date",
-            ["type"] = "`$STRING`",
-            ["format"] = "date",
-          },
-          {
-            ["name"] = "city",
-            ["title"] = "City",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "contact_expire_after",
-            ["title"] = "Contact Expire After",
-            ["type"] = "`$INTEGER`",
-            ["req"] = true,
-            ["short"] = "Contact expire after days",
-          },
-          {
-            ["name"] = "contacts_count",
-            ["title"] = "Contacts Count",
-            ["type"] = "`$INTEGER`",
-          },
-          {
-            ["name"] = "country",
-            ["title"] = "Country",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "created_by",
-            ["title"] = "Created By",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-          },
-          {
-            ["name"] = "date_created",
-            ["title"] = "Date Created",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "date_updated",
-            ["title"] = "Date Updated",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "description",
-            ["title"] = "Description",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "email",
-            ["title"] = "Email",
-            ["type"] = "`$STRING`",
-            ["format"] = "email",
-          },
-          {
-            ["name"] = "first_name",
-            ["title"] = "First Name",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "gender",
-            ["title"] = "Gender",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-          },
-          {
-            ["name"] = "group_id",
-            ["title"] = "Group Id",
-            ["type"] = "`$STRING`",
-            ["short"] = "Object ID",
-            ["format"] = "oid",
-          },
-          {
-            ["name"] = "groups",
-            ["title"] = "Groups",
-            ["type"] = "`$ARRAY`",
-            ["req"] = true,
-          },
-          {
             ["name"] = "id",
             ["title"] = "Id",
             ["type"] = "`$STRING`",
-            ["op"] = {
-              ["list"] = {
-                ["req"] = true,
-                ["type"] = "`$STRING`",
-              },
-            },
             ["short"] = "Object ID",
             ["format"] = "oid",
-          },
-          {
-            ["name"] = "idx",
-            ["title"] = "Idx",
-            ["type"] = "`$STRING`",
-            ["short"] = "User provided resource id",
-          },
-          {
-            ["name"] = "last_name",
-            ["title"] = "Last Name",
-            ["type"] = "`$STRING`",
           },
           {
             ["name"] = "name",
             ["title"] = "Name",
-            ["type"] = "`$STRING`",
-            ["short"] = "Group name",
-          },
-          {
-            ["name"] = "permissions",
-            ["title"] = "Permissions",
-            ["type"] = "`$ARRAY`",
-          },
-          {
-            ["name"] = "phone_number",
-            ["title"] = "Phone Number",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "read",
-            ["title"] = "Read",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has read permission",
-          },
-          {
-            ["name"] = "send",
-            ["title"] = "Send",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has send permission",
-          },
-          {
-            ["name"] = "source",
-            ["title"] = "Source",
             ["type"] = "`$STRING`",
           },
           {
             ["name"] = "type",
             ["title"] = "Type",
             ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "username",
-            ["title"] = "Username",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "value",
-            ["title"] = "Value",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "write",
-            ["title"] = "Write",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has write permission",
           },
         },
         ["id"] = {
@@ -2202,6 +2185,22 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "name",
+                    },
+                    {
+                      ["name"] = "type",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -2232,6 +2231,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -2338,6 +2341,19 @@ local function make_config()
                     "id",
                   },
                 },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "name",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -2347,168 +2363,7 @@ local function make_config()
         },
       },
       ["contacts_field_option"] = {
-        ["fields"] = {
-          {
-            ["name"] = "birthday_date",
-            ["title"] = "Birthday Date",
-            ["type"] = "`$STRING`",
-            ["format"] = "date",
-          },
-          {
-            ["name"] = "city",
-            ["title"] = "City",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "contact_expire_after",
-            ["title"] = "Contact Expire After",
-            ["type"] = "`$INTEGER`",
-            ["req"] = true,
-            ["short"] = "Contact expire after days",
-          },
-          {
-            ["name"] = "contacts_count",
-            ["title"] = "Contacts Count",
-            ["type"] = "`$INTEGER`",
-          },
-          {
-            ["name"] = "country",
-            ["title"] = "Country",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "created_by",
-            ["title"] = "Created By",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-          },
-          {
-            ["name"] = "date_created",
-            ["title"] = "Date Created",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "date_updated",
-            ["title"] = "Date Updated",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "description",
-            ["title"] = "Description",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "email",
-            ["title"] = "Email",
-            ["type"] = "`$STRING`",
-            ["format"] = "email",
-          },
-          {
-            ["name"] = "first_name",
-            ["title"] = "First Name",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "gender",
-            ["title"] = "Gender",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-          },
-          {
-            ["name"] = "group_id",
-            ["title"] = "Group Id",
-            ["type"] = "`$STRING`",
-            ["short"] = "Object ID",
-            ["format"] = "oid",
-          },
-          {
-            ["name"] = "groups",
-            ["title"] = "Groups",
-            ["type"] = "`$ARRAY`",
-            ["req"] = true,
-          },
-          {
-            ["name"] = "id",
-            ["title"] = "Id",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["short"] = "Object ID",
-            ["format"] = "oid",
-          },
-          {
-            ["name"] = "idx",
-            ["title"] = "Idx",
-            ["type"] = "`$STRING`",
-            ["short"] = "User provided resource id",
-          },
-          {
-            ["name"] = "last_name",
-            ["title"] = "Last Name",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "name",
-            ["title"] = "Name",
-            ["type"] = "`$STRING`",
-            ["short"] = "Group name",
-          },
-          {
-            ["name"] = "permissions",
-            ["title"] = "Permissions",
-            ["type"] = "`$ARRAY`",
-          },
-          {
-            ["name"] = "phone_number",
-            ["title"] = "Phone Number",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "read",
-            ["title"] = "Read",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has read permission",
-          },
-          {
-            ["name"] = "send",
-            ["title"] = "Send",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has send permission",
-          },
-          {
-            ["name"] = "source",
-            ["title"] = "Source",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "type",
-            ["title"] = "Type",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "username",
-            ["title"] = "Username",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "value",
-            ["title"] = "Value",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "write",
-            ["title"] = "Write",
-            ["type"] = "`$BOOLEAN`",
-            ["short"] = "Has write permission",
-          },
-        },
-        ["id"] = {
-          ["field"] = "id",
-          ["name"] = "id",
-        },
+        ["fields"] = {},
         ["name"] = "contacts_field_option",
         ["op"] = {
           ["list"] = {
@@ -2565,6 +2420,10 @@ local function make_config()
                     "field_id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -2576,139 +2435,18 @@ local function make_config()
       ["contactsgroup"] = {
         ["fields"] = {
           {
-            ["name"] = "birthday_date",
-            ["title"] = "Birthday Date",
-            ["type"] = "`$STRING`",
-            ["format"] = "date",
-          },
-          {
-            ["name"] = "city",
-            ["title"] = "City",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "contact_expire_after",
-            ["title"] = "Contact Expire After",
-            ["type"] = "`$INTEGER`",
-            ["req"] = true,
-            ["short"] = "Contact expire after days",
-          },
-          {
-            ["name"] = "contacts_count",
-            ["title"] = "Contacts Count",
-            ["type"] = "`$INTEGER`",
-          },
-          {
-            ["name"] = "country",
-            ["title"] = "Country",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "created_by",
-            ["title"] = "Created By",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-          },
-          {
-            ["name"] = "date_created",
-            ["title"] = "Date Created",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "date_updated",
-            ["title"] = "Date Updated",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "description",
-            ["title"] = "Description",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "email",
-            ["title"] = "Email",
-            ["type"] = "`$STRING`",
-            ["format"] = "email",
-          },
-          {
-            ["name"] = "first_name",
-            ["title"] = "First Name",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "gender",
-            ["title"] = "Gender",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-          },
-          {
             ["name"] = "group_id",
             ["title"] = "Group Id",
             ["type"] = "`$STRING`",
             ["req"] = true,
-            ["op"] = {
-              ["list"] = {
-                ["type"] = "`$STRING`",
-              },
-            },
             ["short"] = "Object ID",
             ["format"] = "oid",
-          },
-          {
-            ["name"] = "groups",
-            ["title"] = "Groups",
-            ["type"] = "`$ARRAY`",
-            ["req"] = true,
-          },
-          {
-            ["name"] = "id",
-            ["title"] = "Id",
-            ["type"] = "`$STRING`",
-            ["req"] = true,
-            ["short"] = "Object ID",
-            ["format"] = "oid",
-          },
-          {
-            ["name"] = "idx",
-            ["title"] = "Idx",
-            ["type"] = "`$STRING`",
-            ["short"] = "User provided resource id",
-          },
-          {
-            ["name"] = "last_name",
-            ["title"] = "Last Name",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "name",
-            ["title"] = "Name",
-            ["type"] = "`$STRING`",
-            ["short"] = "Group name",
-          },
-          {
-            ["name"] = "permissions",
-            ["title"] = "Permissions",
-            ["type"] = "`$ARRAY`",
-          },
-          {
-            ["name"] = "phone_number",
-            ["title"] = "Phone Number",
-            ["type"] = "`$STRING`",
           },
           {
             ["name"] = "read",
             ["title"] = "Read",
             ["type"] = "`$BOOLEAN`",
             ["req"] = true,
-            ["op"] = {
-              ["list"] = {
-                ["type"] = "`$BOOLEAN`",
-              },
-            },
             ["short"] = "Has read permission",
           },
           {
@@ -2716,55 +2454,21 @@ local function make_config()
             ["title"] = "Send",
             ["type"] = "`$BOOLEAN`",
             ["req"] = true,
-            ["op"] = {
-              ["list"] = {
-                ["type"] = "`$BOOLEAN`",
-              },
-            },
             ["short"] = "Has send permission",
-          },
-          {
-            ["name"] = "source",
-            ["title"] = "Source",
-            ["type"] = "`$STRING`",
-          },
-          {
-            ["name"] = "type",
-            ["title"] = "Type",
-            ["type"] = "`$STRING`",
           },
           {
             ["name"] = "username",
             ["title"] = "Username",
             ["type"] = "`$STRING`",
             ["req"] = true,
-            ["op"] = {
-              ["list"] = {
-                ["type"] = "`$STRING`",
-              },
-            },
-          },
-          {
-            ["name"] = "value",
-            ["title"] = "Value",
-            ["type"] = "`$STRING`",
           },
           {
             ["name"] = "write",
             ["title"] = "Write",
             ["type"] = "`$BOOLEAN`",
             ["req"] = true,
-            ["op"] = {
-              ["list"] = {
-                ["type"] = "`$BOOLEAN`",
-              },
-            },
             ["short"] = "Has write permission",
           },
-        },
-        ["id"] = {
-          ["field"] = "id",
-          ["name"] = "id",
         },
         ["name"] = "contactsgroup",
         ["op"] = {
@@ -2822,6 +2526,42 @@ local function make_config()
                     "group_id",
                   },
                 },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["list"] = true,
+                      ["name"] = "birthday_date",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "email",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "first_name",
+                    },
+                    {
+                      ["name"] = "gender",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "group_id",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "last_name",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "phone_number",
+                    },
+                    {
+                      ["name"] = "q",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
               },
               {
                 ["kind"] = "http",
@@ -2846,6 +2586,28 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "contact_expire_after",
+                    },
+                    {
+                      ["name"] = "description",
+                    },
+                    {
+                      ["name"] = "idx",
+                    },
+                    {
+                      ["name"] = "name",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -2853,51 +2615,6 @@ local function make_config()
             ["input"] = "data",
             ["name"] = "list",
             ["points"] = {
-              {
-                ["kind"] = "http",
-                ["method"] = "GET",
-                ["orig"] = "/contacts/groups",
-                ["segments"] = {
-                  {
-                    ["lit"] = "contacts",
-                  },
-                  {
-                    ["lit"] = "groups",
-                  },
-                },
-                ["parts"] = {
-                  "contacts",
-                  "groups",
-                },
-                ["rename"] = {},
-                ["transform"] = {
-                  ["req"] = "`reqdata`",
-                  ["res"] = "`body.collection`",
-                },
-                ["args"] = {
-                  ["query"] = {
-                    {
-                      ["name"] = "name",
-                      ["orig"] = "name",
-                      ["type"] = "`$OBJECT`",
-                      ["kind"] = "query",
-                      ["example"] = "{\"name\" : \"group name\"}",
-                    },
-                    {
-                      ["name"] = "with",
-                      ["orig"] = "with",
-                      ["type"] = "`$ARRAY`",
-                      ["kind"] = "query",
-                    },
-                  },
-                },
-                ["select"] = {
-                  ["exist"] = {
-                    "name",
-                    "with",
-                  },
-                },
-              },
               {
                 ["kind"] = "http",
                 ["method"] = "GET",
@@ -2947,6 +2664,54 @@ local function make_config()
                   ["exist"] = {
                     "group_id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
+              },
+              {
+                ["kind"] = "http",
+                ["method"] = "GET",
+                ["orig"] = "/contacts/groups",
+                ["segments"] = {
+                  {
+                    ["lit"] = "contacts",
+                  },
+                  {
+                    ["lit"] = "groups",
+                  },
+                },
+                ["parts"] = {
+                  "contacts",
+                  "groups",
+                },
+                ["rename"] = {},
+                ["transform"] = {
+                  ["req"] = "`reqdata`",
+                  ["res"] = "`body.collection`",
+                },
+                ["args"] = {
+                  ["query"] = {
+                    {
+                      ["name"] = "name",
+                      ["orig"] = "name",
+                      ["type"] = "`$OBJECT`",
+                      ["kind"] = "query",
+                      ["example"] = "{\"name\" : \"group name\"}",
+                    },
+                    {
+                      ["name"] = "with",
+                      ["orig"] = "with",
+                      ["type"] = "`$ARRAY`",
+                      ["kind"] = "query",
+                    },
+                  },
+                },
+                ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -3073,15 +2838,6 @@ local function make_config()
                       ["type"] = "`$STRING`",
                       ["kind"] = "param",
                       ["reqd"] = true,
-                    },
-                  },
-                  ["query"] = {
-                    {
-                      ["name"] = "username",
-                      ["orig"] = "username",
-                      ["type"] = "`$STRING`",
-                      ["kind"] = "query",
-                      ["reqd"] = true,
                       ["example"] = "example_username",
                     },
                   },
@@ -3139,6 +2895,15 @@ local function make_config()
                     "group_id",
                   },
                 },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "delete_contacts",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
               },
               {
                 ["kind"] = "http",
@@ -3189,6 +2954,42 @@ local function make_config()
                   ["exist"] = {
                     "group_id",
                   },
+                },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["list"] = true,
+                      ["name"] = "birthday_date",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "email",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "first_name",
+                    },
+                    {
+                      ["name"] = "gender",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "group_id",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "last_name",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "phone_number",
+                    },
+                    {
+                      ["name"] = "q",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
                 },
               },
               {
@@ -3274,15 +3075,6 @@ local function make_config()
                       ["type"] = "`$STRING`",
                       ["kind"] = "param",
                       ["reqd"] = true,
-                    },
-                  },
-                  ["query"] = {
-                    {
-                      ["name"] = "username",
-                      ["orig"] = "username",
-                      ["type"] = "`$STRING`",
-                      ["kind"] = "query",
-                      ["reqd"] = true,
                       ["example"] = "example_username",
                     },
                   },
@@ -3292,6 +3084,25 @@ local function make_config()
                     "group_id",
                     "username",
                   },
+                },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "read",
+                    },
+                    {
+                      ["name"] = "send",
+                    },
+                    {
+                      ["name"] = "write",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
               {
@@ -3343,6 +3154,42 @@ local function make_config()
                   ["exist"] = {
                     "group_id",
                   },
+                },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["list"] = true,
+                      ["name"] = "birthday_date",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "email",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "first_name",
+                    },
+                    {
+                      ["name"] = "gender",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "group_id",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "last_name",
+                    },
+                    {
+                      ["list"] = true,
+                      ["name"] = "phone_number",
+                    },
+                    {
+                      ["name"] = "q",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
                 },
               },
             },
@@ -3503,6 +3350,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -3635,6 +3486,10 @@ local function make_config()
                     "id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -3687,6 +3542,28 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "contact_expire_after",
+                    },
+                    {
+                      ["name"] = "description",
+                    },
+                    {
+                      ["name"] = "idx",
+                    },
+                    {
+                      ["name"] = "name",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -3751,6 +3628,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -3780,6 +3661,18 @@ local function make_config()
                 ["args"] = {},
                 ["select"] = {
                   ["$action"] = "verification",
+                },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "code",
+                    },
+                    {
+                      ["name"] = "phone_number",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
                 },
               },
             },
@@ -3880,14 +3773,16 @@ local function make_config()
                     },
                   },
                 },
-                ["select"] = {
-                  ["exist"] = {
-                    "accept",
-                    "limit",
-                    "offset",
-                    "phone_number",
-                    "x_async",
+                ["select"] = {},
+                ["response"] = {
+                  ["alternatives"] = {
+                    {
+                      ["kind"] = "raw",
+                      ["media"] = "text/csv",
+                    },
                   },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -3982,6 +3877,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4012,6 +3911,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4123,6 +4026,28 @@ local function make_config()
                     "group_id",
                   },
                 },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "read",
+                    },
+                    {
+                      ["name"] = "send",
+                    },
+                    {
+                      ["name"] = "username",
+                    },
+                    {
+                      ["name"] = "write",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4184,15 +4109,6 @@ local function make_config()
                       ["type"] = "`$STRING`",
                       ["kind"] = "param",
                       ["reqd"] = true,
-                    },
-                  },
-                  ["query"] = {
-                    {
-                      ["name"] = "username",
-                      ["orig"] = "username",
-                      ["type"] = "`$STRING`",
-                      ["kind"] = "query",
-                      ["reqd"] = true,
                       ["example"] = "example_username",
                     },
                   },
@@ -4201,8 +4117,11 @@ local function make_config()
                   ["exist"] = {
                     "group_id",
                     "id",
-                    "username",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -4256,6 +4175,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4349,9 +4272,10 @@ local function make_config()
                 },
                 ["select"] = {
                   ["$action"] = "price",
-                  ["exist"] = {
-                    "type",
-                  },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -4379,6 +4303,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4419,6 +4347,10 @@ local function make_config()
                 ["args"] = {},
                 ["select"] = {
                   ["$action"] = "message",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -4491,6 +4423,19 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "sender",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4521,6 +4466,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4572,6 +4521,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -4632,6 +4585,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4658,8 +4615,10 @@ local function make_config()
           {
             ["name"] = "sender",
             ["title"] = "Sender",
-            ["type"] = "`$ANY`",
+            ["type"] = "`$STRING`",
             ["req"] = true,
+            ["short"] = "RCS sender ID (object ID of the agent/sender the user has access to).",
+            ["format"] = "oid",
           },
           {
             ["name"] = "text",
@@ -4697,6 +4656,34 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["alternatives"] = {
+                    {
+                      ["fields"] = {
+                        {
+                          ["name"] = "content",
+                        },
+                        {
+                          ["name"] = "phone_number",
+                        },
+                        {
+                          ["name"] = "sender",
+                        },
+                        {
+                          ["name"] = "text",
+                        },
+                      },
+                      ["kind"] = "form",
+                      ["media"] = "application/x-www-form-urlencoded",
+                    },
+                  },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4780,12 +4767,16 @@ local function make_config()
                     },
                   },
                 },
-                ["select"] = {
-                  ["exist"] = {
-                    "accept",
-                    "month",
-                    "year",
+                ["select"] = {},
+                ["response"] = {
+                  ["alternatives"] = {
+                    {
+                      ["kind"] = "raw",
+                      ["media"] = "text/csv",
+                    },
                   },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -4888,6 +4879,20 @@ local function make_config()
                 ["select"] = {
                   ["$action"] = "link",
                 },
+                ["body"] = {
+                  ["alternatives"] = {
+                    {
+                      ["kind"] = "form",
+                      ["media"] = "application/x-www-form-urlencoded",
+                    },
+                  },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -4919,6 +4924,10 @@ local function make_config()
                 ["args"] = {},
                 ["select"] = {
                   ["$action"] = "link",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -4968,6 +4977,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -5066,6 +5079,25 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "description",
+                    },
+                    {
+                      ["name"] = "name",
+                    },
+                    {
+                      ["name"] = "url",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -5229,6 +5261,92 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["alternatives"] = {
+                    {
+                      ["fields"] = {
+                        {
+                          ["name"] = "allow_duplicates",
+                        },
+                        {
+                          ["name"] = "check_idx",
+                        },
+                        {
+                          ["name"] = "date",
+                        },
+                        {
+                          ["name"] = "date_validate",
+                        },
+                        {
+                          ["name"] = "details",
+                        },
+                        {
+                          ["name"] = "encoding",
+                        },
+                        {
+                          ["name"] = "expiration_date",
+                        },
+                        {
+                          ["list"] = true,
+                          ["name"] = "fallback",
+                        },
+                        {
+                          ["name"] = "fast",
+                        },
+                        {
+                          ["name"] = "flash",
+                        },
+                        {
+                          ["name"] = "format",
+                        },
+                        {
+                          ["name"] = "from",
+                        },
+                        {
+                          ["name"] = "group",
+                        },
+                        {
+                          ["name"] = "idx",
+                        },
+                        {
+                          ["name"] = "max_parts",
+                        },
+                        {
+                          ["name"] = "message",
+                        },
+                        {
+                          ["name"] = "normalize",
+                        },
+                        {
+                          ["name"] = "notify_url",
+                        },
+                        {
+                          ["name"] = "test",
+                        },
+                        {
+                          ["name"] = "time_restriction",
+                        },
+                        {
+                          ["name"] = "to",
+                        },
+                      },
+                      ["kind"] = "form",
+                      ["media"] = "application/x-www-form-urlencoded",
+                    },
+                  },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
+                ["response"] = {
+                  ["alternatives"] = {
+                    {
+                      ["kind"] = "raw",
+                      ["media"] = "text/plain",
+                    },
+                  },
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -5257,7 +5375,7 @@ local function make_config()
                     ["lit"] = "sendernames",
                   },
                   {
-                    ["var"] = "sendername_id",
+                    ["var"] = "sender",
                   },
                   {
                     ["lit"] = "commands",
@@ -5269,15 +5387,11 @@ local function make_config()
                 ["parts"] = {
                   "sms",
                   "sendernames",
-                  "{sendername_id}",
+                  "{sender}",
                   "commands",
                   "make_default",
                 },
-                ["rename"] = {
-                  ["param"] = {
-                    ["sender"] = "sendername_id",
-                  },
-                },
+                ["rename"] = {},
                 ["transform"] = {
                   ["req"] = "`reqdata`",
                   ["res"] = "`body`",
@@ -5285,7 +5399,7 @@ local function make_config()
                 ["args"] = {
                   ["params"] = {
                     {
-                      ["name"] = "sendername_id",
+                      ["name"] = "sender",
                       ["orig"] = "sender",
                       ["type"] = "`$STRING`",
                       ["kind"] = "param",
@@ -5295,7 +5409,7 @@ local function make_config()
                 },
                 ["select"] = {
                   ["exist"] = {
-                    "sendername_id",
+                    "sender",
                   },
                 },
               },
@@ -5495,6 +5609,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -5549,6 +5667,10 @@ local function make_config()
                     "id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -5597,6 +5719,10 @@ local function make_config()
                     "id",
                   },
                 },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
               {
                 ["kind"] = "http",
@@ -5625,10 +5751,10 @@ local function make_config()
                     },
                   },
                 },
-                ["select"] = {
-                  ["exist"] = {
-                    "q",
-                  },
+                ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -5674,6 +5800,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -5764,6 +5894,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
               {
@@ -5925,6 +6059,25 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "name",
+                    },
+                    {
+                      ["name"] = "normalize",
+                    },
+                    {
+                      ["name"] = "template",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -5955,6 +6108,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -6002,6 +6159,10 @@ local function make_config()
                   ["exist"] = {
                     "id",
                   },
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
                 },
               },
             },
@@ -6051,6 +6212,25 @@ local function make_config()
                     "id",
                   },
                 },
+                ["body"] = {
+                  ["fields"] = {
+                    {
+                      ["name"] = "name",
+                    },
+                    {
+                      ["name"] = "normalize",
+                    },
+                    {
+                      ["name"] = "template",
+                    },
+                  },
+                  ["kind"] = "form",
+                  ["media"] = "application/x-www-form-urlencoded",
+                },
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },
@@ -6060,73 +6240,7 @@ local function make_config()
         },
       },
       ["user_rcs_sender_collection"] = {
-        ["fields"] = {
-          {
-            ["name"] = "deliveredAt",
-            ["title"] = "Delivered At",
-            ["type"] = "`$STRING`",
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "expiredAt",
-            ["title"] = "Expired At",
-            ["type"] = "`$STRING`",
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "id",
-            ["title"] = "Id",
-            ["type"] = "`$STRING`",
-            ["short"] = "Object ID",
-            ["format"] = "oid",
-          },
-          {
-            ["name"] = "interface",
-            ["title"] = "Interface",
-            ["type"] = "`$STRING`",
-            ["short"] = "Interface through which the message was sent (www, api, ...).",
-          },
-          {
-            ["name"] = "messageType",
-            ["title"] = "Message Type",
-            ["type"] = "`$STRING`",
-            ["short"] = "RCS message type (basic, single, ...).",
-          },
-          {
-            ["name"] = "readAt",
-            ["title"] = "Read At",
-            ["type"] = "`$STRING`",
-            ["format"] = "date-time",
-          },
-          {
-            ["name"] = "recipient",
-            ["title"] = "Recipient",
-            ["type"] = "`$STRING`",
-            ["short"] = "Recipient phone number (without +).",
-          },
-          {
-            ["name"] = "sender",
-            ["title"] = "Sender",
-            ["type"] = "`$STRING`",
-            ["short"] = "Sender name",
-          },
-          {
-            ["name"] = "senderId",
-            ["title"] = "Sender Id",
-            ["type"] = "`$STRING`",
-            ["short"] = "Sender id",
-          },
-          {
-            ["name"] = "sentAt",
-            ["title"] = "Sent At",
-            ["type"] = "`$STRING`",
-            ["format"] = "date-time",
-          },
-        },
-        ["id"] = {
-          ["field"] = "id",
-          ["name"] = "id",
-        },
+        ["fields"] = {},
         ["name"] = "user_rcs_sender_collection",
         ["op"] = {
           ["list"] = {
@@ -6156,6 +6270,10 @@ local function make_config()
                 },
                 ["args"] = {},
                 ["select"] = {},
+                ["response"] = {
+                  ["kind"] = "json",
+                  ["media"] = "application/json",
+                },
               },
             },
           },

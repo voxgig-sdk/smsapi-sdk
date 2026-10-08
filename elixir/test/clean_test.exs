@@ -159,7 +159,22 @@ defmodule Smsapi.CleanTest do
     ]
   end
 
-  defp make_sdk(respond, sinks, cleanopts, extra \\ []) do
+  # Offline, as every generated suite is: the test OPTION resolves a required
+  # server variable to test-<name>, and installs no transport.
+  defp offline(opts), do: S.setprop(opts, "test", S.jm(["active", true]))
+
+  # A client the sweep cannot build leaves nothing swept: a harness error, not
+  # a leak.
+  defp construct(opts) do
+    Smsapi.new(offline(opts))
+  rescue
+    e ->
+      reraise "clean harness: the client could not be constructed, so nothing was swept: " <>
+                Exception.message(e),
+              __STACKTRACE__
+  end
+
+  defp make_sdk(respond, sinks, cleanopts, extra \\ [], auth \\ nil) do
     capture = fn name -> fn rec -> add(sinks, data_forms(name, rec)) end end
     feature = S.jm([])
 
@@ -178,7 +193,7 @@ defmodule Smsapi.CleanTest do
     clean = S.jm(["values", @canary.value])
     Enum.each(cleanopts, fn {k, v} -> S.setprop(clean, k, v) end)
 
-    Smsapi.new(
+    opts =
       S.jm([
         "apikey", @canary.apikey,
         "secret", @canary.secret,
@@ -188,7 +203,9 @@ defmodule Smsapi.CleanTest do
         "extend", S.jt([capture_feature(sinks) | extra]),
         "utility", S.jm(["fetcher", fn _ctx, url, fd -> respond.(url, fd) end])
       ])
-    )
+
+    if auth != nil, do: S.setprop(opts, "auth", auth)
+    construct(opts)
   end
 
   # A fresh struct node of the match, since an operation may keep what it is
@@ -368,7 +385,7 @@ defmodule Smsapi.CleanTest do
        []},
       {"smssendername.create", fn sdk -> Smsapi.smssendername(sdk) end,
        fn ent, match, ctrl -> Smsapi.Entity.Smssendername.create(ent, args(match), ctrl) end,
-       ["sendername_id"]},
+       ["sender"]},
       {"smssendername.remove", fn sdk -> Smsapi.smssendername(sdk) end,
        fn ent, match, ctrl -> Smsapi.Entity.Smssendername.remove(ent, args(match), ctrl) end,
        ["sender"]},
@@ -397,7 +414,7 @@ defmodule Smsapi.CleanTest do
   # arguments, else with every path parameter its points declare filled in.
   defp usable_op do
     plain =
-      Smsapi.new(
+      construct(
         S.jm([
           "apikey", @canary.apikey,
           "utility", S.jm(["fetcher", fn _c, _u, _f -> {response(200, S.jm(["id", "i1"]), []), nil} end])
@@ -507,6 +524,8 @@ defmodule Smsapi.CleanTest do
 
     if err != nil, do: add(sinks, error_forms(err))
     if out != nil, do: add(sinks, result_forms(out))
+    # Raw, as a caller copying the match into another query reads it.
+    add(sinks, data_forms("match", Smsapi.EntityBase.match_get(ent)))
     explain = S.getprop(ctrl, "explain")
     if explain != nil, do: add(sinks, data_forms("explain", explain))
     if held != nil and held != explain, do: add(sinks, data_forms("explain:held", held))
@@ -554,11 +573,16 @@ defmodule Smsapi.CleanTest do
         end)
       end)
 
+    # A name given at run time replaces the declared one: the match leaves
+    # out whichever name prepare_auth placed.
+    [{_ok, ok_respond} | _] = scenarios()
+    drive(make_sdk(ok_respond, sinks, [], [], S.jm(["name", "zzcred"])), target, S.jm([]), sinks)
+
     # A credential mistyped as a map is rejected by validation, whose message
     # quotes the value it rejected.
     rejected =
       try do
-        Smsapi.new(S.jm(["apikey", S.jm(["value", @canary.apikey]), "clean", S.jm(["values", @canary.value])]))
+        Smsapi.new(offline(S.jm(["apikey", S.jm(["value", @canary.apikey]), "clean", S.jm(["values", @canary.value])])))
         nil
       rescue
         e -> e
@@ -613,7 +637,7 @@ defmodule Smsapi.CleanTest do
     [_ok, {_nf, notfound_respond} | _] = scenarios()
 
     bare =
-      Smsapi.new(
+      construct(
         S.jm([
           "apikey", @canary.apikey,
           "secret", @canary.secret,
@@ -713,17 +737,19 @@ defmodule Smsapi.CleanTest do
 
   # A feature's name is not a field name: a feature called secrets does not
   # make its settings secret, though a sensitive field inside it still is. An
-  # entity block, of entity settings or seeded records, is not read at all.
+  # entity block, of entity settings or seeded records, is not read at all, and
+  # nor are rbac's rules, keyed by entity and operation names.
   test "a feature's name is read as a name" do
     record = S.jm(["zztoken", S.jm(["ZZTOKEN01", S.jm(["note", "PLAINRECORD-t5r3e1w9"])])])
 
     client =
-      Smsapi.new(
+      construct(
         S.jm([
           "apikey", @canary.apikey,
           "feature",
           S.jm([
             "secrets", S.jm(["active", false, "name", "ZZNAME-feat123", "token", "ZZTOKEN-feat456"]),
+            "rbac", S.jm(["active", false, "rules", S.jm(["zztoken.load", "PLAINRULE-k7j5h3g1"])]),
             "test", S.jm(["active", false, "entity", record])
           ]),
           "entity", S.jm(["zztoken", S.jm(["alias", S.jm(["zzkey", "PLAINALIAS-m2n4b6v8"])])])
@@ -734,6 +760,7 @@ defmodule Smsapi.CleanTest do
     assert Smsapi.Utility.clean_impl(ctx, "ZZNAME-feat123 ZZTOKEN-feat456") == "ZZNAME-feat123 " <> @mask
     assert Smsapi.Utility.clean_impl(ctx, "record PLAINRECORD-t5r3e1w9") == "record PLAINRECORD-t5r3e1w9"
     assert Smsapi.Utility.clean_impl(ctx, "alias PLAINALIAS-m2n4b6v8") == "alias PLAINALIAS-m2n4b6v8"
+    assert Smsapi.Utility.clean_impl(ctx, "rule PLAINRULE-k7j5h3g1") == "rule PLAINRULE-k7j5h3g1"
   end
 
   test "the generated config's own clean block is honoured" do

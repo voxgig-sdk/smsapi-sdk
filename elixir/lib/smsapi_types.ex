@@ -162,7 +162,6 @@ defmodule Smsapi.Types do
     * `"email"` — String.t() (optional)
     * `"first_name"` — String.t() (optional)
     * `"gender"` — String.t() (required)
-    * `"group_id"` — String.t() (optional)
     * `"groups"` — list() (required)
     * `"id"` — String.t() (required)
     * `"idx"` — String.t() (optional)
@@ -170,14 +169,8 @@ defmodule Smsapi.Types do
     * `"name"` — String.t() (required)
     * `"permissions"` — list() (optional)
     * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
     * `"size"` — integer() (required)
     * `"source"` — String.t() (optional)
-    * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contact :: %{optional(String.t()) => any()}
 
@@ -224,7 +217,6 @@ defmodule Smsapi.Types do
     * `"email"` — String.t() (optional)
     * `"first_name"` — String.t() (optional)
     * `"gender"` — String.t() (required)
-    * `"group_id"` — String.t() (optional)
     * `"groups"` — list() (required)
     * `"id"` — String.t() (required)
     * `"idx"` — String.t() (optional)
@@ -232,14 +224,8 @@ defmodule Smsapi.Types do
     * `"name"` — String.t() (required)
     * `"permissions"` — list() (optional)
     * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
     * `"size"` — integer() (required)
     * `"source"` — String.t() (optional)
-    * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contact_create_data :: %{optional(String.t()) => any()}
 
@@ -261,21 +247,14 @@ defmodule Smsapi.Types do
     * `"email"` — String.t() (optional)
     * `"first_name"` — String.t() (optional)
     * `"gender"` — String.t() (optional)
-    * `"group_id"` — String.t() (optional)
     * `"groups"` — list() (optional)
     * `"idx"` — String.t() (optional)
     * `"last_name"` — String.t() (optional)
     * `"name"` — String.t() (optional)
     * `"permissions"` — list() (optional)
     * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
     * `"size"` — integer() (optional)
     * `"source"` — String.t() (optional)
-    * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contact_update_data :: %{optional(String.t()) => any()}
 
@@ -291,33 +270,9 @@ defmodule Smsapi.Types do
   ContactsField entity data model.
 
   Members:
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (required)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (required)
-    * `"date_created"` — String.t() (required)
-    * `"date_updated"` — String.t() (required)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (required)
-    * `"group_id"` — String.t() (optional)
-    * `"groups"` — list() (required)
     * `"id"` — String.t() (optional)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
     * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
-    * `"source"` — String.t() (optional)
     * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contacts_field :: %{optional(String.t()) => any()}
 
@@ -325,33 +280,9 @@ defmodule Smsapi.Types do
   Request payload for ContactsField list.
 
   Members:
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (optional)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (optional)
-    * `"date_created"` — String.t() (optional)
-    * `"date_updated"` — String.t() (optional)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (optional)
-    * `"group_id"` — String.t() (optional)
-    * `"groups"` — list() (optional)
     * `"id"` — String.t() (optional)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
     * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
-    * `"source"` — String.t() (optional)
     * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contacts_field_list_match :: %{optional(String.t()) => any()}
 
@@ -359,33 +290,9 @@ defmodule Smsapi.Types do
   Request payload for ContactsField create.
 
   Members:
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (required)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (required)
-    * `"date_created"` — String.t() (required)
-    * `"date_updated"` — String.t() (required)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (required)
-    * `"group_id"` — String.t() (optional)
-    * `"groups"` — list() (required)
     * `"id"` — String.t() (optional)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
     * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
-    * `"source"` — String.t() (optional)
     * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contacts_field_create_data :: %{optional(String.t()) => any()}
 
@@ -394,32 +301,8 @@ defmodule Smsapi.Types do
 
   Members:
     * `"id"` — String.t() (required)
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (optional)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (optional)
-    * `"date_created"` — String.t() (optional)
-    * `"date_updated"` — String.t() (optional)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (optional)
-    * `"group_id"` — String.t() (optional)
-    * `"groups"` — list() (optional)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
     * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
-    * `"source"` — String.t() (optional)
     * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contacts_field_update_data :: %{optional(String.t()) => any()}
 
@@ -433,35 +316,6 @@ defmodule Smsapi.Types do
 
   @typedoc """
   ContactsFieldOption entity data model.
-
-  Members:
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (required)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (required)
-    * `"date_created"` — String.t() (required)
-    * `"date_updated"` — String.t() (required)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (required)
-    * `"group_id"` — String.t() (optional)
-    * `"groups"` — list() (required)
-    * `"id"` — String.t() (required)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
-    * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
-    * `"read"` — boolean() (optional)
-    * `"send"` — boolean() (optional)
-    * `"source"` — String.t() (optional)
-    * `"type"` — String.t() (optional)
-    * `"username"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
-    * `"write"` — boolean() (optional)
   """
   @type contacts_field_option :: %{optional(String.t()) => any()}
 
@@ -477,32 +331,10 @@ defmodule Smsapi.Types do
   Contactsgroup entity data model.
 
   Members:
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (required)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (required)
-    * `"date_created"` — String.t() (required)
-    * `"date_updated"` — String.t() (required)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (required)
     * `"group_id"` — String.t() (required)
-    * `"groups"` — list() (required)
-    * `"id"` — String.t() (required)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
-    * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
     * `"read"` — boolean() (required)
     * `"send"` — boolean() (required)
-    * `"source"` — String.t() (optional)
-    * `"type"` — String.t() (optional)
     * `"username"` — String.t() (required)
-    * `"value"` — String.t() (optional)
     * `"write"` — boolean() (required)
   """
   @type contactsgroup :: %{optional(String.t()) => any()}
@@ -520,32 +352,10 @@ defmodule Smsapi.Types do
   Request payload for Contactsgroup create.
 
   Members:
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (required)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (required)
-    * `"date_created"` — String.t() (required)
-    * `"date_updated"` — String.t() (required)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (required)
     * `"group_id"` — String.t() (required)
-    * `"groups"` — list() (required)
-    * `"id"` — String.t() (required)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
-    * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
     * `"read"` — boolean() (required)
     * `"send"` — boolean() (required)
-    * `"source"` — String.t() (optional)
-    * `"type"` — String.t() (optional)
     * `"username"` — String.t() (required)
-    * `"value"` — String.t() (optional)
     * `"write"` — boolean() (required)
   """
   @type contactsgroup_create_data :: %{optional(String.t()) => any()}
@@ -556,30 +366,8 @@ defmodule Smsapi.Types do
   Members:
     * `"group_id"` — String.t() (required)
     * `"username"` — String.t() (optional)
-    * `"birthday_date"` — String.t() (optional)
-    * `"city"` — String.t() (optional)
-    * `"contact_expire_after"` — integer() (optional)
-    * `"contacts_count"` — integer() (optional)
-    * `"country"` — String.t() (optional)
-    * `"created_by"` — String.t() (optional)
-    * `"date_created"` — String.t() (optional)
-    * `"date_updated"` — String.t() (optional)
-    * `"description"` — String.t() (optional)
-    * `"email"` — String.t() (optional)
-    * `"first_name"` — String.t() (optional)
-    * `"gender"` — String.t() (optional)
-    * `"groups"` — list() (optional)
-    * `"id"` — String.t() (optional)
-    * `"idx"` — String.t() (optional)
-    * `"last_name"` — String.t() (optional)
-    * `"name"` — String.t() (optional)
-    * `"permissions"` — list() (optional)
-    * `"phone_number"` — String.t() (optional)
     * `"read"` — boolean() (optional)
     * `"send"` — boolean() (optional)
-    * `"source"` — String.t() (optional)
-    * `"type"` — String.t() (optional)
-    * `"value"` — String.t() (optional)
     * `"write"` — boolean() (optional)
   """
   @type contactsgroup_update_data :: %{optional(String.t()) => any()}
@@ -767,7 +555,6 @@ defmodule Smsapi.Types do
   Members:
     * `"group_id"` — String.t() (required)
     * `"id"` — String.t() (required)
-    * `"username"` — String.t() (required)
   """
   @type permission_load_match :: %{optional(String.t()) => any()}
 
@@ -918,7 +705,7 @@ defmodule Smsapi.Types do
   Members:
     * `"content"` — map() (optional)
     * `"phone_number"` — String.t() (required)
-    * `"sender"` — any() (required)
+    * `"sender"` — String.t() (required)
     * `"text"` — String.t() (optional)
   """
   @type sent_rcs_message :: %{optional(String.t()) => any()}
@@ -929,7 +716,7 @@ defmodule Smsapi.Types do
   Members:
     * `"content"` — map() (optional)
     * `"phone_number"` — String.t() (required)
-    * `"sender"` — any() (required)
+    * `"sender"` — String.t() (required)
     * `"text"` — String.t() (optional)
   """
   @type sent_rcs_message_create_data :: %{optional(String.t()) => any()}
@@ -1103,7 +890,7 @@ defmodule Smsapi.Types do
   Request payload for Smssendername create.
 
   Members:
-    * `"sendername_id"` — String.t() (required)
+    * `"sender"` — String.t() (required)
   """
   @type smssendername_create_data :: %{optional(String.t()) => any()}
 
@@ -1248,35 +1035,11 @@ defmodule Smsapi.Types do
 
   @typedoc """
   UserRcsSenderCollection entity data model.
-
-  Members:
-    * `"deliveredAt"` — String.t() (optional)
-    * `"expiredAt"` — String.t() (optional)
-    * `"id"` — String.t() (optional)
-    * `"interface"` — String.t() (optional)
-    * `"messageType"` — String.t() (optional)
-    * `"readAt"` — String.t() (optional)
-    * `"recipient"` — String.t() (optional)
-    * `"sender"` — String.t() (optional)
-    * `"senderId"` — String.t() (optional)
-    * `"sentAt"` — String.t() (optional)
   """
   @type user_rcs_sender_collection :: %{optional(String.t()) => any()}
 
   @typedoc """
   Request payload for UserRcsSenderCollection list.
-
-  Members:
-    * `"deliveredAt"` — String.t() (optional)
-    * `"expiredAt"` — String.t() (optional)
-    * `"id"` — String.t() (optional)
-    * `"interface"` — String.t() (optional)
-    * `"messageType"` — String.t() (optional)
-    * `"readAt"` — String.t() (optional)
-    * `"recipient"` — String.t() (optional)
-    * `"sender"` — String.t() (optional)
-    * `"senderId"` — String.t() (optional)
-    * `"sentAt"` — String.t() (optional)
   """
   @type user_rcs_sender_collection_list_match :: %{optional(String.t()) => any()}
 

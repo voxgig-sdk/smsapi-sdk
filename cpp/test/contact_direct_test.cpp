@@ -52,9 +52,10 @@ static void contact_direct_list() {
   auto client = setup.client;
 
   Value params = vmap();
+  setp(params, "id", Value("direct01"));
 
   Value result = client->direct(vmap({
-    {"path", Value("contacts")},
+    {"path", Value("contacts/{id}/groups")},
     {"method", Value("GET")},
     {"params", params}
   }));
@@ -65,6 +66,12 @@ static void contact_direct_list() {
   ASSERT_TRUE(data.is_list(), "expected data to be an array");
   ASSERT_EQ((int)Struct::size(data), 2, "expected 2 items");
   ASSERT_EQ((int)setup.calls.as_list()->size(), 1, "expected 1 call");
+  {
+    Value call = (*setup.calls.as_list())[0];
+    ASSERT_EQ_VAL(getp(getp(call, "init"), "method"), Value("GET"), "expected method GET");
+    std::string url = as_str(getp(call, "url"));
+    ASSERT_TRUE(url.find("direct01") != std::string::npos, "expected url to contain direct01");
+  }
 }
 
 static void contact_direct_load() {

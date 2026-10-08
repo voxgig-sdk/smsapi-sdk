@@ -265,7 +265,6 @@ guide: {
   entity: sent_rcs_message: {
     path: "/rcs/messages": {
       op: create: method: *POST
-      op: create: transform: res: *("`body.id`")|top
     }
   }
 
@@ -301,7 +300,6 @@ guide: {
       op: remove: method: *DELETE
     }
     path: "/sms/sendernames/{sender}/commands/make_default": {
-      rename: param: "sender": *"sendername_id"
       op: create: method: *POST
     }
   }

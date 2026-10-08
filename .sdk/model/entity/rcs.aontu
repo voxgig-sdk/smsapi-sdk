@@ -20,6 +20,10 @@ main: kit: entity: rcs: {
           q: {
             "$action": "message"
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "rcs"

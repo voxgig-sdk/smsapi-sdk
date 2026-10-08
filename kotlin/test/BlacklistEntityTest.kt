@@ -6,18 +6,29 @@ import java.nio.file.Paths
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 
+import voxgig.smsapisdk.core.Config
+import voxgig.smsapisdk.core.Context
 import voxgig.smsapisdk.core.Helpers
 import voxgig.smsapisdk.core.SdkEntity
+import voxgig.smsapisdk.core.SdkError
 import voxgig.smsapisdk.core.SmsapiSDK
+import voxgig.smsapisdk.feature.BaseFeature
 import voxgig.smsapisdk.utility.Json
 import voxgig.smsapisdk.utility.struct.Struct
 
 @Suppress("UNCHECKED_CAST", "UNUSED_VARIABLE", "UNUSED_VALUE")
 class BlacklistEntityTest {
+
+  // main.kit.test.live.strict is true (the default is true): a live
+  // request that fails, or a live test missing an input it needs,
+  // fails the test.
+  // An account with no record for a test to read skips it either way.
+  private val LIVE_STRICT = true
 
   @Test
   fun instance() {
@@ -38,10 +49,6 @@ class BlacklistEntityTest {
         if (reason == null || "" == reason) "skipped via sdk-test-control.json" else reason,
       )
     }
-    Assumptions.assumeFalse(
-      setup.syntheticOnly,
-      "live entity test uses synthetic IDs from fixture — set SMSAPI_TEST_BLACKLIST_ENTID JSON to run live",
-    )
     val client = setup.client
 
     // CREATE
@@ -68,6 +75,23 @@ class BlacklistEntityTest {
     blacklistRef01MatchRm0["id"] = blacklistRef01Data["id"]
     blacklistRef01Ent.remove(blacklistRef01MatchRm0, null)
 
+  }
+
+  private fun hasFeature(name: String): Boolean {
+    val fm = Helpers.toMapAny(Config.sharedConfig()["feature"])
+    return fm != null && fm[name] != null
+  }
+
+  @Test
+  fun validate() {
+    Assumptions.assumeTrue(hasFeature("validate"), "feature not present in this SDK: validate")
+    val client = SmsapiSDK.testSDK(null, linkedMapOf<String, Any?>(
+      "feature" to linkedMapOf<String, Any?>(
+        "validate" to linkedMapOf<String, Any?>("active" to true))))
+    val err = assertThrows(SdkError::class.java) {
+      client.blacklist(null).load(linkedMapOf<String, Any?>("limit" to "x"), null)
+    }
+    assertEquals("validate_failed", err.code)
   }
 
   companion object {
@@ -99,7 +123,7 @@ class BlacklistEntityTest {
           "\"`\$VAL`\": [\"`\$FORMAT`\", \"upper\", \"`\$COPY`\"]" +
           "}]}"))
 
-      // Detect ENTID env override before envOverride consumes it.
+      // Whether *_ENTID supplied the idmap, read before envOverride consumes it.
       val entidEnvRaw = RunnerSupport.getenv("SMSAPI_TEST_BLACKLIST_ENTID")
       val idmapOverridden = entidEnvRaw != null && entidEnvRaw.trim().startsWith("{")
 

@@ -66,6 +66,27 @@ static void mfa_code_entity_instance() {
 }
 
 
+static bool mfa_code_has_feature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
+
+static void mfa_code_entity_validate() {
+  if (!mfa_code_has_feature("validate")) {
+    std::cerr << "skip: feature not present in this SDK: validate\n";
+    return;
+  }
+  auto vsdk = SmsapiSDK::testSDK(Value::undef(), vmap({{"feature",
+      vmap({{"validate", vmap({{"active", Value(true)}})}})}}));
+  std::string code;
+  try {
+    vsdk->mfa_code()->create(vmap({{"content", Value(1)}, {"phone_number", Value("x")}}), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    code = err->code;
+  }
+  ASSERT_EQ(code, std::string("validate_failed"), "an invalid request fails with validate_failed");
+}
+
 static void mfa_code_entity_basic() {
   auto setup = mfa_code_basic_setup(Value::undef());
   std::string mode = setup.live ? "live" : "unit";
@@ -89,6 +110,7 @@ static void mfa_code_entity_basic() {
 
 int main() {
   T_RUN(mfa_code_entity_instance);
+  T_RUN(mfa_code_entity_validate);
   T_RUN(mfa_code_entity_basic);
   return sdktest::summary("mfa_code_entity_test");
 }

@@ -15,7 +15,7 @@ keeps the cognitive load low.
 
 ## Install
 This package is not yet published to PyPI. Install it from the GitHub
-release tag (`py/vX.Y.Z`, see [Releases](https://github.com/voxgig-sdk/smsapi-sdk/releases)) or
+release tag (`py/vX.Y.Z`, see [Tags](https://github.com/voxgig-sdk/smsapi-sdk/tags)) or
 from a source checkout:
 
 ```bash
@@ -41,14 +41,14 @@ client = SmsapiSDK({
 
 ### 2. List available records
 
-`list()` returns a `list` of records (each a `dict`) and raises on
-error — iterate it directly.
+`list()` returns a `list` of entities, one per record, and raises on
+error; an entity's `data_get()` reads its record (a `dict`).
 
 ```python
 try:
     availables = client.Available().list()
     for available in availables:
-        print(available)
+        print(available.data_get())
 except Exception as err:
     print(f"list failed: {err}")
 ```
@@ -60,8 +60,8 @@ Permission is nested under group, so provide the `group_id`.
 
 ```python
 try:
-    permission = client.Permission().load({"group_id": "example_group_id", "username": "example_username", "id": "example_id"})
-    print(permission)
+    permission = client.Permission().load({"group_id": "example_group_id", "id": "example_id"})
+    print(permission.data_get())
 except Exception as err:
     print(f"load failed: {err}")
 ```
@@ -73,10 +73,10 @@ Entity operations raise on failure, so wrap them in `try` / `except`:
 
 ```python
 try:
-    permission = client.Permission().load({"group_id": "example", "id": "example_id", "username": "example"})
-    print(permission)
+    templates = client.Template().list()
+    print([item.data_get() for item in templates])
 except Exception as err:
-    print(f"load failed: {err}")
+    print(f"list failed: {err}")
 ```
 
 `direct()` does **not** raise — it returns the result envelope. Branch
@@ -140,10 +140,9 @@ Create a mock client for unit testing — no server required:
 ```python
 client = SmsapiSDK.test()
 
-# Entity ops return the ENTITY and raises on error;
-# call data_get() for the record.
-permission = client.Permission().load({"id": "test01", "group_id": "example", "username": "example"})
-# permission contains the mock response record
+# Entity ops return the entity, and list one per record; they raise on error.
+template = client.Template().list()
+# data_get() on an entity reads its mock response record
 ```
 
 ### Use a custom fetch function
@@ -256,11 +255,11 @@ All entities share the same interface.
 
 | Method | Signature | Description |
 | --- | --- | --- |
-| `load` | `(reqmatch, ctrl) -> any` | Load a single entity by match criteria. Raises on error. |
-| `list` | `(reqmatch, ctrl) -> list` | List entities matching the criteria. Raises on error. |
-| `create` | `(reqdata, ctrl) -> any` | Create a new entity. Raises on error. |
-| `update` | `(reqdata, ctrl) -> any` | Update an existing entity. Raises on error. |
-| `remove` | `(reqmatch, ctrl) -> any` | Remove an entity. Raises on error. |
+| `load` | `(reqmatch, ctrl) -> any` | Load a single entity by match criteria, and return it. Raises on error. |
+| `list` | `(reqmatch, ctrl) -> list` | List entities matching the criteria, one per record. Raises on error. |
+| `create` | `(reqdata, ctrl) -> any` | Create a new entity, and return it. Raises on error. |
+| `update` | `(reqdata, ctrl) -> any` | Update an existing entity, and return it. Raises on error. |
+| `remove` | `(reqmatch, ctrl) -> any` | Remove an entity, and return it marked as deleted. Raises on error. |
 | `data_get` | `() -> dict` | Get entity data. |
 | `data_set` | `(data)` | Set entity data. |
 | `match_get` | `() -> dict` | Get entity match criteria. |
@@ -270,9 +269,9 @@ All entities share the same interface.
 
 ### Result shape
 
-Entity operations return the ENTITY (call data_get() for the record) (a `dict` for single-entity
-ops, a `list` for `list`) and raise on error. Wrap calls in
-`try`/`except` to handle failures.
+Entity operations return the entity, and `list` a `list` of entities, one
+per record; an entity's `data_get()` reads its record (a `dict`). They raise
+on error, so wrap calls in `try`/`except` to handle failures.
 
 The `direct()` escape hatch never raises — it returns a result `dict`
 you branch on via `result["ok"]`:
@@ -344,7 +343,6 @@ API path: `/callbacks`
 | `email` |  |
 | `first_name` |  |
 | `gender` |  |
-| `group_id` | Object ID |
 | `groups` |  |
 | `id` | Object ID |
 | `idx` | User provided resource id |
@@ -352,14 +350,8 @@ API path: `/callbacks`
 | `name` | Group name |
 | `permissions` |  |
 | `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
 | `size` |  |
 | `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Load, Remove, Update.
 
@@ -369,33 +361,9 @@ API path: `/contacts/{contactId}/groups`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
 | `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
+| `name` |  |
 | `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
 
@@ -405,33 +373,6 @@ API path: `/contacts/fields`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
-| `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
-| `read` | Has read permission |
-| `send` | Has send permission |
-| `source` |  |
-| `type` |  |
-| `username` |  |
-| `value` |  |
-| `write` | Has write permission |
 
 Operations: List.
 
@@ -441,32 +382,10 @@ API path: `/contacts/fields/{fieldId}/options`
 
 | Field | Description |
 | --- | --- |
-| `birthday_date` |  |
-| `city` |  |
-| `contact_expire_after` | Contact expire after days |
-| `contacts_count` |  |
-| `country` |  |
-| `created_by` |  |
-| `date_created` |  |
-| `date_updated` |  |
-| `description` |  |
-| `email` |  |
-| `first_name` |  |
-| `gender` |  |
 | `group_id` | Object ID |
-| `groups` |  |
-| `id` | Object ID |
-| `idx` | User provided resource id |
-| `last_name` |  |
-| `name` | Group name |
-| `permissions` |  |
-| `phone_number` |  |
 | `read` | Has read permission |
 | `send` | Has send permission |
-| `source` |  |
-| `type` |  |
 | `username` |  |
-| `value` |  |
 | `write` | Has write permission |
 
 Operations: Create, List, Remove, Update.
@@ -634,7 +553,7 @@ API path: `/sms/sendernames/statement`
 | --- | --- |
 | `content` | RCS message content in RCS JSON format. |
 | `phone_number` | Recipient phone number (e.g. |
-| `sender` |  |
+| `sender` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | Plain text message content. |
 
 Operations: Create.
@@ -754,16 +673,6 @@ API path: `/sms/templates`
 
 | Field | Description |
 | --- | --- |
-| `deliveredAt` |  |
-| `expiredAt` |  |
-| `id` | Object ID |
-| `interface` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | RCS message type (basic, single, ...). |
-| `readAt` |  |
-| `recipient` | Recipient phone number (without +). |
-| `sender` | Sender name |
-| `senderId` | Sender id |
-| `sentAt` |  |
 
 Operations: List.
 
@@ -909,7 +818,6 @@ Create an instance: `contact = client.Contact()`
 | `email` | `str` |  |
 | `first_name` | `str` |  |
 | `gender` | `str` |  |
-| `group_id` | `str` | Object ID |
 | `groups` | `list` |  |
 | `id` | `str` | Object ID |
 | `idx` | `str` | User provided resource id |
@@ -917,14 +825,8 @@ Create an instance: `contact = client.Contact()`
 | `name` | `str` | Group name |
 | `permissions` | `list` |  |
 | `phone_number` | `str` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
 | `size` | `int` |  |
 | `source` | `str` |  |
-| `type` | `str` |  |
-| `username` | `str` |  |
-| `value` | `str` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: Load
 
@@ -974,33 +876,9 @@ Create an instance: `contacts_field = client.ContactsField()`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `str` |  |
-| `city` | `str` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `str` |  |
-| `created_by` | `str` |  |
-| `date_created` | `str` |  |
-| `date_updated` | `str` |  |
-| `description` | `str` |  |
-| `email` | `str` |  |
-| `first_name` | `str` |  |
-| `gender` | `str` |  |
-| `group_id` | `str` | Object ID |
-| `groups` | `list` |  |
 | `id` | `str` | Object ID |
-| `idx` | `str` | User provided resource id |
-| `last_name` | `str` |  |
-| `name` | `str` | Group name |
-| `permissions` | `list` |  |
-| `phone_number` | `str` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `str` |  |
+| `name` | `str` |  |
 | `type` | `str` |  |
-| `username` | `str` |  |
-| `value` | `str` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: List
 
@@ -1012,12 +890,6 @@ contacts_fields = client.ContactsField().list()
 
 ```python
 contacts_field = client.ContactsField().create({
-    "contact_expire_after": 1,  # int
-    "created_by": "example_created_by",  # str
-    "date_created": "example_date_created",  # str
-    "date_updated": "example_date_updated",  # str
-    "gender": "example_gender",  # str
-    "groups": [],  # list
 })
 ```
 
@@ -1031,38 +903,6 @@ Create an instance: `contacts_field_option = client.ContactsFieldOption()`
 | Method | Description |
 | --- | --- |
 | `list()` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `birthday_date` | `str` |  |
-| `city` | `str` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `str` |  |
-| `created_by` | `str` |  |
-| `date_created` | `str` |  |
-| `date_updated` | `str` |  |
-| `description` | `str` |  |
-| `email` | `str` |  |
-| `first_name` | `str` |  |
-| `gender` | `str` |  |
-| `group_id` | `str` | Object ID |
-| `groups` | `list` |  |
-| `id` | `str` | Object ID |
-| `idx` | `str` | User provided resource id |
-| `last_name` | `str` |  |
-| `name` | `str` | Group name |
-| `permissions` | `list` |  |
-| `phone_number` | `str` |  |
-| `read` | `bool` | Has read permission |
-| `send` | `bool` | Has send permission |
-| `source` | `str` |  |
-| `type` | `str` |  |
-| `username` | `str` |  |
-| `value` | `str` |  |
-| `write` | `bool` | Has write permission |
 
 #### Example: List
 
@@ -1088,32 +928,10 @@ Create an instance: `contactsgroup = client.Contactsgroup()`
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `birthday_date` | `str` |  |
-| `city` | `str` |  |
-| `contact_expire_after` | `int` | Contact expire after days |
-| `contacts_count` | `int` |  |
-| `country` | `str` |  |
-| `created_by` | `str` |  |
-| `date_created` | `str` |  |
-| `date_updated` | `str` |  |
-| `description` | `str` |  |
-| `email` | `str` |  |
-| `first_name` | `str` |  |
-| `gender` | `str` |  |
 | `group_id` | `str` | Object ID |
-| `groups` | `list` |  |
-| `id` | `str` | Object ID |
-| `idx` | `str` | User provided resource id |
-| `last_name` | `str` |  |
-| `name` | `str` | Group name |
-| `permissions` | `list` |  |
-| `phone_number` | `str` |  |
 | `read` | `bool` | Has read permission |
 | `send` | `bool` | Has send permission |
-| `source` | `str` |  |
-| `type` | `str` |  |
 | `username` | `str` |  |
-| `value` | `str` |  |
 | `write` | `bool` | Has write permission |
 
 #### Example: List
@@ -1126,14 +944,7 @@ contactsgroups = client.Contactsgroup().list()
 
 ```python
 contactsgroup = client.Contactsgroup().create({
-    "contact_expire_after": 1,  # int
-    "created_by": "example_created_by",  # str
-    "date_created": "example_date_created",  # str
-    "date_updated": "example_date_updated",  # str
-    "gender": "example_gender",  # str
     "group_id": "example_group_id",  # str
-    "groups": [],  # list
-    "id": "example_id",  # str
     "read": True,  # bool
     "send": True,  # bool
     "username": "example_username",  # str
@@ -1318,7 +1129,7 @@ Create an instance: `permission = client.Permission()`
 #### Example: Load
 
 ```python
-permission = client.Permission().load({"id": "permission_id", "group_id": "group_id", "username": "username"})
+permission = client.Permission().load({"id": "permission_id", "group_id": "group_id"})
 ```
 
 #### Example: Create
@@ -1494,7 +1305,7 @@ Create an instance: `sent_rcs_message = client.SentRcsMessage()`
 | --- | --- | --- |
 | `content` | `dict` | RCS message content in RCS JSON format. |
 | `phone_number` | `str` | Recipient phone number (e.g. |
-| `sender` | `Any` |  |
+| `sender` | `str` | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `str` | Plain text message content. |
 
 #### Example: Create
@@ -1502,7 +1313,7 @@ Create an instance: `sent_rcs_message = client.SentRcsMessage()`
 ```python
 sent_rcs_message = client.SentRcsMessage().create({
     "phone_number": "example_phone_number",  # str
-    "sender": "example_sender",  # Any
+    "sender": "example_sender",  # str
 })
 ```
 
@@ -1641,7 +1452,7 @@ Create an instance: `smssendername = client.Smssendername()`
 
 ```python
 smssendername = client.Smssendername().create({
-    "sendername_id": "example_sendername_id",  # str
+    "sender": "example_sender",  # str
 })
 ```
 
@@ -1760,21 +1571,6 @@ Create an instance: `user_rcs_sender_collection = client.UserRcsSenderCollection
 | Method | Description |
 | --- | --- |
 | `list()` | List entities, optionally matching the given criteria. |
-
-#### Fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `deliveredAt` | `str` |  |
-| `expiredAt` | `str` |  |
-| `id` | `str` | Object ID |
-| `interface` | `str` | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `str` | RCS message type (basic, single, ...). |
-| `readAt` | `str` |  |
-| `recipient` | `str` | Recipient phone number (without +). |
-| `sender` | `str` | Sender name |
-| `senderId` | `str` | Sender id |
-| `sentAt` | `str` |  |
 
 #### Example: List
 
@@ -2221,15 +2017,15 @@ Import entity or utility modules directly only when needed.
 
 ### Entity state
 
-Entity instances are stateful. After a successful `load`, the entity
+Entity instances are stateful. After a successful `list`, the entity
 stores the returned data and match criteria internally.
 
 ```python
-permission = client.Permission()
-permission.load({"group_id": "example", "id": "example_id", "username": "example"})
+template = client.Template()
+template.list()
 
-# permission.data_get() now returns the permission data from the last load
-# permission.match_get() returns the last match criteria
+# template.data_get() now returns the template data from the last list
+# template.match_get() returns the last match criteria
 ```
 
 Call `make()` to create a fresh instance with the same configuration

@@ -19,7 +19,7 @@ main: kit: entity: smssendername: {
             params: [
               {
                 k: "param"
-                n: "sendername_id"
+                n: "sender"
                 or: "sender"
                 r: true
                 t: "`$STRING`"
@@ -30,13 +30,8 @@ main: kit: entity: smssendername: {
           o: "/sms/sendernames/{sender}/commands/make_default"
           q: {
             exist: [
-              "sendername_id"
+              "sender"
             ]
-          }
-          r: {
-            param: {
-              sender: "sendername_id"
-            }
           }
           s: [
             {
@@ -46,7 +41,7 @@ main: kit: entity: smssendername: {
               lit: "sendernames"
             }
             {
-              var: "sendername_id"
+              var: "sender"
             }
             {
               lit: "commands"

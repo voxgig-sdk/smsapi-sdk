@@ -15,7 +15,10 @@
 (ns sdk.core
   (:require [voxgig.struct :as vs]
             [sdk.schema :as schema]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import [java.net URI]
+           [java.net.http HttpClient HttpClient$Redirect HttpClient$Version
+            HttpRequest HttpRequest$BodyPublishers HttpResponse$BodyHandlers]))
 
 (def SDK-NAME "Smsapi")
 
@@ -35,22 +38,29 @@
               (let [c (peek-c)]
                 (cond (= c \{) (parse-obj) (= c \[) (parse-arr) (= c \") (parse-str)
                       (or (= c \t) (= c \f)) (parse-bool) (= c \n) (parse-null) :else (parse-num))))
+            (fail [] (throw (ex-info (str "json: unexpected input at " (aget pos 0)) {})))
+            (expect [^String word value]
+              (if (.startsWith s word (aget pos 0))
+                (do (aset pos 0 (+ (aget pos 0) (count word))) value)
+                (fail)))
             (parse-obj []
               (next-c)
               (let [m (java.util.LinkedHashMap.)]
                 (skip-ws)
                 (if (= (peek-c) \}) (do (next-c) m)
                     (loop [] (skip-ws)
-                      (let [k (parse-str)] (skip-ws) (next-c)
+                      (when-not (= (peek-c) \") (fail))
+                      (let [k (parse-str)] (skip-ws)
+                        (when-not (= (next-c) \:) (fail))
                         (.put m k (parse-val)) (skip-ws)
-                        (if (= (next-c) \,) (recur) m))))))
+                        (let [c (next-c)] (cond (= c \,) (recur) (= c \}) m :else (fail))))))))
             (parse-arr []
               (next-c)
               (let [a (java.util.ArrayList.)]
                 (skip-ws)
                 (if (= (peek-c) \]) (do (next-c) a)
                     (loop [] (.add a (parse-val)) (skip-ws)
-                      (if (= (next-c) \,) (recur) a)))))
+                      (let [c (next-c)] (cond (= c \,) (recur) (= c \]) a :else (fail)))))))
             (parse-str []
               (next-c)
               (let [sb (StringBuilder.)]
@@ -69,10 +79,8 @@
                                    (.append sb e))
                                  (recur))
                       :else (do (.append sb c) (recur)))))))
-            (parse-bool []
-              (if (= (peek-c) \t) (do (aset pos 0 (+ (aget pos 0) 4)) true)
-                  (do (aset pos 0 (+ (aget pos 0) 5)) false)))
-            (parse-null [] (aset pos 0 (+ (aget pos 0) 4)) nil)
+            (parse-bool [] (if (= (peek-c) \t) (expect "true" true) (expect "false" false)))
+            (parse-null [] (expect "null" nil))
             (parse-num []
               (let [start (aget pos 0)]
                 (while (and (< (aget pos 0) n)
@@ -91,7 +99,10 @@
                     (try (Long/parseLong tok)
                          (catch NumberFormatException _
                            (bigint (java.math.BigInteger. tok))))))))]
-      (parse-val))))
+      (let [v (parse-val)]
+        (skip-ws)
+        (when (< (aget pos 0) n) (fail))
+        v))))
 
 ;; The option spec, parsed ONCE. sdk.schema holds the raw JSON and nothing
 ;; else — it cannot parse its own data without requiring this namespace,
@@ -170,6 +181,12 @@
 
 ;; ctx.make_error(code, msg)
 (defn ctx-error [ctx code msg] (make-error-obj code msg ctx))
+
+;; Whether a comma-separated allow option names the item: whole names, any case.
+(defn allowed? [names item]
+  (and (string? names) (string? item) (not= "" item)
+       (boolean (some #(.equalsIgnoreCase ^String (str/trim %) ^String item)
+                      (str/split names #"," -1)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Client accessors. A client is a plain map holding atoms (so it is shared by
@@ -253,7 +270,10 @@
            :method  (g "method" "GET")
            :body    (g "body" nil)
            :url     (g "url" "")
-           :path    (g "path" "")})))
+           :path    (g "path" "")
+           ;; The query parameters prepare-auth placed: the credential, which
+           ;; the request sends and the entity's match leaves out.
+           :authquery (g "authquery" [])})))
 
 ;; ---------------------------------------------------------------------------
 ;; Result (atom-map).
@@ -291,7 +311,9 @@
            :headers (g "headers")
            :json (when (vs/isfunc jf) jf)
            :body (g "body")
-           :err (g "err")})))
+           :err (g "err")
+           ;; Set by a transport that could not read a non-blank body as JSON.
+           :unreadable (true? (g "unreadable"))})))
 
 ;; ---------------------------------------------------------------------------
 ;; Control (atom-map). Shared with the base context when not overridden.
@@ -369,12 +391,12 @@
       (or (nil? opname) (= "" opname)) (make-operation (vs/jm))
       :else
       (let [opcfg (vs/getpath config (str "entity." entname ".op." opname))
-            input (if (or (= opname "update") (= opname "create")) "data" "match")
+            input (if (or (= opname "update") (= opname "create") (= opname "patch")) "data" "match")
             points (let [t (when (vs/ismap opcfg) (vs/getprop opcfg "points"))]
                      (if (vs/islist t) t (vs/jt)))
             op (make-operation (vs/jm "entity" entname "name" opname "input" input "points" points))]
-        (swap! opmap assoc cache-key op)
-        op))))
+        ;; Every request racing to build this Operation gets the one stored first.
+        (get (swap! opmap #(if (contains? % cache-key) % (assoc % cache-key op))) cache-key)))))
 
 ;; ---------------------------------------------------------------------------
 ;; Feature dispatch.
@@ -466,19 +488,21 @@
   (let [n (try (long (Math/floor (Double/parseDouble (str v)))) (catch Exception _ nil))]
     (if (and n (<= 0 n)) n dflt)))
 
-;; The derived clean block: a struct map so it lives in options.__derived__
-;; and its `values` list stays MUTABLE after make-options - features register
-;; what they resolve later.
+;; The derived clean block: a java.util.Map so it lives in options.__derived__
+;; and its `values` list can be replaced after make-options - features
+;; register what they resolve later. Concurrent, so a clean or a request
+;; copying the options reads it without the lock and sees the last put.
 (defn make-clean-config [cleanopts]
   (let [o (fn [k] (mget cleanopts k))
         keys (vs/jt)]
     (doseq [k (splitkeys (o "keys"))] (.add ^java.util.List keys k))
-    (vs/jm "active" (not= false (o "active"))
-           "keys" keys
-           "values" (vs/jt)
-           "mask" (let [m (o "mask")] (if (string? m) m "[redacted]"))
-           "hint" (count-opt (o "hint") 0)
-           "min" (max 1 (count-opt (o "min") 4)))))
+    (doto (java.util.concurrent.ConcurrentHashMap.)
+      (.put "active" (not= false (o "active")))
+      (.put "keys" keys)
+      (.put "values" (vs/jt))
+      (.put "mask" (let [m (o "mask")] (if (string? m) m "[redacted]")))
+      (.put "hint" (count-opt (o "hint") 0))
+      (.put "min" (max 1 (count-opt (o "min") 4))))))
 
 ;; A context without options (make-error accepts a bare one) still masks by
 ;; the schema defaults.
@@ -499,20 +523,24 @@
 
 (defn u-clean-add [ctx value]
   (let [cfg (clean-config ctx)
-        minlen (long (or (mget cfg "min") 4))
-        values (mget cfg "values")]
-    (when (and (string? value) (>= (count value) minlen) (instance? java.util.List values))
-      (let [changed (atom false)]
-        (doseq [form (clean-forms value)]
-          (when (and (>= (count form) minlen) (not (.contains ^java.util.List values form)))
-            (.add ^java.util.List values form)
-            (reset! changed true)))
-        ;; Longest first, so a value is never masked by a substring of itself.
-        (when @changed
-          (let [sorted (sort-by (fn [^String s] (- (count s))) (vec values))]
-            (.clear ^java.util.List values)
-            (doseq [s sorted] (.add ^java.util.List values s))))))
+        minlen (long (or (mget cfg "min") 4))]
+    (when (and (string? value) (>= (count value) minlen)
+               (instance? java.util.List (mget cfg "values")))
+      (let [forms (filterv #(>= (count %) minlen) (clean-forms value))]
+        ;; Every request copies the options, the registry among them, so a
+        ;; registration publishes a new vector and never changes a published one.
+        (locking cfg
+          (let [values (vec (mget cfg "values"))
+                added (remove #(.contains ^java.util.List values %) forms)]
+            ;; Longest first, so a value is never masked by a substring of itself.
+            (when (seq added)
+              (.put ^java.util.Map cfg "values"
+                    (vec (sort-by (fn [^String s] (- (count s))) (into values added)))))))))
     nil))
+
+(defn- registered [cfg]
+  (let [values (mget cfg "values")]
+    (if (instance? java.util.List values) values [])))
 
 (defn- mask-value [cfg ^String value]
   (let [hint (long (or (mget cfg "hint") 0))
@@ -525,7 +553,7 @@
   (reduce (fn [^String out ^String value]
             (if (.contains out value) (str/replace out value (mask-value cfg value)) out))
           text
-          (vec (or (mget cfg "values") []))))
+          (registered cfg)))
 
 (defn- sensitive-key? [cfg key]
   (if (or (nil? key) (number? key))
@@ -698,56 +726,188 @@
       ;; shared corpus caught all three.
       (get METHOD-MAP (op-name (oget ctx :op))))))
 
+;; The arguments a point declares in one location, query or header, each as
+;; [name wire val]: the name it travels under and the value this call passes
+;; in its match or else its data. Unlike a path parameter, the entity's stored
+;; match and data never supply one.
+(defn- call-args [ctx kind]
+  (let [point (oget ctx :point)
+        args (when point (vs/getprop point "args"))
+        defs (when (vs/ismap args) (vs/getprop args kind))]
+    (if (vs/islist defs)
+      (vec (keep (fn [ad]
+                   (let [name (when (vs/ismap ad) (vs/getprop ad "name"))]
+                     (when (and (string? name) (seq name))
+                       (let [orig (vs/getprop ad "orig")
+                             wire (if (and (string? orig) (seq orig)) orig name)
+                             v (vs/getprop (oget ctx :reqmatch) name)
+                             v (if (nil? v) (vs/getprop (oget ctx :reqdata) name) v)]
+                         [name wire v]))))
+                 (vec defs)))
+      [])))
+
+;; ---- media -------------------------------------------------------------------
+;;
+;; The media types a point declares: `response` (the model's `rs`) for the
+;; Accept header, and `body` (the model's `rb`) for the request body.
+
+;; The data key holding a raw request body. Like `$action`, it can never be a
+;; declared argument name.
+(def RAW-BODY "$body")
+
+(defn json-media? [media]
+  (let [m (-> (if (string? media) media "") (str/split #";" 2) first (or "") str/trim str/lower-case)]
+    (or (= "application/json" m) (= "text/json" m) (str/ends-with? m "+json"))))
+
+;; The declared JSON type alone, else every declared type in the model's
+;; order; nil when no success response declares a body.
+(defn accept-of [point]
+  (let [res (when point (vs/getprop point "response"))
+        media (when (vs/ismap res) (vs/getprop res "media"))]
+    (when (and (string? media) (seq media))
+      (if (= "json" (vs/getprop res "kind"))
+        media
+        (let [alts (vs/getprop res "alternatives")
+              others (when (vs/islist alts)
+                       (keep (fn [alt]
+                               (let [m (when (vs/ismap alt) (vs/getprop alt "media"))]
+                                 (when (and (string? m) (seq m)) m)))
+                             (vec alts)))]
+          (str/join ", " (cons media others)))))))
+
+(defn raw-request? [point]
+  (let [body (when point (vs/getprop point "body"))]
+    (and (vs/ismap body) (= "raw" (vs/getprop body "kind")))))
+
+(defn json-request? [point]
+  (let [body (when point (vs/getprop point "body"))]
+    (and (vs/ismap body) (= "json" (vs/getprop body "kind")))))
+
+;; Bytes or a stream go as given. A map or a list is JSON, and so is a scalar
+;; on a point that declares a JSON body.
+(defn request-body [point body]
+  (cond
+    (or (bytes? body) (instance? java.io.InputStream body)) body
+    (or (vs/isnode body) (json-request? point)) (vs/jsonify body)
+    :else body))
+
+(defn- media-header? [^java.util.Map headers name]
+  (boolean (some (fn [k] (and (string? k) (= name (str/lower-case k)))) (vec (.keySet headers)))))
+
+;; A caller's accept wins. A declared request type replaces each JSON
+;; content-type, the SDK default, and leaves any other the caller set.
+(defn media-headers [point ^java.util.Map headers]
+  (let [accept (accept-of point)]
+    (when (and accept (not (media-header? headers "accept")))
+      (.put headers "accept" accept)))
+  (let [body (when point (vs/getprop point "body"))
+        kind (when (vs/ismap body) (vs/getprop body "kind"))
+        media (when (vs/ismap body) (vs/getprop body "media"))]
+    (when (and (contains? #{"raw" "json"} kind) (string? media) (seq media))
+      (doseq [k (vec (.keySet headers))]
+        (when (and (string? k) (= "content-type" (str/lower-case k)) (json-media? (.get headers k)))
+          (.remove headers k)))
+      (when-not (media-header? headers "content-type")
+        (.put headers "content-type" media))))
+  headers)
+
+;; A byte array, an InputStream or a string, sent as it is. An InputStream is
+;; read here, once, before the first attempt, so that a retry sends the same
+;; bytes again.
+(defn raw-body [reqdata]
+  (let [body (when (vs/ismap reqdata) (vs/getprop reqdata RAW-BODY))]
+    (if (instance? java.io.InputStream body) (.readAllBytes ^java.io.InputStream body) body)))
+
+;; The form style of a cookie parameter: a list repeats the name, a map sends
+;; its own keys, and every value is percent-encoded.
+(defn- cookie-pair [wire v]
+  (let [esc (fn [x] (vs/escurl (vs/stringify x)))]
+    (str/join "; "
+              (cond
+                (vs/islist v) (map (fn [item] (str wire "=" (esc item))) v)
+                (vs/ismap v) (map (fn [k] (str (vs/escurl k) "=" (esc (vs/getprop v k)))) (vs/keysof v))
+                :else [(str wire "=" (esc v))]))))
+
+;; The caller's cookie pieces with the named cookies removed: a cookie is one
+;; ;-delimited piece, whatever its value holds.
+(defn- cookie-keep [header names]
+  (vec (for [piece (str/split header #";")
+             :let [cookie (str/trim piece)
+                   name (str/trim (first (str/split cookie #"=" 2)))]
+             :when (and (not= "" cookie) (not (contains? names name)))]
+         cookie)))
+
 (defn u-prepare-headers [ctx]
   (let [options (client-options-map (oget ctx :client))
         headers (vs/getprop options "headers")
-        out (if (nil? headers) (vs/jm)
-                (let [o (vs/clone headers)] (if (vs/ismap o) o (vs/jm))))
-        point (oget ctx :point)
-        args (when point (vs/getprop point "args"))
-        aheader (let [h (when (vs/ismap args) (vs/getprop args "header"))]
-                  (if (vs/islist h) h (vs/jt)))]
-    ;; A header parameter travels as a header, under the name the definition
-    ;; gives it, and only from this call's own arguments. It replaces a default
-    ;; of the same name, whatever its case.
-    (doseq [hd (vec aheader)]
-      (let [name (when (vs/ismap hd) (vs/getprop hd "name"))]
-        (when (and (string? name) (seq name))
-          (let [orig (vs/getprop hd "orig")
-                wire (if (and (string? orig) (seq orig)) orig name)
-                v (vs/getprop (oget ctx :reqmatch) name)
-                v (if (nil? v) (vs/getprop (oget ctx :reqdata) name) v)]
-            (when (some? v)
-              (let [key (str/lower-case wire)]
-                (doseq [k (vec (.keySet ^java.util.Map out))]
-                  (when (and (string? k) (= key (str/lower-case k)))
-                    (.remove ^java.util.Map out k)))
-                (.put ^java.util.Map out key (vs/stringify v))))))))
+        out (media-headers (oget ctx :point)
+                           (if (nil? headers) (vs/jm)
+                               (let [o (vs/clone headers)] (if (vs/ismap o) o (vs/jm)))))]
+    ;; A header argument replaces a default of the same name, whatever its case.
+    (doseq [[_ wire v] (call-args ctx "header")]
+      (when (some? v)
+        (let [key (str/lower-case wire)]
+          (doseq [k (vec (.keySet ^java.util.Map out))]
+            (when (and (string? k) (= key (str/lower-case k)))
+              (.remove ^java.util.Map out k)))
+          (.put ^java.util.Map out key (vs/stringify v)))))
+    ;; A cookie argument travels in the cookie header, form serialized and
+    ;; percent-encoded, replacing a cookie of the same name among those the
+    ;; caller's headers already send.
+    (let [sent (vec (for [[_ wire v] (call-args ctx "cookie") :when (some? v)] [wire v]))]
+      (when (seq sent)
+        (let [names (set (mapcat (fn [[wire v]] (if (vs/ismap v) (map vs/escurl (vs/keysof v)) [wire])) sent))
+              given (vec (filter (fn [k] (and (string? k) (= "cookie" (str/lower-case k))))
+                                 (vec (.keySet ^java.util.Map out))))
+              kept (vec (for [k given
+                              :let [v (.get ^java.util.Map out k)]
+                              :when (string? v)
+                              cookie (cookie-keep v names)]
+                          cookie))
+              pairs (vec (for [[wire v] sent
+                               :let [pair (cookie-pair wire v)]
+                               :when (not= "" pair)]
+                           pair))]
+          (doseq [k given] (.remove ^java.util.Map out k))
+          (when (seq (concat kept pairs))
+            (.put ^java.util.Map out "cookie" (str/join "; " (concat kept pairs)))))))
     out))
 
-(defn u-param [ctx paramdef]
-  (let [point (oget ctx :point)
-        spec (oget ctx :spec)
-        match (oget ctx :match)
+;; The name a point gives a parameter in the call, if it renames it.
+(defn- param-alias [point key]
+  (let [am (when point (to-map (vs/getprop point "alias")))
+        ak (when am (vs/getprop am key))]
+    (if (string? ak) ak "")))
+
+;; The value the call or its entity gives a point's parameter, under its name
+;; or the point's alias for it.
+(defn param-value [ctx point key]
+  (let [akey (param-alias point key)
         reqmatch (oget ctx :reqmatch)
-        data (oget ctx :data)
         reqdata (oget ctx :reqdata)
-        pt (vs/typify paramdef)
-        key (if (pos? (bit-and vs/T_string pt)) paramdef
-                (let [k (vs/getprop paramdef "name")] (if (string? k) k "")))
-        akey (let [am (when point (to-map (vs/getprop point "alias")))]
-               (if am (let [ak (vs/getprop am key)] (if (string? ak) ak "")) ""))
+        data (oget ctx :data)
         v (atom (vs/getprop reqmatch key))]
-    (when (nil? @v) (reset! v (vs/getprop match key)))
-    (when (and (nil? @v) (seq akey))
-      (when spec (.put ^java.util.Map (oget spec :alias) akey key))
-      (reset! v (vs/getprop reqmatch akey)))
+    (when (nil? @v) (reset! v (vs/getprop (oget ctx :match) key)))
+    (when (and (nil? @v) (seq akey)) (reset! v (vs/getprop reqmatch akey)))
     (when (nil? @v) (reset! v (vs/getprop reqdata key)))
     (when (nil? @v) (reset! v (vs/getprop data key)))
     (when (and (nil? @v) (seq akey))
       (reset! v (vs/getprop reqdata akey))
       (when (nil? @v) (reset! v (vs/getprop data akey))))
     @v))
+
+(defn u-param [ctx paramdef]
+  (let [point (oget ctx :point)
+        spec (oget ctx :spec)
+        pt (vs/typify paramdef)
+        key (if (pos? (bit-and vs/T_string pt)) paramdef
+                (let [k (vs/getprop paramdef "name")] (if (string? k) k "")))
+        akey (param-alias point key)]
+    (when (and spec (seq akey)
+               (nil? (vs/getprop (oget ctx :reqmatch) key))
+               (nil? (vs/getprop (oget ctx :match) key)))
+      (.put ^java.util.Map (oget spec :alias) akey key))
+    (param-value ctx point key)))
 
 (defn u-prepare-params [ctx]
   (let [point (oget ctx :point)
@@ -782,9 +942,22 @@
         aheader (let [args (when point (vs/getprop point "args"))
                       h (when (vs/ismap args) (vs/getprop args "header"))]
                   (if (vs/islist h) h (vs/jt)))
-        pset (into (into (into #{} (vec params))
-                         (keep (fn [pd] (when (vs/ismap pd) (vs/getprop pd "name"))) (vec aparams)))
-                   (keep (fn [hd] (when (vs/ismap hd) (vs/getprop hd "name"))) (vec aheader)))
+        ;; A cookie parameter travels in the cookie header, which u-prepare-headers fills.
+        acookie (let [args (when point (vs/getprop point "args"))
+                      c (when (vs/ismap args) (vs/getprop args "cookie"))]
+                  (if (vs/islist c) c (vs/jt)))
+        ;; A header or cookie name leaves the query unless a query parameter
+        ;; shares it: then both are sent.
+        declared (let [args (when point (vs/getprop point "args"))
+                       q (when (vs/ismap args) (vs/getprop args "query"))]
+                   (into #{} (keep (fn [qd] (when (vs/ismap qd) (vs/getprop qd "name")))
+                                   (vec (if (vs/islist q) q (vs/jt))))))
+        routed (fn [d] (when (vs/ismap d)
+                         (let [n (vs/getprop d "name")] (when-not (contains? declared n) n))))
+        pset (into (into (into (into #{} (vec params))
+                               (keep (fn [pd] (when (vs/ismap pd) (vs/getprop pd "name"))) (vec aparams)))
+                         (keep routed (vec aheader)))
+                   (keep routed (vec acookie)))
         ;; A query parameter travels under the name the definition gives it,
         ;; its orig, which the model may have renamed for the caller.
         aquery (let [args (when point (vs/getprop point "args"))
@@ -801,6 +974,10 @@
       (let [k (vs/getprop item 0) v (vs/getprop item 1)]
         (when (and (some? v) (string? k) (not= "$action" k) (not (contains? pset k)))
           (.put ^java.util.Map out (get wire k k) v))))
+    ;; A create or update passes its query arguments in its data.
+    (doseq [[name orig v] (call-args ctx "query")]
+      (when (and (some? v) (not (contains? pset name)))
+        (.put ^java.util.Map out orig v)))
     out))
 
 (defn- omit-keys [reqdata names]
@@ -816,19 +993,32 @@
 ;; so the body is a copy without it. The caller's map is left untouched.
 (defn- strip-action [reqdata] (omit-keys reqdata ["$action"]))
 
-;; A header argument travels as a header, which u-prepare-headers sends, so the
-;; body is built from the request data without it.
-(defn- header-arg-names [point]
-  (let [args (when point (vs/getprop point "args"))
-        h (when (vs/ismap args) (vs/getprop args "header"))]
-    (if (vs/islist h)
-      (filterv #(and (string? %) (seq %))
-               (map #(when (vs/ismap %) (vs/getprop % "name")) (vec h)))
-      [])))
+(defn- field-arg? [ctx name]
+  (let [point (oget ctx :point)
+        args (when point (vs/getprop point "args"))]
+    (boolean
+     (some (fn [kind]
+             (let [defs (when (vs/ismap args) (vs/getprop args kind))]
+               (when (vs/islist defs)
+                 (some (fn [ad]
+                         (and (vs/ismap ad)
+                              (= name (vs/getprop ad "name"))
+                              (true? (vs/getprop ad "field"))))
+                       (vec defs)))))
+           ["header" "cookie" "query"]))))
+
+;; A header, cookie or query argument travels where u-prepare-headers or
+;; u-prepare-query sends it, so the body is built from the request data
+;; without it, unless the point marks it as a field the body keeps.
+(defn- routed-arg-names [ctx]
+  (->> (concat (call-args ctx "header") (call-args ctx "cookie") (call-args ctx "query"))
+       (map first)
+       (remove (partial field-arg? ctx))
+       vec))
 
 (defn u-transform-request [ctx]
   (let [spec (oget ctx :spec) point (oget ctx :point)
-        data (omit-keys (oget ctx :reqdata) (header-arg-names point))]
+        data (omit-keys (oget ctx :reqdata) (routed-arg-names ctx))]
     (when spec (oset! spec :step "reqform"))
     (let [transform (to-map (vs/getprop point "transform"))]
       (strip-action
@@ -838,7 +1028,10 @@
                  (vs/transform (vs/jm "reqdata" data) reqform))))))))
 
 (defn u-prepare-body [ctx]
-  (if (= "data" (op-input (oget ctx :op))) (ucall ctx :transform-request) nil))
+  (cond
+    (not= "data" (op-input (oget ctx :op))) nil
+    (raw-request? (oget ctx :point)) (raw-body (oget ctx :reqdata))
+    :else (ucall ctx :transform-request)))
 
 ;; ---- graphql ---------------------------------------------------------------
 ;;
@@ -964,6 +1157,17 @@
 ;; feature/secrets) go on resolving exactly as before.
 (load "prepare_auth")
 
+;; The path parameters of a point that neither the call nor the entity gives a
+;; value for, looked up as u-param looks them up.
+(defn- unfilled-params [ctx point]
+  (let [parts (vs/getprop point "parts")]
+    (if (vs/islist parts)
+      (vec (keep (fn [part]
+                   (when-let [[_ pname] (and (string? part) (re-matches #"\{([^{}/]+)\}" part))]
+                     (when (nil? (param-value ctx point pname)) pname)))
+                 (vec parts)))
+      [])))
+
 (defn u-make-point [ctx]
   (let [preset (out-get ctx "point")]
     (if (some? preset)
@@ -972,11 +1176,12 @@
         (do (oset! ctx :point preset) [(oget ctx :point) nil]))
       (let [op (oget ctx :op)
             options (oget ctx :options)
-            allow-op (or (vs/getpath options "allow.op") "")]
+            allow-op (vs/getpath options "allow.op")]
         (cond
-          (not (str/includes? allow-op (op-name op)))
+          (not (allowed? allow-op (op-name op)))
           [nil (ctx-error ctx "point_op_allow"
-                          (str "Operation \"" (op-name op) "\" not allowed by SDK option allow.op value: \"" allow-op "\""))]
+                          (str "Operation \"" (op-name op) "\" not allowed by SDK option allow.op value: \""
+                               (if (string? allow-op) allow-op "") "\""))]
           (zero? (vs/size (op-points op)))
           [nil (ctx-error ctx "point_no_points"
                           (str "Operation \"" (op-name op) "\" has no endpoint definitions."))]
@@ -1044,14 +1249,34 @@
                               (str "Operation \"" (op-name op) "\" action \"" (vs/stringify req-action) "\" is not valid."))]
 
               :else
-              (let [chosen (or matched (own-point (vec (op-points op))))]
-                (if (and reqselector req-action chosen)
+              (let [all (vec (op-points op))
+                    ;; A call without an action falls back to a point without
+                    ;; one, as generation does, and only to a route the call
+                    ;; can fill.
+                    plain (filterv #(nil? (vs/getprop (to-map (vs/getprop % "select")) "$action")) all)
+                    fillable (filterv #(empty? (unfilled-params ctx %)) plain)
+                    chosen (or matched (when (seq fillable) (own-point fillable)))]
+                (cond
+                  (and (nil? matched) (empty? plain))
+                  [nil (ctx-error ctx "point_action_required"
+                                  (str "Operation \"" (op-name op)
+                                       "\" has only action endpoints; pass $action to choose one."))]
+
+                  (nil? chosen)
+                  [nil (ctx-error ctx "point_no_match"
+                                  (str "Operation \"" (op-name op)
+                                       "\" has no endpoint whose path parameters are all given (missing: "
+                                       (str/join ", " (unfilled-params ctx (own-point plain))) ")."))]
+
+                  (and reqselector req-action)
                   (let [point-select (to-map (vs/getprop chosen "select"))
                         point-action (vs/getprop point-select "$action")]
                     (if (not= req-action point-action)
                       [nil (ctx-error ctx "point_action_invalid"
                                       (str "Operation \"" (op-name op) "\" action \"" (vs/stringify req-action) "\" is not valid."))]
                       (do (oset! ctx :point chosen) [(oget ctx :point) nil])))
+
+                  :else
                   (do (oset! ctx :point chosen) [(oget ctx :point) nil]))))))))))
 
 (defn u-make-spec [ctx]
@@ -1071,10 +1296,11 @@
           spec (make-spec (vs/jm "base" base "prefix" prefix "parts" parts "suffix" suffix "step" "start"))]
       (oset! ctx :spec spec)
       (oset! spec :method (ucall ctx :prepare-method))
-      (let [allow-method (or (vs/getpath options "allow.method") "")]
-        (if (not (str/includes? allow-method (oget spec :method)))
+      (let [allow-method (vs/getpath options "allow.method")]
+        (if (not (allowed? allow-method (oget spec :method)))
           [nil (ctx-error ctx "spec_method_allow"
-                          (str "Method \"" (oget spec :method) "\" not allowed by SDK option allow.method value: \"" allow-method "\""))]
+                          (str "Method \"" (oget spec :method) "\" not allowed by SDK option allow.method value: \""
+                               (if (string? allow-method) allow-method "") "\""))]
           (do
             (oset! spec :params (ucall ctx :prepare-params))
             (oset! spec :query (ucall ctx :prepare-query))
@@ -1097,8 +1323,17 @@
                 (oset! spec :body (ucall ctx :prepare-body))
                 (oset! spec :path (ucall ctx :prepare-path))))
             (when-let [ex (oget (oget ctx :ctrl) :explain)] (.put ^java.util.Map ex "spec" spec))
-            (let [[s err] (ucall ctx :prepare-auth)]
-              (if err [nil err] (do (oset! ctx :spec s) [s nil])))))))))
+            ;; Whatever prepare-auth sets in the query, under whichever name,
+            ;; is the credential; a key it leaves as it was is the caller's.
+            (let [query (java.util.LinkedHashMap. ^java.util.Map (or (oget spec :query) (vs/jm)))
+                  [s err] (ucall ctx :prepare-auth)]
+              (if err [nil err]
+                  (do
+                    (oset! s :authquery
+                           (vec (for [[k v] (or (oget s :query) (vs/jm))
+                                      :when (or (not (.containsKey query k)) (not= (.get query k) v))]
+                                  k)))
+                    (oset! ctx :spec s) [s nil])))))))))
 
 (defn u-make-url [ctx]
   (let [spec (oget ctx :spec) result (oget ctx :result)]
@@ -1108,6 +1343,8 @@
       :else
       (let [url (atom (vs/join (vs/jt (oget spec :base) (oget spec :prefix) (oget spec :path) (oget spec :suffix)) "/" true))
             resmatch (vs/jm)
+            ;; Sent with the request, never recorded as the entity's match.
+            authquery (set (oget spec :authquery []))
             point (oget ctx :point)
             orig (when point (vs/getprop point "orig"))]
         ;; A route the definition ends with a slash keeps it: a server such as a
@@ -1123,16 +1360,26 @@
                     encoded (vs/escurl val-str)]
                 (reset! url (str/replace @url placeholder encoded))
                 (.put ^java.util.Map resmatch k v)))))
-        (let [qsep (atom "?")]
-          (doseq [item (or (vs/items (oget spec :query)) [])]
-            (let [k (vs/getprop item 0) v (vs/getprop item 1)]
-              (when (and (some? v) (string? k))
-                (let [val-str (if (string? v) v (vs/stringify v))]
-                  (reset! url (str @url @qsep (vs/escurl k) "=" (vs/escurl val-str)))
-                  (reset! qsep "&")
-                  (.put ^java.util.Map resmatch k v))))))
-        (oset! result :resmatch resmatch)
-        [@url nil]))))
+        ;; A placeholder left in the route would send the request to the wrong
+        ;; route. The base's own placeholders are server variables, resolved
+        ;; with the options.
+        (if-let [unfilled (let [base (str/replace (str (or (oget spec :base) "")) #"/+$" "")]
+                            (seq (re-seq #"\{[^{}/]+\}"
+                                         (if (str/starts-with? @url base) (subs @url (count base)) @url))))]
+          ["" (ctx-error ctx "url_param_missing"
+                         (str "URL path has no value for " (str/join ", " unfilled) "."))]
+          (do
+            (let [qsep (atom "?")]
+              (doseq [item (or (vs/items (oget spec :query)) [])]
+                (let [k (vs/getprop item 0) v (vs/getprop item 1)]
+                  (when (and (some? v) (string? k))
+                    (let [val-str (if (string? v) v (vs/stringify v))]
+                      (reset! url (str @url @qsep (vs/escurl k) "=" (vs/escurl val-str)))
+                      (reset! qsep "&")
+                      (when-not (contains? authquery k)
+                        (.put ^java.util.Map resmatch k v)))))))
+            (oset! result :resmatch resmatch)
+            [@url nil]))))))
 
 (defn u-make-fetch-def [ctx]
   (let [spec (oget ctx :spec)]
@@ -1147,7 +1394,7 @@
                   (let [fetchdef (vs/jm "url" url "method" (oget spec :method) "headers" (oget spec :headers))
                         body (oget spec :body)]
                     (when (some? body)
-                      (.put ^java.util.Map fetchdef "body" (if (vs/ismap body) (vs/jsonify body) body)))
+                      (.put ^java.util.Map fetchdef "body" (request-body (oget ctx :point) body)))
                     [fetchdef nil]))))))))
 
 (defn u-make-request [ctx]
@@ -1195,10 +1442,47 @@
       (oset! result :headers (if (and response (vs/ismap (oget response :headers))) (oget response :headers) (vs/jm))))
     result))
 
+(def ^:private preview-length 160)
+
+(defn- header-value [headers name]
+  (or (some (fn [item]
+              (when (= name (str/lower-case (str (vs/getprop item 0)))) (str (vs/getprop item 1))))
+            (or (when (vs/ismap headers) (vs/items headers)) []))
+      ""))
+
+;; Cleaned whole: a secret the bound would split could leave its prefix.
+(defn- body-preview [ctx text]
+  (let [^String flat (str (ucall ctx :clean (str/trim (str/replace (str text) #"\s+" " "))))]
+    (if (> (.codePointCount flat 0 (count flat)) preview-length)
+      (str (subs flat 0 (.offsetByCodePoints flat 0 (int preview-length))) "...")
+      flat)))
+
+;; A body that is not JSON. An HTTP failure keeps its own error, with the
+;; response described; otherwise the code tells a wrong content type from
+;; malformed JSON.
+(defn unreadable-body [ctx status headers text sent failed]
+  (let [ctype (header-value headers "content-type")
+        ua (str (ucall ctx :clean (header-value sent "user-agent")))
+        detail (str "HTTP " status ", content-type " (if (= "" ctype) "none" ctype)
+                    ", user-agent " (if (= "" ua) "transport default" ua)
+                    (if (nil? text) "" (str ", body: " (body-preview ctx text))))]
+    (cond
+      (sdk-error? failed) (assoc failed :msg (str (:msg failed) " (" detail ")"))
+      (some? failed) (ctx-error ctx (or (err-code failed) "") (str (err-msg failed) " (" detail ")"))
+      (or (= "" ctype) (str/includes? (str/lower-case ctype) "json"))
+      (ctx-error ctx "response_json_invalid" (str "response: body is not valid JSON (" detail ")"))
+      :else
+      (ctx-error ctx "response_content_type" (str "response: expected JSON, got " ctype " (" detail ")")))))
+
 (defn u-result-body [ctx]
   (let [response (oget ctx :response) result (oget ctx :result)]
     (when (and result response (oget response :json) (oget response :body))
       (oset! result :body ((oget response :json))))
+    (when (and result response (oget response :unreadable))
+      (let [spec (oget ctx :spec)]
+        (oset! result :err (unreadable-body ctx (oget result :status) (oget result :headers)
+                                            (oget response :body) (when spec (oget spec :headers))
+                                            (oget result :err)))))
     result))
 
 (defn u-transform-response [ctx]
@@ -1329,16 +1613,20 @@
 
 ;; A feature's name is not a field name: only the sensitive names inside its
 ;; settings count, so `secrets` does not make every setting a secret. Entity
-;; blocks hold entity settings and seeded records, never a credential.
+;; blocks hold entity settings and seeded records, never a credential, and
+;; rbac's rules are keyed by entity and operation names.
 (defn- clean-add-options [ctx opts]
-  (let [noent #(omit-keys % ["entity"])
+  (let [plain (fn [block fname]
+                (omit-keys block (if (= "rbac" fname) ["entity" "rules"] ["entity"])))
         top (dissoc (into {} opts) "feature" "entity")
         feature (vs/getprop opts "feature")]
-    (u-clean-add-sensitive ctx (cond-> top (contains? top "test") (update "test" noent)))
-    (doseq [fopts (cond (vs/ismap feature) (map #(vs/getprop feature %) (vs/keysof feature))
-                        (vs/islist feature) (vec feature)
-                        :else [feature])]
-      (u-clean-add-sensitive ctx (noent fopts)))))
+    (u-clean-add-sensitive ctx (cond-> top (contains? top "test") (update "test" plain nil)))
+    (doseq [[fname fopts] (cond (vs/ismap feature)
+                                (map #(vector % (vs/getprop feature %)) (vs/keysof feature))
+                                (vs/islist feature)
+                                (map #(vector (when (vs/ismap %) (vs/getprop % "name")) %) feature)
+                                :else [[nil feature]])]
+      (u-clean-add-sensitive ctx (plain fopts fname)))))
 
 (defn u-make-options [ctx]
   (let [options (or (oget ctx :options) (vs/jm))
@@ -1488,39 +1776,55 @@
 ;; Default transport + fetcher gate.
 ;; ---------------------------------------------------------------------------
 
+;; java.net.http rather than HttpURLConnection, which refuses PATCH. HTTP/1.1,
+;; as the vendored sekreto client: over cleartext, HTTP/2 opens with an h2c
+;; upgrade that holds the body back, and some servers refuse that request.
+(def ^:private http-client
+  (delay (-> (HttpClient/newBuilder)
+             (.version HttpClient$Version/HTTP_1_1)
+             (.followRedirects HttpClient$Redirect/NORMAL)
+             (.build))))
+
+(defn- body-publisher [body]
+  (cond
+    (string? body) (HttpRequest$BodyPublishers/ofString body)
+    (bytes? body) (HttpRequest$BodyPublishers/ofByteArray body)
+    (instance? java.io.InputStream body)
+    (HttpRequest$BodyPublishers/ofByteArray (.readAllBytes ^java.io.InputStream body))
+    :else (HttpRequest$BodyPublishers/noBody)))
+
 (defn default-http-fetch [fullurl fetchdef]
   (let [method-str (or (vs/getprop fetchdef "method") "GET")
-        body-str (vs/getprop fetchdef "body")
         headers (or (vs/getprop fetchdef "headers") (vs/jm))]
     (try
-      (let [url (java.net.URL. fullurl)
-            conn (.openConnection url)]
-        (.setRequestMethod ^java.net.HttpURLConnection conn (str/upper-case method-str))
-        (let [has-ua (atom false)]
-          (doseq [item (or (vs/items headers) [])]
-            (let [k (vs/getprop item 0) v (vs/getprop item 1)]
-              (when (string? v)
-                (when (= (str/lower-case (str k)) "user-agent") (reset! has-ua true))
-                (.setRequestProperty ^java.net.HttpURLConnection conn (str k) v))))
-          (when-not @has-ua
-            (.setRequestProperty ^java.net.HttpURLConnection conn "User-Agent"
-                                 (str "Mozilla/5.0 (compatible; " SDK-NAME "SDK/1.0)"))))
-        (when (string? body-str)
-          (.setDoOutput ^java.net.HttpURLConnection conn true)
-          (with-open [os (.getOutputStream ^java.net.HttpURLConnection conn)]
-            (.write os (.getBytes ^String body-str "UTF-8"))))
-        (let [code (.getResponseCode ^java.net.HttpURLConnection conn)
-              is (try (.getInputStream ^java.net.HttpURLConnection conn) (catch Exception _ (.getErrorStream ^java.net.HttpURLConnection conn)))
-              body (when is (slurp is))
+      (let [builder (HttpRequest/newBuilder (URI/create fullurl))
+            has-ua (atom false)]
+        (.method builder (str/upper-case method-str) (body-publisher (vs/getprop fetchdef "body")))
+        (doseq [item (or (vs/items headers) [])]
+          (let [k (vs/getprop item 0) v (vs/getprop item 1)]
+            (when (string? v)
+              (when (= (str/lower-case (str k)) "user-agent") (reset! has-ua true))
+              (.setHeader builder (str k) v))))
+        ;; The default User-Agent is recorded with the headers the request sent.
+        (when-not @has-ua
+          (let [ua (str "Mozilla/5.0 (compatible; " SDK-NAME "SDK/1.0)")]
+            (.setHeader builder "User-Agent" ua)
+            (vs/setprop headers "user-agent" ua)))
+        (let [resp (.send ^HttpClient @http-client (.build builder) (HttpResponse$BodyHandlers/ofByteArray))
+              body (String. ^bytes (.body resp) "UTF-8")
               resp-headers (vs/jm)]
-          (doseq [[k vlist] (.getHeaderFields ^java.net.HttpURLConnection conn)]
-            (when k (.put ^java.util.Map resp-headers (str/lower-case k) (str/join "," vlist))))
-          (let [json-body (try (when (and body (seq body)) (json-parse body)) (catch Exception _ nil))]
-            [(vs/jm "status" code "statusText" "" "headers" resp-headers
-                    "json" (fn [] json-body) "body" body) nil])))
+          (doseq [[k vlist] (.map (.headers resp))]
+            (.put ^java.util.Map resp-headers (str/lower-case k) (str/join "," vlist)))
+          (let [[json-body unreadable] (if (str/blank? body)
+                                         [nil false]
+                                         (try [(json-parse body) false] (catch Exception _ [nil true])))]
+            [(vs/jm "status" (.statusCode resp) "statusText" "" "headers" resp-headers
+                    "json" (fn [] json-body) "body" body "unreadable" unreadable) nil])))
+      ;; A request that got no answer fails the operation.
       (catch Throwable e
-        [(vs/jm "status" 0 "statusText" (str (.getName (class e)) ": " (.getMessage e))
-                "headers" (vs/jm) "json" (fn [] nil) "body" nil) nil]))))
+        (when (instance? InterruptedException e) (.interrupt (Thread/currentThread)))
+        [nil (make-error-obj "fetch_transport"
+                             (str (.getName (class e)) (when-let [m (.getMessage e)] (str ": " m))))]))))
 
 (defn u-fetcher [ctx fullurl fetchdef]
   (let [client (oget ctx :client)]

@@ -247,9 +247,34 @@ static bool hasFeature(const std::string& name) {
 }
 
 
+// Offline, as every generated suite is: the test OPTION resolves a required
+// server variable to test-<name>, and installs no transport.
+static Value offline(const Value& opts) {
+  Value out = vmap();
+  if (opts.is_map()) {
+    for (const auto& kv : *opts.as_map()) map_put(out, kv.first, kv.second);
+  }
+  map_put(out, "test", vmap({{"active", Value(true)}}));
+  return out;
+}
+
+// A client the sweep cannot build leaves nothing swept: a harness error, not
+// a leak.
+static std::shared_ptr<SmsapiSDK> construct(const Value& opts) {
+  const std::string harness = "clean harness: the client could not be constructed, so nothing was swept: ";
+  try {
+    return std::make_shared<SmsapiSDK>(offline(opts));
+  } catch (const SdkErrorPtr& e) {
+    throw std::runtime_error(harness + e->msg);
+  } catch (const std::exception& e) {
+    throw std::runtime_error(harness + e.what());
+  }
+}
+
 static std::shared_ptr<SmsapiSDK> makeSdk(const Scenario& scenario, std::vector<Sink>* sinks,
                                               const Value& cleanopts,
-                                              FeaturePtr extra = nullptr) {
+                                              FeaturePtr extra = nullptr,
+                                              const Value& auth = Value::undef()) {
   Value feature = vmap();
   if (hasFeature("log")) {
     // The log feature hands [level, record] to its logger.
@@ -291,7 +316,8 @@ static std::shared_ptr<SmsapiSDK> makeSdk(const Scenario& scenario, std::vector<
     {"feature", feature},
     {"system", vmap({{"fetch", Value(fetch)}})},
   });
-  auto sdk = std::make_shared<SmsapiSDK>(opts);
+  if (auth.is_map()) map_put(opts, "auth", auth);
+  auto sdk = construct(opts);
   sdk->getRootCtx()->utility->featureAdd(sdk->getRootCtx(), std::make_shared<CaptureFeature>(sinks));
   if (extra) sdk->getRootCtx()->utility->featureAdd(sdk->getRootCtx(), extra);
   return sdk;
@@ -301,7 +327,8 @@ static std::shared_ptr<SmsapiSDK> makeSdk(const Scenario& scenario, std::vector<
 struct Candidate {
   std::string name;
   std::vector<std::string> params;
-  std::function<Value(SmsapiSDK&, const Value&, const Value&)> run;
+  // The operation's data, and the match its entity then holds.
+  std::function<Value(SmsapiSDK&, const Value&, const Value&, Value*)> run;
   std::function<std::vector<Value>(SmsapiSDK&, const Value&, const Value&)> stream;
 };
 
@@ -317,503 +344,997 @@ struct Target {
 static std::vector<Candidate> candidates() {
   return {
     {"available.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.available()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.available();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.available()->stream("list", m, callopts);
     }},
     {"blacklist.load", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.blacklist()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.blacklist();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.blacklist()->stream("load", m, callopts);
     }},
     {"blacklist.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.blacklist()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.blacklist();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.blacklist()->stream("create", m, callopts);
     }},
     {"blacklist.remove", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.blacklist()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.blacklist();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.blacklist()->stream("remove", m, callopts);
     }},
     {"callback.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.callback()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.callback();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.callback()->stream("list", m, callopts);
     }},
     {"callback.load", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.callback()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.callback();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.callback()->stream("load", m, callopts);
     }},
     {"callback.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.callback()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.callback();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.callback()->stream("create", m, callopts);
     }},
     {"callback.remove", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.callback()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.callback();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.callback()->stream("remove", m, callopts);
     }},
     {"callback.update", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.callback()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.callback();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.callback()->stream("update", m, callopts);
     }},
     {"contact.list", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.contact()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contact();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contact()->stream("list", m, callopts);
     }},
     {"contact.load", {"contact_id", "group_id", "id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contact()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contact();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contact()->stream("load", m, callopts);
     }},
     {"contact.create", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contact()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contact();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contact()->stream("create", m, callopts);
     }},
     {"contact.remove", {"group_id", "id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contact()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contact();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contact()->stream("remove", m, callopts);
     }},
     {"contact.update", {"contact_id", "group_id", "id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contact()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contact();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contact()->stream("update", m, callopts);
     }},
     {"contacts_field.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.contacts_field()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contacts_field();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contacts_field()->stream("list", m, callopts);
     }},
     {"contacts_field.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contacts_field()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contacts_field();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contacts_field()->stream("create", m, callopts);
     }},
     {"contacts_field.remove", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contacts_field()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contacts_field();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contacts_field()->stream("remove", m, callopts);
     }},
     {"contacts_field.update", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contacts_field()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contacts_field();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contacts_field()->stream("update", m, callopts);
     }},
     {"contacts_field_option.list", {"field_id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.contacts_field_option()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contacts_field_option();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contacts_field_option()->stream("list", m, callopts);
     }},
     {"contactsgroup.list", {"group_id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.contactsgroup()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contactsgroup();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contactsgroup()->stream("list", m, callopts);
     }},
     {"contactsgroup.create", {"group_id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contactsgroup()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contactsgroup();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contactsgroup()->stream("create", m, callopts);
     }},
     {"contactsgroup.remove", {"contact_id", "group_id", "username"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contactsgroup()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contactsgroup();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contactsgroup()->stream("remove", m, callopts);
     }},
     {"contactsgroup.update", {"group_id", "username"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contactsgroup()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contactsgroup();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contactsgroup()->stream("update", m, callopts);
     }},
     {"contactstrash.remove", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contactstrash()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contactstrash();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contactstrash()->stream("remove", m, callopts);
     }},
     {"contactstrash.update", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.contactstrash()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.contactstrash();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.contactstrash()->stream("update", m, callopts);
     }},
     {"field_available.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.field_available()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.field_available();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.field_available()->stream("list", m, callopts);
     }},
     {"group.load", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.group()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.group();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.group()->stream("load", m, callopts);
     }},
     {"group.update", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.group()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.group();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.group()->stream("update", m, callopts);
     }},
     {"mfa_code.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.mfa_code()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.mfa_code();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.mfa_code()->stream("create", m, callopts);
     }},
     {"opt_out.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.opt_out()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.opt_out();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.opt_out()->stream("list", m, callopts);
     }},
     {"opt_out.remove", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.opt_out()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.opt_out();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.opt_out()->stream("remove", m, callopts);
     }},
     {"opt_out_setting.load", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.opt_out_setting()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.opt_out_setting();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.opt_out_setting()->stream("load", m, callopts);
     }},
     {"opt_out_setting.update", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.opt_out_setting()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.opt_out_setting();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.opt_out_setting()->stream("update", m, callopts);
     }},
     {"permission.load", {"group_id", "id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.permission()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.permission();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.permission()->stream("load", m, callopts);
     }},
     {"permission.create", {"group_id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.permission()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.permission();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.permission()->stream("create", m, callopts);
     }},
     {"ping.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.ping()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.ping();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.ping()->stream("list", m, callopts);
     }},
     {"profile.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.profile()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.profile();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.profile()->stream("list", m, callopts);
     }},
     {"profile.load", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.profile()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.profile();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.profile()->stream("load", m, callopts);
     }},
     {"rcs.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.rcs()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.rcs();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.rcs()->stream("list", m, callopts);
     }},
     {"sendername.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.sendername()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.sendername();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.sendername()->stream("list", m, callopts);
     }},
     {"sendername.load", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.sendername()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.sendername();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.sendername()->stream("load", m, callopts);
     }},
     {"sendername.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.sendername()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.sendername();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.sendername()->stream("create", m, callopts);
     }},
     {"sendername_statement.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.sendername_statement()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.sendername_statement();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.sendername_statement()->stream("list", m, callopts);
     }},
     {"sent_rcs_message.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.sent_rcs_message()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.sent_rcs_message();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.sent_rcs_message()->stream("create", m, callopts);
     }},
     {"shipment_country_volume.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.shipment_country_volume()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.shipment_country_volume();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.shipment_country_volume()->stream("list", m, callopts);
     }},
     {"short_url.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.short_url()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.short_url();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.short_url()->stream("list", m, callopts);
     }},
     {"short_url.load", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.short_url()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.short_url();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.short_url()->stream("load", m, callopts);
     }},
     {"short_url.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.short_url()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.short_url();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.short_url()->stream("create", m, callopts);
     }},
     {"short_url.remove", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.short_url()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.short_url();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.short_url()->stream("remove", m, callopts);
     }},
     {"short_url.update", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.short_url()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.short_url();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.short_url()->stream("update", m, callopts);
     }},
     {"smsdo.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.smsdo()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.smsdo();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.smsdo()->stream("create", m, callopts);
     }},
-    {"smssendername.create", {"sendername_id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.smssendername()->create(m, ctrl)->data();
+    {"smssendername.create", {"sender"},
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.smssendername();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.smssendername()->stream("create", m, callopts);
     }},
     {"smssendername.remove", {"sender"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.smssendername()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.smssendername();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.smssendername()->stream("remove", m, callopts);
     }},
     {"smstemplate.remove", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.smstemplate()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.smstemplate();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.smstemplate()->stream("remove", m, callopts);
     }},
     {"subuser.list", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.subuser()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.subuser();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.subuser()->stream("list", m, callopts);
     }},
     {"subuser.load", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.subuser()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.subuser();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.subuser()->stream("load", m, callopts);
     }},
     {"subuser.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.subuser()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.subuser();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.subuser()->stream("create", m, callopts);
     }},
     {"subuser.remove", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.subuser()->remove(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.subuser();
+      try {
+        Value out = ent->remove(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.subuser()->stream("remove", m, callopts);
     }},
     {"subuser.update", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.subuser()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.subuser();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.subuser()->stream("update", m, callopts);
     }},
     {"template.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.template_()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.template_();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.template_()->stream("list", m, callopts);
     }},
     {"template.load", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.template_()->load(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.template_();
+      try {
+        Value out = ent->load(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.template_()->stream("load", m, callopts);
     }},
     {"template.create", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.template_()->create(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.template_();
+      try {
+        Value out = ent->create(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.template_()->stream("create", m, callopts);
     }},
     {"template.update", {"id"},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      return c.template_()->update(m, ctrl)->data();
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.template_();
+      try {
+        Value out = ent->update(m, ctrl)->data();
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.template_()->stream("update", m, callopts);
     }},
     {"user_rcs_sender_collection.list", {},
-     [](SmsapiSDK& c, const Value& m, const Value& ctrl) -> Value {
-      auto ents = c.user_rcs_sender_collection()->list(m, ctrl);
-      Value out = vlist();
-      for (const auto& e : ents) out.as_list()->push_back(e->data());
-      return out;
+     [](SmsapiSDK& c, const Value& m, const Value& ctrl, Value* match) -> Value {
+      auto ent = c.user_rcs_sender_collection();
+      try {
+        auto ents = ent->list(m, ctrl);
+        Value out = vlist();
+        for (const auto& e : ents) out.as_list()->push_back(e->data());
+        if (match) *match = ent->match();
+        return out;
+      } catch (...) {
+        if (match) *match = ent->match();
+        throw;
+      }
     },
      [](SmsapiSDK& c, const Value& m, const Value& callopts) -> std::vector<Value> {
       return c.user_rcs_sender_collection()->stream("list", m, callopts);
@@ -832,13 +1353,13 @@ static Target usableOp(const std::vector<Candidate>& cands) {
     {"apikey", Value(CANARY_APIKEY)},
     {"system", vmap({{"fetch", Value(fetch)}})},
   });
-  auto plain = std::make_shared<SmsapiSDK>(opts);
+  auto plain = construct(opts);
   for (size_t i = 0; i < cands.size(); i++) {
     Value filled = vmap();
     for (const auto& p : cands[i].params) map_put(filled, p, Value("p1"));
     for (const Value& match : {vmap(), filled}) {
       try {
-        cands[i].run(*plain, Struct::clone(match), vmap());
+        cands[i].run(*plain, Struct::clone(match), vmap(), nullptr);
         return {static_cast<int>(i), match};
       } catch (const SdkErrorPtr&) {
         continue;
@@ -861,9 +1382,10 @@ static SdkErrorPtr drive(SmsapiSDK& sdk, const Candidate& cand, const Target& ta
   Value held = getp(ctrl, "explain");
   SdkErrorPtr err;
   Value out = Value::undef();
+  Value match = Value::undef();
   bool got = false;
   try {
-    out = cand.run(sdk, Struct::clone(target.match), ctrl);
+    out = cand.run(sdk, Struct::clone(target.match), ctrl, &match);
     got = true;
   } catch (const SdkErrorPtr& e) {
     err = e;
@@ -873,6 +1395,8 @@ static SdkErrorPtr drive(SmsapiSDK& sdk, const Candidate& cand, const Target& ta
   }
   if (err) addError(sinks, "error", err);
   if (got) addForms(sinks, "result", out);
+  // Raw, as a caller copying the match into another query reads it.
+  addForms(sinks, "match", match);
   Value explain = getp(ctrl, "explain");
   if (explain.is_map()) addForms(sinks, "explain", explain);
   if (held.is_map() && (!explain.is_map() || held.as_map() != explain.as_map())) {
@@ -923,14 +1447,19 @@ static void no_credential_leaves_the_sdk() {
     }
   }
 
+  // A name given at run time replaces the declared one: the match leaves out
+  // whichever name prepareAuth placed.
+  drive(*makeSdk(scenarios()[0], &sinks, Value::undef(), nullptr, vmap({{"name", Value("zzcred")}})),
+        cand, target, vmap(), sinks);
+
   // A credential mistyped as a map is rejected by validation, whose message
   // quotes the value it rejected.
   SdkErrorPtr rejected;
   try {
-    std::make_shared<SmsapiSDK>(vmap({
+    std::make_shared<SmsapiSDK>(offline(vmap({
       {"apikey", vmap({{"value", Value(CANARY_APIKEY)}})},
       {"clean", vmap({{"values", Value(CANARY_VALUE)}})},
-    }));
+    })));
   } catch (const SdkErrorPtr& e) {
     rejected = e;
   }
@@ -990,7 +1519,7 @@ static void no_credential_leaves_the_sdk() {
     Value url = vs::getelem(args, Value(int64_t(0)));
     return notfoundsc.respond(url.is_string() ? url.as_string() : "", vs::getelem(args, Value(int64_t(1))));
   };
-  auto bare = std::make_shared<SmsapiSDK>(vmap({
+  auto bare = construct(vmap({
     {"apikey", Value(CANARY_APIKEY)},
     {"secret", Value(CANARY_SECRET)},
     {"headers", vmap({{"X-Custom-Token", Value(CANARY_HEADER)}})},
@@ -1099,7 +1628,7 @@ static void the_sweep_can_see_a_leak() {
 // A registered value used as a property name is masked; names that mask
 // alike are all kept.
 static void a_registered_value_used_as_a_name_is_masked() {
-  auto sdk = std::make_shared<SmsapiSDK>(vmap({
+  auto sdk = construct(vmap({
     {"clean", vmap({{"values", Value("ZZVAL-abc123,ZZVAL-xyz789")}})},
   }));
   Value out = util::clean(sdk->getRootCtx(), vmap({
@@ -1114,7 +1643,7 @@ static void a_registered_value_used_as_a_name_is_masked() {
 
 // The generated config's own clean block is honoured, and left unchanged.
 static void the_generated_configs_own_clean_block_is_honoured() {
-  auto client = std::make_shared<SmsapiSDK>(vmap());
+  auto client = construct(vmap());
   UtilityPtr utility = client->getUtility();
   Value config = vmap({{"options", vmap({{"clean", vmap({
     {"keys", Value("zzsens")}, {"values", Value("CONFIG-SEEDED-1")},
@@ -1140,13 +1669,17 @@ static void the_generated_configs_own_clean_block_is_honoured() {
 // A feature's name is not a field name: a feature called secrets does not
 // make its settings secret, though a sensitive field inside it still is. An
 // entity block, of per-entity settings or seeded records keyed by entity name
-// and id, is not read at all.
+// and id, is not read at all, and nor are rbac's rules, keyed by entity and
+// operation names.
 static void a_feature_name_is_read_as_a_name() {
-  auto client = std::make_shared<SmsapiSDK>(vmap({
+  auto client = construct(vmap({
     {"apikey", Value(CANARY_APIKEY)},
     {"feature", vmap({
       {"secrets", vmap({
         {"active", Value(false)}, {"name", Value("ZZNAME-feat123")}, {"token", Value("ZZTOKEN-feat456")},
+      })},
+      {"rbac", vmap({
+        {"active", Value(false)}, {"rules", vmap({{"zztoken.load", Value("PLAINRULE-k7j5h3g1")}})},
       })},
       {"test", vmap({
         {"active", Value(false)},
@@ -1162,6 +1695,8 @@ static void a_feature_name_is_read_as_a_name() {
                 Value("record PLAINRECORD-t5r3e1w9"), "a record seeded under an entity block is not registered");
   ASSERT_EQ_VAL(util::clean(ctx, Value("alias PLAINALIAS-m2n4b6v8")),
                 Value("alias PLAINALIAS-m2n4b6v8"), "an entity's own settings are not registered");
+  ASSERT_EQ_VAL(util::clean(ctx, Value("rule PLAINRULE-k7j5h3g1")),
+                Value("rule PLAINRULE-k7j5h3g1"), "an rbac rule keyed by entity and operation is not registered");
 }
 
 

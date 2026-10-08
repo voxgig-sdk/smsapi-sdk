@@ -78,6 +78,11 @@ class GroupEntity(clientIn: SdkClient, entoptsIn: MutableMap<String, Any?>?) :
 
 
 
+  override fun patch(req: MutableMap<String, Any?>?, ctrl: MutableMap<String, Any?>?): Any? {
+    throw Helpers.unsupportedOp("patch", this.name)
+  }
+
+
   override fun remove(req: MutableMap<String, Any?>?, ctrl: MutableMap<String, Any?>?): Any? {
     throw Helpers.unsupportedOp("remove", this.name)
   }

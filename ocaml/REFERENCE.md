@@ -10,6 +10,7 @@ Complete API reference for the Smsapi OCaml SDK.
 ```ocaml
 open Voxgig_struct
 open Sdk_helpers
+open Sdk_types
 
 let client = Sdk_client.make options
 ```
@@ -203,7 +204,7 @@ let available = Sdk_client.available client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -256,7 +257,7 @@ let blacklist = Sdk_client.blacklist client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.blacklist client Noval).e_create (jo [
@@ -264,9 +265,11 @@ let result = (Sdk_client.blacklist client Noval).e_create (jo [
 let result_data = result.e_data_get ()
 ```
 
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.blacklist client Noval).e_load (Noval) Noval
@@ -275,7 +278,7 @@ let result_data = result.e_data_get ()
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.blacklist client Noval).e_remove (jo [("id", (Str "id"))]) Noval
@@ -347,7 +350,7 @@ let callback = Sdk_client.callback client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.callback client Noval).e_create (jo [
@@ -357,7 +360,7 @@ let result_data = result.e_data_get ()
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -367,7 +370,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.callback client Noval).e_load (jo [("id", (Str "callback_id"))]) Noval
@@ -376,7 +379,7 @@ let result_data = result.e_data_get ()
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.callback client Noval).e_remove (jo [("id", (Str "callback_id"))]) Noval
@@ -385,7 +388,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.callback client Noval).e_update (jo [
@@ -447,7 +450,6 @@ let contact = Sdk_client.contact client Noval
 | `email` | `string` | No |  |
 | `first_name` | `string` | No |  |
 | `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
 | `groups` | `value list` | Yes |  |
 | `id` | `string` | Yes | Object ID |
 | `idx` | `string` | No | User provided resource id |
@@ -455,14 +457,8 @@ let contact = Sdk_client.contact client Noval
 | `name` | `string` | Yes | Group name |
 | `permissions` | `value list` | No |  |
 | `phone_number` | `string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
 | `size` | `int` | Yes |  |
 | `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `bool` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -470,9 +466,9 @@ let contact = Sdk_client.contact client Noval
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -481,28 +477,21 @@ let contact = Sdk_client.contact client Noval
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contact client Noval).e_create (jo [
@@ -521,9 +510,11 @@ let result = (Sdk_client.contact client Noval).e_create (jo [
 let result_data = result.e_data_get ()
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -533,7 +524,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contact client Noval).e_load (jo [("id", (Str "contact_id"))]) Noval
@@ -542,7 +533,7 @@ let result_data = result.e_data_get ()
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.contact client Noval).e_remove (jo [("id", (Str "contact_id"))]) Noval
@@ -551,7 +542,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contact client Noval).e_update (jo [
@@ -560,6 +551,8 @@ let result = (Sdk_client.contact client Noval).e_update (jo [
 ]) Noval
 let result_data = result.e_data_get ()
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Fields
 
@@ -600,87 +593,27 @@ let contacts_field = Sdk_client.contacts_field client Noval
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `int` | Yes | Contact expire after days |
-| `contacts_count` | `int` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `value list` | Yes |  |
 | `id` | `string` | No | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `value list` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `string` | No |  |
+| `name` | `string` | No |  |
 | `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `bool` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contacts_field client Noval).e_create (jo [
-    ("contact_expire_after", (Num 1.));  (* int *)
-    ("created_by", (Str "example_created_by"));  (* string *)
-    ("date_created", (Str "example_date_created"));  (* string *)
-    ("date_updated", (Str "example_date_updated"));  (* string *)
-    ("gender", (Str "example_gender"));  (* string *)
-    ("groups", (empty_list ()));  (* value list *)
 ]) Noval
 let result_data = result.e_data_get ()
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -690,7 +623,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.contacts_field client Noval).e_remove (jo [("id", (Str "id"))]) Noval
@@ -699,7 +632,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contacts_field client Noval).e_update (jo [
@@ -708,6 +641,8 @@ let result = (Sdk_client.contacts_field client Noval).e_update (jo [
 ]) Noval
 let result_data = result.e_data_get ()
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Fields
 
@@ -744,47 +679,15 @@ The entity name.
 let contacts_field_option = Sdk_client.contacts_field_option client Noval
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `int` | Yes | Contact expire after days |
-| `contacts_count` | `int` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
-| `group_id` | `string` | No | Object ID |
-| `groups` | `value list` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `value list` | No |  |
-| `phone_number` | `string` | No |  |
-| `read` | `bool` | No | Has read permission |
-| `send` | `bool` | No | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
-| `username` | `string` | No |  |
-| `value` | `string` | No |  |
-| `write` | `bool` | No | Has write permission |
-
 ### Operations
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
-let results = (Sdk_client.contacts_field_option client Noval).e_list (empty_map ()) Noval in
+let results = (Sdk_client.contacts_field_option client Noval).e_list (jo [("field_id", (Str "example"))]) Noval in
 List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 ```
 
@@ -827,82 +730,21 @@ let contactsgroup = Sdk_client.contactsgroup client Noval
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `string` | No |  |
-| `city` | `string` | No |  |
-| `contact_expire_after` | `int` | Yes | Contact expire after days |
-| `contacts_count` | `int` | No |  |
-| `country` | `string` | No |  |
-| `created_by` | `string` | Yes |  |
-| `date_created` | `string` | Yes |  |
-| `date_updated` | `string` | Yes |  |
-| `description` | `string` | No |  |
-| `email` | `string` | No |  |
-| `first_name` | `string` | No |  |
-| `gender` | `string` | Yes |  |
 | `group_id` | `string` | Yes | Object ID |
-| `groups` | `value list` | Yes |  |
-| `id` | `string` | Yes | Object ID |
-| `idx` | `string` | No | User provided resource id |
-| `last_name` | `string` | No |  |
-| `name` | `string` | No | Group name |
-| `permissions` | `value list` | No |  |
-| `phone_number` | `string` | No |  |
 | `read` | `bool` | Yes | Has read permission |
 | `send` | `bool` | Yes | Has send permission |
-| `source` | `string` | No |  |
-| `type` | `string` | No |  |
 | `username` | `string` | Yes |  |
-| `value` | `string` | No |  |
 | `write` | `bool` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contactsgroup client Noval).e_create (jo [
-    ("contact_expire_after", (Num 1.));  (* int *)
-    ("created_by", (Str "example_created_by"));  (* string *)
-    ("date_created", (Str "example_date_created"));  (* string *)
-    ("date_updated", (Str "example_date_updated"));  (* string *)
-    ("gender", (Str "example_gender"));  (* string *)
     ("group_id", (Str "example_group_id"));  (* string *)
-    ("groups", (empty_list ()));  (* value list *)
-    ("id", (Str "example_id"));  (* string *)
     ("read", (Bool true));  (* bool *)
     ("send", (Bool true));  (* bool *)
     ("username", (Str "example_username"));  (* string *)
@@ -911,9 +753,11 @@ let result = (Sdk_client.contactsgroup client Noval).e_create (jo [
 let result_data = result.e_data_get ()
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -923,7 +767,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.contactsgroup client Noval).e_remove (jo [("group_id", (Str "group_id"))]) Noval
@@ -932,7 +776,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contactsgroup client Noval).e_update (jo [
@@ -941,6 +785,8 @@ let result = (Sdk_client.contactsgroup client Noval).e_update (jo [
 ]) Noval
 let result_data = result.e_data_get ()
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Fields
 
@@ -981,7 +827,7 @@ let contactstrash = Sdk_client.contactstrash client Noval
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.contactstrash client Noval).e_remove (Noval) Noval
@@ -990,7 +836,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.contactstrash client Noval).e_update (jo [
@@ -1048,7 +894,7 @@ let field_available = Sdk_client.field_available client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1110,7 +956,7 @@ let group = Sdk_client.group client Noval
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.group client Noval).e_load (jo [("id", (Str "group_id"))]) Noval
@@ -1119,7 +965,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.group client Noval).e_update (jo [
@@ -1128,6 +974,8 @@ let result = (Sdk_client.group client Noval).e_update (jo [
 ]) Noval
 let result_data = result.e_data_get ()
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Fields
 
@@ -1177,7 +1025,7 @@ let mfa_code = Sdk_client.mfa_code client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.mfa_code client Noval).e_create (jo [
@@ -1185,6 +1033,8 @@ let result = (Sdk_client.mfa_code client Noval).e_create (jo [
 ]) Noval
 let result_data = result.e_data_get ()
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Fields
 
@@ -1234,7 +1084,7 @@ let opt_out = Sdk_client.opt_out client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1244,7 +1094,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.opt_out client Noval).e_remove (jo [("id", (Str "id"))]) Noval
@@ -1296,7 +1146,7 @@ let opt_out_setting = Sdk_client.opt_out_setting client Noval
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.opt_out_setting client Noval).e_load (Noval) Noval
@@ -1305,7 +1155,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.opt_out_setting client Noval).e_update (jo [
@@ -1364,7 +1214,7 @@ let permission = Sdk_client.permission client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.permission client Noval).e_create (jo [
@@ -1377,12 +1227,14 @@ let result = (Sdk_client.permission client Noval).e_create (jo [
 let result_data = result.e_data_get ()
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
-let result = (Sdk_client.permission client Noval).e_load (jo [("id", (Str "permission_id")); ("group_id", (Str "group_id")); ("username", (Str "username"))]) Noval
+let result = (Sdk_client.permission client Noval).e_load (jo [("id", (Str "permission_id")); ("group_id", (Str "group_id"))]) Noval
 let result_data = result.e_data_get ()
 ```
 
@@ -1432,7 +1284,7 @@ let ping = Sdk_client.ping client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1491,7 +1343,7 @@ let profile = Sdk_client.profile client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1501,7 +1353,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.profile client Noval).e_load (Noval) Noval
@@ -1547,7 +1399,7 @@ let rcs = Sdk_client.rcs client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1604,7 +1456,7 @@ let sendername = Sdk_client.sendername client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.sendername client Noval).e_create (jo [
@@ -1612,9 +1464,11 @@ let result = (Sdk_client.sendername client Noval).e_create (jo [
 let result_data = result.e_data_get ()
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1624,7 +1478,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.sendername client Noval).e_load (jo [("id", (Str "sendername_id"))]) Noval
@@ -1678,7 +1532,7 @@ let sendername_statement = Sdk_client.sendername_statement client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1727,19 +1581,19 @@ let sent_rcs_message = Sdk_client.sent_rcs_message client Noval
 | --- | --- | --- | --- |
 | `content` | `value map` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `string` | Yes | Recipient phone number (e.g. |
-| `sender` | `value` | Yes |  |
+| `sender` | `string` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `string` | No | Plain text message content. |
 
 ### Operations
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.sent_rcs_message client Noval).e_create (jo [
     ("phone_number", (Str "example_phone_number"));  (* string *)
-    ("sender", (Str "example_sender"));  (* value *)
+    ("sender", (Str "example_sender"));  (* string *)
 ]) Noval
 let result_data = result.e_data_get ()
 ```
@@ -1792,7 +1646,7 @@ let shipment_country_volume = Sdk_client.shipment_country_volume client Noval
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1854,7 +1708,7 @@ let short_url = Sdk_client.short_url client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.short_url client Noval).e_create (jo [
@@ -1864,7 +1718,7 @@ let result_data = result.e_data_get ()
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -1874,7 +1728,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.short_url client Noval).e_load (jo [("id", (Str "short_url_id"))]) Noval
@@ -1883,7 +1737,7 @@ let result_data = result.e_data_get ()
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.short_url client Noval).e_remove (jo [("id", (Str "short_url_id"))]) Noval
@@ -1892,7 +1746,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.short_url client Noval).e_update (jo [
@@ -1901,6 +1755,8 @@ let result = (Sdk_client.short_url client Noval).e_update (jo [
 ]) Noval
 let result_data = result.e_data_get ()
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Fields
 
@@ -1967,7 +1823,7 @@ let smsdo = Sdk_client.smsdo client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.smsdo client Noval).e_create (jo [
@@ -2014,18 +1870,18 @@ let smssendername = Sdk_client.smssendername client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.smssendername client Noval).e_create (jo [
-    ("sendername_id", (Str "example_sendername_id"));  (* string *)
+    ("sender", (Str "example_sender"));  (* string *)
 ]) Noval
 let result_data = result.e_data_get ()
 ```
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.smssendername client Noval).e_remove (jo [("sender", (Str "sender"))]) Noval
@@ -2077,7 +1933,7 @@ let smstemplate = Sdk_client.smstemplate client Noval
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.smstemplate client Noval).e_remove (jo [("id", (Str "id"))]) Noval
@@ -2145,7 +2001,7 @@ let subuser = Sdk_client.subuser client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.subuser client Noval).e_create (jo [
@@ -2156,7 +2012,7 @@ let result_data = result.e_data_get ()
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -2166,7 +2022,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.subuser client Noval).e_load (jo [("id", (Str "subuser_id"))]) Noval
@@ -2175,7 +2031,7 @@ let result_data = result.e_data_get ()
 
 #### `e_remove reqmatch ctrl : entity_obj`
 
-Remove the entity matching the given criteria. Resolves to the ENTITY, marked deleted (`e_deleted`); it keeps the data it held. Raises on error.
+Remove the entity matching the given criteria. Resolves to the entity, marked as deleted (`e_deleted`); it keeps the data it held. Raises on error.
 
 ```ocaml
 let result = (Sdk_client.subuser client Noval).e_remove (jo [("id", (Str "subuser_id"))]) Noval
@@ -2184,7 +2040,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.subuser client Noval).e_update (jo [
@@ -2242,7 +2098,7 @@ let template = Sdk_client.template client Noval
 
 #### `e_create reqdata ctrl : entity_obj`
 
-Create a new entity with the given data. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Create a new entity with the given data. Resolves to the created entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.template client Noval).e_create (jo [
@@ -2250,9 +2106,11 @@ let result = (Sdk_client.template client Noval).e_create (jo [
 let result_data = result.e_data_get ()
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -2262,7 +2120,7 @@ List.iter (fun e -> print_endline (stringify (e.e_data_get ()))) results
 
 #### `e_load reqmatch ctrl : entity_obj`
 
-Load a single entity matching the given criteria. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Load a single entity matching the given criteria. Resolves to the entity, whose record `e_data_get` reads, and raises on error.
 
 ```ocaml
 let result = (Sdk_client.template client Noval).e_load (jo [("id", (Str "template_id"))]) Noval
@@ -2271,7 +2129,7 @@ let result_data = result.e_data_get ()
 
 #### `e_update reqdata ctrl : entity_obj`
 
-Update an existing entity. The data must include the entity `id`. Resolves to the ENTITY (read the record with `e_data_get`) and raises on error.
+Update an existing entity. The data must include the entity `id`. Resolves to the updated entity and raises on error.
 
 ```ocaml
 let result = (Sdk_client.template client Noval).e_update (jo [
@@ -2280,6 +2138,8 @@ let result = (Sdk_client.template client Noval).e_update (jo [
 ]) Noval
 let result_data = result.e_data_get ()
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Fields
 
@@ -2316,26 +2176,11 @@ The entity name.
 let user_rcs_sender_collection = Sdk_client.user_rcs_sender_collection client Noval
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `string` | No |  |
-| `expiredAt` | `string` | No |  |
-| `id` | `string` | No | Object ID |
-| `interface` | `string` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `string` | No | RCS message type (basic, single, ...). |
-| `readAt` | `string` | No |  |
-| `recipient` | `string` | No | Recipient phone number (without +). |
-| `sender` | `string` | No | Sender name |
-| `senderId` | `string` | No | Sender id |
-| `sentAt` | `string` | No |  |
-
 ### Operations
 
 #### `e_list reqmatch ctrl : entity_obj list`
 
-List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one ENTITY per record and raises on error.
+List entities matching the given criteria. The match is optional — pass `(empty_map ())` to list all records. Resolves to one entity per record and raises on error.
 
 ```ocaml
 (* One ENTITY per record; the record is reached with e_data_get. *)
@@ -3027,6 +2872,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

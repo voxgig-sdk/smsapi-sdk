@@ -10,3 +10,14 @@ let () =
       let client = Sdk_client.test () in
       let ent = Sdk_client.smstemplate client Noval in
       check_str "name" ent.e_name "smstemplate")
+
+let () =
+  test "smstemplate.validate" (fun () ->
+      if Harness.has_feature "validate" then begin
+        let client = Sdk_client.test_with Noval
+            (jo [("feature", jo [("validate", jo [("active", Bool true)])])]) in
+        let ent = Sdk_client.smstemplate client Noval in
+        let err = (try ignore (ent.e_remove (jo [("id", Num 1.)]) Noval); None with e -> Some e) in
+        check_str "validate refuses an invalid request"
+          (match err with Some (Sdk_error_exc er) -> er.err_code | _ -> "<no SDK error>") "validate_failed"
+      end)

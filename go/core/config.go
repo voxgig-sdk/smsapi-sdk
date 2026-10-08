@@ -312,6 +312,7 @@ func MakeConfig() map[string]any {
 				},
 				"optspec": map[string]any{
 					"clearTimer": "`$FUNCTION`",
+					"now": "`$FUNCTION`",
 					"setTimer": "`$FUNCTION`",
 				},
 				"strict": false,
@@ -434,6 +435,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -485,6 +490,28 @@ func MakeConfig() map[string]any {
 								"select": map[string]any{
 									"$action": "phone_number",
 								},
+								"body": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"fields": []any{
+												map[string]any{
+													"name": "expire_at",
+												},
+												map[string]any{
+													"name": "phone_number",
+												},
+											},
+											"kind": "form",
+											"media": "application/x-www-form-urlencoded",
+										},
+									},
+									"kind": "json",
+									"media": "application/json",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -513,6 +540,21 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"kind": "raw",
+											"media": "text/csv",
+										},
+									},
+									"fields": []any{
+										map[string]any{
+											"name": "import",
+										},
+									},
+									"kind": "multipart",
+									"media": "multipart/form-data",
+								},
 							},
 						},
 					},
@@ -584,13 +626,16 @@ func MakeConfig() map[string]any {
 								},
 								"select": map[string]any{
 									"$action": "phone_number",
-									"exist": []any{
-										"accept",
-										"limit",
-										"offset",
-										"q",
-										"x_async",
+								},
+								"response": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"kind": "raw",
+											"media": "text/csv",
+										},
 									},
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -675,9 +720,6 @@ func MakeConfig() map[string]any {
 								},
 								"select": map[string]any{
 									"$action": "phone_number",
-									"exist": []any{
-										"phone_number",
-									},
 								},
 							},
 						},
@@ -770,6 +812,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -796,6 +842,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -840,6 +890,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 							map[string]any{
@@ -888,6 +942,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -978,6 +1036,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 							map[string]any{
@@ -1101,11 +1163,6 @@ func MakeConfig() map[string]any {
 						"title": "Collection",
 						"type": "`$ARRAY`",
 						"req": true,
-						"op": map[string]any{
-							"update": map[string]any{
-								"type": "`$ARRAY`",
-							},
-						},
 					},
 					map[string]any{
 						"name": "contact_expire_after",
@@ -1119,11 +1176,6 @@ func MakeConfig() map[string]any {
 						"title": "Contacts Count",
 						"type": "`$INTEGER`",
 						"req": true,
-						"op": map[string]any{
-							"list": map[string]any{
-								"type": "`$INTEGER`",
-							},
-						},
 					},
 					map[string]any{
 						"name": "country",
@@ -1179,13 +1231,6 @@ func MakeConfig() map[string]any {
 						"req": true,
 					},
 					map[string]any{
-						"name": "group_id",
-						"title": "Group Id",
-						"type": "`$STRING`",
-						"short": "Object ID",
-						"format": "oid",
-					},
-					map[string]any{
 						"name": "groups",
 						"title": "Groups",
 						"type": "`$ARRAY`",
@@ -1215,11 +1260,6 @@ func MakeConfig() map[string]any {
 						"title": "Name",
 						"type": "`$STRING`",
 						"req": true,
-						"op": map[string]any{
-							"list": map[string]any{
-								"type": "`$STRING`",
-							},
-						},
 						"short": "Group name",
 					},
 					map[string]any{
@@ -1233,18 +1273,6 @@ func MakeConfig() map[string]any {
 						"type": "`$STRING`",
 					},
 					map[string]any{
-						"name": "read",
-						"title": "Read",
-						"type": "`$BOOLEAN`",
-						"short": "Has read permission",
-					},
-					map[string]any{
-						"name": "send",
-						"title": "Send",
-						"type": "`$BOOLEAN`",
-						"short": "Has send permission",
-					},
-					map[string]any{
 						"name": "size",
 						"title": "Size",
 						"type": "`$INTEGER`",
@@ -1254,27 +1282,6 @@ func MakeConfig() map[string]any {
 						"name": "source",
 						"title": "Source",
 						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "type",
-						"title": "Type",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "username",
-						"title": "Username",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "value",
-						"title": "Value",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "write",
-						"title": "Write",
-						"type": "`$BOOLEAN`",
-						"short": "Has write permission",
 					},
 				},
 				"id": map[string]any{
@@ -1334,6 +1341,14 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"body": map[string]any{
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -1354,6 +1369,61 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "birthday_date",
+										},
+										map[string]any{
+											"name": "browser",
+										},
+										map[string]any{
+											"name": "city",
+										},
+										map[string]any{
+											"name": "country",
+										},
+										map[string]any{
+											"name": "description",
+										},
+										map[string]any{
+											"name": "device",
+										},
+										map[string]any{
+											"name": "email",
+										},
+										map[string]any{
+											"name": "first_name",
+										},
+										map[string]any{
+											"name": "gender",
+										},
+										map[string]any{
+											"name": "idx",
+										},
+										map[string]any{
+											"name": "last_name",
+										},
+										map[string]any{
+											"name": "operating_system",
+										},
+										map[string]any{
+											"name": "phone_number",
+										},
+										map[string]any{
+											"name": "source",
+										},
+										map[string]any{
+											"name": "undelivered_messages",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -1361,112 +1431,6 @@ func MakeConfig() map[string]any {
 						"input": "data",
 						"name": "list",
 						"points": []any{
-							map[string]any{
-								"kind": "http",
-								"method": "GET",
-								"orig": "/contacts",
-								"segments": []any{
-									map[string]any{
-										"lit": "contacts",
-									},
-								},
-								"parts": []any{
-									"contacts",
-								},
-								"rename": map[string]any{},
-								"transform": map[string]any{
-									"req": "`reqdata`",
-									"res": "`body.collection`",
-								},
-								"args": map[string]any{
-									"query": []any{
-										map[string]any{
-											"name": "birthday_date",
-											"orig": "birthday_date",
-											"type": "`$ARRAY`",
-											"kind": "query",
-											"example": "2022-06-24",
-										},
-										map[string]any{
-											"name": "email",
-											"orig": "email",
-											"type": "`$ARRAY`",
-											"kind": "query",
-										},
-										map[string]any{
-											"name": "first_name",
-											"orig": "first_name",
-											"type": "`$ARRAY`",
-											"kind": "query",
-										},
-										map[string]any{
-											"name": "gender",
-											"orig": "gender",
-											"type": "`$STRING`",
-											"kind": "query",
-										},
-										map[string]any{
-											"name": "group_id",
-											"orig": "group_id",
-											"type": "`$ARRAY`",
-											"kind": "query",
-										},
-										map[string]any{
-											"name": "last_name",
-											"orig": "last_name",
-											"type": "`$ARRAY`",
-											"kind": "query",
-										},
-										map[string]any{
-											"name": "limit",
-											"orig": "limit",
-											"type": "`$INTEGER`",
-											"kind": "query",
-											"example": 5,
-										},
-										map[string]any{
-											"name": "offset",
-											"orig": "offset",
-											"type": "`$INTEGER`",
-											"kind": "query",
-											"example": 0,
-										},
-										map[string]any{
-											"name": "order_by",
-											"orig": "order_by",
-											"type": "`$STRING`",
-											"kind": "query",
-										},
-										map[string]any{
-											"name": "phone_number",
-											"orig": "phone_number",
-											"type": "`$ARRAY`",
-											"kind": "query",
-										},
-										map[string]any{
-											"name": "q",
-											"orig": "q",
-											"type": "`$STRING`",
-											"kind": "query",
-										},
-									},
-								},
-								"select": map[string]any{
-									"exist": []any{
-										"birthday_date",
-										"email",
-										"first_name",
-										"gender",
-										"group_id",
-										"last_name",
-										"limit",
-										"offset",
-										"order_by",
-										"phone_number",
-										"q",
-									},
-								},
-							},
 							map[string]any{
 								"kind": "http",
 								"method": "GET",
@@ -1513,6 +1477,112 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
+							},
+							map[string]any{
+								"kind": "http",
+								"method": "GET",
+								"orig": "/contacts",
+								"segments": []any{
+									map[string]any{
+										"lit": "contacts",
+									},
+								},
+								"parts": []any{
+									"contacts",
+								},
+								"rename": map[string]any{},
+								"transform": map[string]any{
+									"req": "`reqdata`",
+									"res": "`body.collection`",
+								},
+								"args": map[string]any{
+									"query": []any{
+										map[string]any{
+											"name": "birthday_date",
+											"orig": "birthday_date",
+											"type": "`$ARRAY`",
+											"kind": "query",
+											"example": "2022-06-24",
+											"field": true,
+										},
+										map[string]any{
+											"name": "email",
+											"orig": "email",
+											"type": "`$ARRAY`",
+											"kind": "query",
+											"field": true,
+										},
+										map[string]any{
+											"name": "first_name",
+											"orig": "first_name",
+											"type": "`$ARRAY`",
+											"kind": "query",
+											"field": true,
+										},
+										map[string]any{
+											"name": "gender",
+											"orig": "gender",
+											"type": "`$STRING`",
+											"kind": "query",
+											"field": true,
+										},
+										map[string]any{
+											"name": "group_id",
+											"orig": "group_id",
+											"type": "`$ARRAY`",
+											"kind": "query",
+										},
+										map[string]any{
+											"name": "last_name",
+											"orig": "last_name",
+											"type": "`$ARRAY`",
+											"kind": "query",
+											"field": true,
+										},
+										map[string]any{
+											"name": "limit",
+											"orig": "limit",
+											"type": "`$INTEGER`",
+											"kind": "query",
+											"example": 5,
+										},
+										map[string]any{
+											"name": "offset",
+											"orig": "offset",
+											"type": "`$INTEGER`",
+											"kind": "query",
+											"example": 0,
+										},
+										map[string]any{
+											"name": "order_by",
+											"orig": "order_by",
+											"type": "`$STRING`",
+											"kind": "query",
+										},
+										map[string]any{
+											"name": "phone_number",
+											"orig": "phone_number",
+											"type": "`$ARRAY`",
+											"kind": "query",
+											"field": true,
+										},
+										map[string]any{
+											"name": "q",
+											"orig": "q",
+											"type": "`$STRING`",
+											"kind": "query",
+										},
+									},
+								},
+								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -1585,6 +1655,10 @@ func MakeConfig() map[string]any {
 										"group_id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -1646,6 +1720,10 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -1688,6 +1766,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -1890,6 +1972,10 @@ func MakeConfig() map[string]any {
 										"group_id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -1951,6 +2037,10 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -1994,6 +2084,43 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "birthday_date",
+										},
+										map[string]any{
+											"name": "city",
+										},
+										map[string]any{
+											"name": "description",
+										},
+										map[string]any{
+											"name": "email",
+										},
+										map[string]any{
+											"name": "first_name",
+										},
+										map[string]any{
+											"name": "gender",
+										},
+										map[string]any{
+											"name": "last_name",
+										},
+										map[string]any{
+											"name": "phone_number",
+										},
+										map[string]any{
+											"name": "source",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -2012,165 +2139,21 @@ func MakeConfig() map[string]any {
 			"contacts_field": map[string]any{
 				"fields": []any{
 					map[string]any{
-						"name": "birthday_date",
-						"title": "Birthday Date",
-						"type": "`$STRING`",
-						"format": "date",
-					},
-					map[string]any{
-						"name": "city",
-						"title": "City",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "contact_expire_after",
-						"title": "Contact Expire After",
-						"type": "`$INTEGER`",
-						"req": true,
-						"short": "Contact expire after days",
-					},
-					map[string]any{
-						"name": "contacts_count",
-						"title": "Contacts Count",
-						"type": "`$INTEGER`",
-					},
-					map[string]any{
-						"name": "country",
-						"title": "Country",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "created_by",
-						"title": "Created By",
-						"type": "`$STRING`",
-						"req": true,
-					},
-					map[string]any{
-						"name": "date_created",
-						"title": "Date Created",
-						"type": "`$STRING`",
-						"req": true,
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "date_updated",
-						"title": "Date Updated",
-						"type": "`$STRING`",
-						"req": true,
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "description",
-						"title": "Description",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "email",
-						"title": "Email",
-						"type": "`$STRING`",
-						"format": "email",
-					},
-					map[string]any{
-						"name": "first_name",
-						"title": "First Name",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "gender",
-						"title": "Gender",
-						"type": "`$STRING`",
-						"req": true,
-					},
-					map[string]any{
-						"name": "group_id",
-						"title": "Group Id",
-						"type": "`$STRING`",
-						"short": "Object ID",
-						"format": "oid",
-					},
-					map[string]any{
-						"name": "groups",
-						"title": "Groups",
-						"type": "`$ARRAY`",
-						"req": true,
-					},
-					map[string]any{
 						"name": "id",
 						"title": "Id",
 						"type": "`$STRING`",
-						"op": map[string]any{
-							"list": map[string]any{
-								"req": true,
-								"type": "`$STRING`",
-							},
-						},
 						"short": "Object ID",
 						"format": "oid",
-					},
-					map[string]any{
-						"name": "idx",
-						"title": "Idx",
-						"type": "`$STRING`",
-						"short": "User provided resource id",
-					},
-					map[string]any{
-						"name": "last_name",
-						"title": "Last Name",
-						"type": "`$STRING`",
 					},
 					map[string]any{
 						"name": "name",
 						"title": "Name",
-						"type": "`$STRING`",
-						"short": "Group name",
-					},
-					map[string]any{
-						"name": "permissions",
-						"title": "Permissions",
-						"type": "`$ARRAY`",
-					},
-					map[string]any{
-						"name": "phone_number",
-						"title": "Phone Number",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "read",
-						"title": "Read",
-						"type": "`$BOOLEAN`",
-						"short": "Has read permission",
-					},
-					map[string]any{
-						"name": "send",
-						"title": "Send",
-						"type": "`$BOOLEAN`",
-						"short": "Has send permission",
-					},
-					map[string]any{
-						"name": "source",
-						"title": "Source",
 						"type": "`$STRING`",
 					},
 					map[string]any{
 						"name": "type",
 						"title": "Type",
 						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "username",
-						"title": "Username",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "value",
-						"title": "Value",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "write",
-						"title": "Write",
-						"type": "`$BOOLEAN`",
-						"short": "Has write permission",
 					},
 				},
 				"id": map[string]any{
@@ -2206,6 +2189,22 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "name",
+										},
+										map[string]any{
+											"name": "type",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -2236,6 +2235,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -2342,6 +2345,19 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "name",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -2351,168 +2367,7 @@ func MakeConfig() map[string]any {
 				},
 			},
 			"contacts_field_option": map[string]any{
-				"fields": []any{
-					map[string]any{
-						"name": "birthday_date",
-						"title": "Birthday Date",
-						"type": "`$STRING`",
-						"format": "date",
-					},
-					map[string]any{
-						"name": "city",
-						"title": "City",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "contact_expire_after",
-						"title": "Contact Expire After",
-						"type": "`$INTEGER`",
-						"req": true,
-						"short": "Contact expire after days",
-					},
-					map[string]any{
-						"name": "contacts_count",
-						"title": "Contacts Count",
-						"type": "`$INTEGER`",
-					},
-					map[string]any{
-						"name": "country",
-						"title": "Country",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "created_by",
-						"title": "Created By",
-						"type": "`$STRING`",
-						"req": true,
-					},
-					map[string]any{
-						"name": "date_created",
-						"title": "Date Created",
-						"type": "`$STRING`",
-						"req": true,
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "date_updated",
-						"title": "Date Updated",
-						"type": "`$STRING`",
-						"req": true,
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "description",
-						"title": "Description",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "email",
-						"title": "Email",
-						"type": "`$STRING`",
-						"format": "email",
-					},
-					map[string]any{
-						"name": "first_name",
-						"title": "First Name",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "gender",
-						"title": "Gender",
-						"type": "`$STRING`",
-						"req": true,
-					},
-					map[string]any{
-						"name": "group_id",
-						"title": "Group Id",
-						"type": "`$STRING`",
-						"short": "Object ID",
-						"format": "oid",
-					},
-					map[string]any{
-						"name": "groups",
-						"title": "Groups",
-						"type": "`$ARRAY`",
-						"req": true,
-					},
-					map[string]any{
-						"name": "id",
-						"title": "Id",
-						"type": "`$STRING`",
-						"req": true,
-						"short": "Object ID",
-						"format": "oid",
-					},
-					map[string]any{
-						"name": "idx",
-						"title": "Idx",
-						"type": "`$STRING`",
-						"short": "User provided resource id",
-					},
-					map[string]any{
-						"name": "last_name",
-						"title": "Last Name",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "name",
-						"title": "Name",
-						"type": "`$STRING`",
-						"short": "Group name",
-					},
-					map[string]any{
-						"name": "permissions",
-						"title": "Permissions",
-						"type": "`$ARRAY`",
-					},
-					map[string]any{
-						"name": "phone_number",
-						"title": "Phone Number",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "read",
-						"title": "Read",
-						"type": "`$BOOLEAN`",
-						"short": "Has read permission",
-					},
-					map[string]any{
-						"name": "send",
-						"title": "Send",
-						"type": "`$BOOLEAN`",
-						"short": "Has send permission",
-					},
-					map[string]any{
-						"name": "source",
-						"title": "Source",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "type",
-						"title": "Type",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "username",
-						"title": "Username",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "value",
-						"title": "Value",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "write",
-						"title": "Write",
-						"type": "`$BOOLEAN`",
-						"short": "Has write permission",
-					},
-				},
-				"id": map[string]any{
-					"field": "id",
-					"name": "id",
-				},
+				"fields": []any{},
 				"name": "contacts_field_option",
 				"op": map[string]any{
 					"list": map[string]any{
@@ -2569,6 +2424,10 @@ func MakeConfig() map[string]any {
 										"field_id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -2580,139 +2439,18 @@ func MakeConfig() map[string]any {
 			"contactsgroup": map[string]any{
 				"fields": []any{
 					map[string]any{
-						"name": "birthday_date",
-						"title": "Birthday Date",
-						"type": "`$STRING`",
-						"format": "date",
-					},
-					map[string]any{
-						"name": "city",
-						"title": "City",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "contact_expire_after",
-						"title": "Contact Expire After",
-						"type": "`$INTEGER`",
-						"req": true,
-						"short": "Contact expire after days",
-					},
-					map[string]any{
-						"name": "contacts_count",
-						"title": "Contacts Count",
-						"type": "`$INTEGER`",
-					},
-					map[string]any{
-						"name": "country",
-						"title": "Country",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "created_by",
-						"title": "Created By",
-						"type": "`$STRING`",
-						"req": true,
-					},
-					map[string]any{
-						"name": "date_created",
-						"title": "Date Created",
-						"type": "`$STRING`",
-						"req": true,
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "date_updated",
-						"title": "Date Updated",
-						"type": "`$STRING`",
-						"req": true,
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "description",
-						"title": "Description",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "email",
-						"title": "Email",
-						"type": "`$STRING`",
-						"format": "email",
-					},
-					map[string]any{
-						"name": "first_name",
-						"title": "First Name",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "gender",
-						"title": "Gender",
-						"type": "`$STRING`",
-						"req": true,
-					},
-					map[string]any{
 						"name": "group_id",
 						"title": "Group Id",
 						"type": "`$STRING`",
 						"req": true,
-						"op": map[string]any{
-							"list": map[string]any{
-								"type": "`$STRING`",
-							},
-						},
 						"short": "Object ID",
 						"format": "oid",
-					},
-					map[string]any{
-						"name": "groups",
-						"title": "Groups",
-						"type": "`$ARRAY`",
-						"req": true,
-					},
-					map[string]any{
-						"name": "id",
-						"title": "Id",
-						"type": "`$STRING`",
-						"req": true,
-						"short": "Object ID",
-						"format": "oid",
-					},
-					map[string]any{
-						"name": "idx",
-						"title": "Idx",
-						"type": "`$STRING`",
-						"short": "User provided resource id",
-					},
-					map[string]any{
-						"name": "last_name",
-						"title": "Last Name",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "name",
-						"title": "Name",
-						"type": "`$STRING`",
-						"short": "Group name",
-					},
-					map[string]any{
-						"name": "permissions",
-						"title": "Permissions",
-						"type": "`$ARRAY`",
-					},
-					map[string]any{
-						"name": "phone_number",
-						"title": "Phone Number",
-						"type": "`$STRING`",
 					},
 					map[string]any{
 						"name": "read",
 						"title": "Read",
 						"type": "`$BOOLEAN`",
 						"req": true,
-						"op": map[string]any{
-							"list": map[string]any{
-								"type": "`$BOOLEAN`",
-							},
-						},
 						"short": "Has read permission",
 					},
 					map[string]any{
@@ -2720,55 +2458,21 @@ func MakeConfig() map[string]any {
 						"title": "Send",
 						"type": "`$BOOLEAN`",
 						"req": true,
-						"op": map[string]any{
-							"list": map[string]any{
-								"type": "`$BOOLEAN`",
-							},
-						},
 						"short": "Has send permission",
-					},
-					map[string]any{
-						"name": "source",
-						"title": "Source",
-						"type": "`$STRING`",
-					},
-					map[string]any{
-						"name": "type",
-						"title": "Type",
-						"type": "`$STRING`",
 					},
 					map[string]any{
 						"name": "username",
 						"title": "Username",
 						"type": "`$STRING`",
 						"req": true,
-						"op": map[string]any{
-							"list": map[string]any{
-								"type": "`$STRING`",
-							},
-						},
-					},
-					map[string]any{
-						"name": "value",
-						"title": "Value",
-						"type": "`$STRING`",
 					},
 					map[string]any{
 						"name": "write",
 						"title": "Write",
 						"type": "`$BOOLEAN`",
 						"req": true,
-						"op": map[string]any{
-							"list": map[string]any{
-								"type": "`$BOOLEAN`",
-							},
-						},
 						"short": "Has write permission",
 					},
-				},
-				"id": map[string]any{
-					"field": "id",
-					"name": "id",
 				},
 				"name": "contactsgroup",
 				"op": map[string]any{
@@ -2826,6 +2530,42 @@ func MakeConfig() map[string]any {
 										"group_id",
 									},
 								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"list": true,
+											"name": "birthday_date",
+										},
+										map[string]any{
+											"list": true,
+											"name": "email",
+										},
+										map[string]any{
+											"list": true,
+											"name": "first_name",
+										},
+										map[string]any{
+											"name": "gender",
+										},
+										map[string]any{
+											"list": true,
+											"name": "group_id",
+										},
+										map[string]any{
+											"list": true,
+											"name": "last_name",
+										},
+										map[string]any{
+											"list": true,
+											"name": "phone_number",
+										},
+										map[string]any{
+											"name": "q",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -2850,6 +2590,28 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "contact_expire_after",
+										},
+										map[string]any{
+											"name": "description",
+										},
+										map[string]any{
+											"name": "idx",
+										},
+										map[string]any{
+											"name": "name",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -2857,51 +2619,6 @@ func MakeConfig() map[string]any {
 						"input": "data",
 						"name": "list",
 						"points": []any{
-							map[string]any{
-								"kind": "http",
-								"method": "GET",
-								"orig": "/contacts/groups",
-								"segments": []any{
-									map[string]any{
-										"lit": "contacts",
-									},
-									map[string]any{
-										"lit": "groups",
-									},
-								},
-								"parts": []any{
-									"contacts",
-									"groups",
-								},
-								"rename": map[string]any{},
-								"transform": map[string]any{
-									"req": "`reqdata`",
-									"res": "`body.collection`",
-								},
-								"args": map[string]any{
-									"query": []any{
-										map[string]any{
-											"name": "name",
-											"orig": "name",
-											"type": "`$OBJECT`",
-											"kind": "query",
-											"example": "{\"name\" : \"group name\"}",
-										},
-										map[string]any{
-											"name": "with",
-											"orig": "with",
-											"type": "`$ARRAY`",
-											"kind": "query",
-										},
-									},
-								},
-								"select": map[string]any{
-									"exist": []any{
-										"name",
-										"with",
-									},
-								},
-							},
 							map[string]any{
 								"kind": "http",
 								"method": "GET",
@@ -2951,6 +2668,54 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"group_id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
+							},
+							map[string]any{
+								"kind": "http",
+								"method": "GET",
+								"orig": "/contacts/groups",
+								"segments": []any{
+									map[string]any{
+										"lit": "contacts",
+									},
+									map[string]any{
+										"lit": "groups",
+									},
+								},
+								"parts": []any{
+									"contacts",
+									"groups",
+								},
+								"rename": map[string]any{},
+								"transform": map[string]any{
+									"req": "`reqdata`",
+									"res": "`body.collection`",
+								},
+								"args": map[string]any{
+									"query": []any{
+										map[string]any{
+											"name": "name",
+											"orig": "name",
+											"type": "`$OBJECT`",
+											"kind": "query",
+											"example": "{\"name\" : \"group name\"}",
+										},
+										map[string]any{
+											"name": "with",
+											"orig": "with",
+											"type": "`$ARRAY`",
+											"kind": "query",
+										},
+									},
+								},
+								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -3077,15 +2842,6 @@ func MakeConfig() map[string]any {
 											"type": "`$STRING`",
 											"kind": "param",
 											"reqd": true,
-										},
-									},
-									"query": []any{
-										map[string]any{
-											"name": "username",
-											"orig": "username",
-											"type": "`$STRING`",
-											"kind": "query",
-											"reqd": true,
 											"example": "example_username",
 										},
 									},
@@ -3143,6 +2899,15 @@ func MakeConfig() map[string]any {
 										"group_id",
 									},
 								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "delete_contacts",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -3193,6 +2958,42 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"group_id",
 									},
+								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"list": true,
+											"name": "birthday_date",
+										},
+										map[string]any{
+											"list": true,
+											"name": "email",
+										},
+										map[string]any{
+											"list": true,
+											"name": "first_name",
+										},
+										map[string]any{
+											"name": "gender",
+										},
+										map[string]any{
+											"list": true,
+											"name": "group_id",
+										},
+										map[string]any{
+											"list": true,
+											"name": "last_name",
+										},
+										map[string]any{
+											"list": true,
+											"name": "phone_number",
+										},
+										map[string]any{
+											"name": "q",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
 								},
 							},
 							map[string]any{
@@ -3278,15 +3079,6 @@ func MakeConfig() map[string]any {
 											"type": "`$STRING`",
 											"kind": "param",
 											"reqd": true,
-										},
-									},
-									"query": []any{
-										map[string]any{
-											"name": "username",
-											"orig": "username",
-											"type": "`$STRING`",
-											"kind": "query",
-											"reqd": true,
 											"example": "example_username",
 										},
 									},
@@ -3296,6 +3088,25 @@ func MakeConfig() map[string]any {
 										"group_id",
 										"username",
 									},
+								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "read",
+										},
+										map[string]any{
+											"name": "send",
+										},
+										map[string]any{
+											"name": "write",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 							map[string]any{
@@ -3347,6 +3158,42 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"group_id",
 									},
+								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"list": true,
+											"name": "birthday_date",
+										},
+										map[string]any{
+											"list": true,
+											"name": "email",
+										},
+										map[string]any{
+											"list": true,
+											"name": "first_name",
+										},
+										map[string]any{
+											"name": "gender",
+										},
+										map[string]any{
+											"list": true,
+											"name": "group_id",
+										},
+										map[string]any{
+											"list": true,
+											"name": "last_name",
+										},
+										map[string]any{
+											"list": true,
+											"name": "phone_number",
+										},
+										map[string]any{
+											"name": "q",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
 								},
 							},
 						},
@@ -3507,6 +3354,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -3639,6 +3490,10 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -3691,6 +3546,28 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "contact_expire_after",
+										},
+										map[string]any{
+											"name": "description",
+										},
+										map[string]any{
+											"name": "idx",
+										},
+										map[string]any{
+											"name": "name",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -3755,6 +3632,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -3784,6 +3665,18 @@ func MakeConfig() map[string]any {
 								"args": map[string]any{},
 								"select": map[string]any{
 									"$action": "verification",
+								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "code",
+										},
+										map[string]any{
+											"name": "phone_number",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
 								},
 							},
 						},
@@ -3884,14 +3777,16 @@ func MakeConfig() map[string]any {
 										},
 									},
 								},
-								"select": map[string]any{
-									"exist": []any{
-										"accept",
-										"limit",
-										"offset",
-										"phone_number",
-										"x_async",
+								"select": map[string]any{},
+								"response": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"kind": "raw",
+											"media": "text/csv",
+										},
 									},
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -3986,6 +3881,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4016,6 +3915,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4127,6 +4030,28 @@ func MakeConfig() map[string]any {
 										"group_id",
 									},
 								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "read",
+										},
+										map[string]any{
+											"name": "send",
+										},
+										map[string]any{
+											"name": "username",
+										},
+										map[string]any{
+											"name": "write",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4188,15 +4113,6 @@ func MakeConfig() map[string]any {
 											"type": "`$STRING`",
 											"kind": "param",
 											"reqd": true,
-										},
-									},
-									"query": []any{
-										map[string]any{
-											"name": "username",
-											"orig": "username",
-											"type": "`$STRING`",
-											"kind": "query",
-											"reqd": true,
 											"example": "example_username",
 										},
 									},
@@ -4205,8 +4121,11 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"group_id",
 										"id",
-										"username",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -4260,6 +4179,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4353,9 +4276,10 @@ func MakeConfig() map[string]any {
 								},
 								"select": map[string]any{
 									"$action": "price",
-									"exist": []any{
-										"type",
-									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -4383,6 +4307,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4423,6 +4351,10 @@ func MakeConfig() map[string]any {
 								"args": map[string]any{},
 								"select": map[string]any{
 									"$action": "message",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -4495,6 +4427,19 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "sender",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4525,6 +4470,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4576,6 +4525,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -4636,6 +4589,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4662,8 +4619,10 @@ func MakeConfig() map[string]any {
 					map[string]any{
 						"name": "sender",
 						"title": "Sender",
-						"type": "`$ANY`",
+						"type": "`$STRING`",
 						"req": true,
+						"short": "RCS sender ID (object ID of the agent/sender the user has access to).",
+						"format": "oid",
 					},
 					map[string]any{
 						"name": "text",
@@ -4701,6 +4660,34 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"fields": []any{
+												map[string]any{
+													"name": "content",
+												},
+												map[string]any{
+													"name": "phone_number",
+												},
+												map[string]any{
+													"name": "sender",
+												},
+												map[string]any{
+													"name": "text",
+												},
+											},
+											"kind": "form",
+											"media": "application/x-www-form-urlencoded",
+										},
+									},
+									"kind": "json",
+									"media": "application/json",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4784,12 +4771,16 @@ func MakeConfig() map[string]any {
 										},
 									},
 								},
-								"select": map[string]any{
-									"exist": []any{
-										"accept",
-										"month",
-										"year",
+								"select": map[string]any{},
+								"response": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"kind": "raw",
+											"media": "text/csv",
+										},
 									},
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -4892,6 +4883,20 @@ func MakeConfig() map[string]any {
 								"select": map[string]any{
 									"$action": "link",
 								},
+								"body": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"kind": "form",
+											"media": "application/x-www-form-urlencoded",
+										},
+									},
+									"kind": "json",
+									"media": "application/json",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -4923,6 +4928,10 @@ func MakeConfig() map[string]any {
 								"args": map[string]any{},
 								"select": map[string]any{
 									"$action": "link",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -4972,6 +4981,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -5070,6 +5083,25 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "description",
+										},
+										map[string]any{
+											"name": "name",
+										},
+										map[string]any{
+											"name": "url",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -5233,6 +5265,92 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"fields": []any{
+												map[string]any{
+													"name": "allow_duplicates",
+												},
+												map[string]any{
+													"name": "check_idx",
+												},
+												map[string]any{
+													"name": "date",
+												},
+												map[string]any{
+													"name": "date_validate",
+												},
+												map[string]any{
+													"name": "details",
+												},
+												map[string]any{
+													"name": "encoding",
+												},
+												map[string]any{
+													"name": "expiration_date",
+												},
+												map[string]any{
+													"list": true,
+													"name": "fallback",
+												},
+												map[string]any{
+													"name": "fast",
+												},
+												map[string]any{
+													"name": "flash",
+												},
+												map[string]any{
+													"name": "format",
+												},
+												map[string]any{
+													"name": "from",
+												},
+												map[string]any{
+													"name": "group",
+												},
+												map[string]any{
+													"name": "idx",
+												},
+												map[string]any{
+													"name": "max_parts",
+												},
+												map[string]any{
+													"name": "message",
+												},
+												map[string]any{
+													"name": "normalize",
+												},
+												map[string]any{
+													"name": "notify_url",
+												},
+												map[string]any{
+													"name": "test",
+												},
+												map[string]any{
+													"name": "time_restriction",
+												},
+												map[string]any{
+													"name": "to",
+												},
+											},
+											"kind": "form",
+											"media": "application/x-www-form-urlencoded",
+										},
+									},
+									"kind": "json",
+									"media": "application/json",
+								},
+								"response": map[string]any{
+									"alternatives": []any{
+										map[string]any{
+											"kind": "raw",
+											"media": "text/plain",
+										},
+									},
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -5261,7 +5379,7 @@ func MakeConfig() map[string]any {
 										"lit": "sendernames",
 									},
 									map[string]any{
-										"var": "sendername_id",
+										"var": "sender",
 									},
 									map[string]any{
 										"lit": "commands",
@@ -5273,15 +5391,11 @@ func MakeConfig() map[string]any {
 								"parts": []any{
 									"sms",
 									"sendernames",
-									"{sendername_id}",
+									"{sender}",
 									"commands",
 									"make_default",
 								},
-								"rename": map[string]any{
-									"param": map[string]any{
-										"sender": "sendername_id",
-									},
-								},
+								"rename": map[string]any{},
 								"transform": map[string]any{
 									"req": "`reqdata`",
 									"res": "`body`",
@@ -5289,7 +5403,7 @@ func MakeConfig() map[string]any {
 								"args": map[string]any{
 									"params": []any{
 										map[string]any{
-											"name": "sendername_id",
+											"name": "sender",
 											"orig": "sender",
 											"type": "`$STRING`",
 											"kind": "param",
@@ -5299,7 +5413,7 @@ func MakeConfig() map[string]any {
 								},
 								"select": map[string]any{
 									"exist": []any{
-										"sendername_id",
+										"sender",
 									},
 								},
 							},
@@ -5499,6 +5613,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -5553,6 +5671,10 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -5601,6 +5723,10 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 							map[string]any{
 								"kind": "http",
@@ -5629,10 +5755,10 @@ func MakeConfig() map[string]any {
 										},
 									},
 								},
-								"select": map[string]any{
-									"exist": []any{
-										"q",
-									},
+								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -5678,6 +5804,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -5768,6 +5898,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 							map[string]any{
@@ -5929,6 +6063,25 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "name",
+										},
+										map[string]any{
+											"name": "normalize",
+										},
+										map[string]any{
+											"name": "template",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -5959,6 +6112,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -6006,6 +6163,10 @@ func MakeConfig() map[string]any {
 									"exist": []any{
 										"id",
 									},
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
 								},
 							},
 						},
@@ -6055,6 +6216,25 @@ func MakeConfig() map[string]any {
 										"id",
 									},
 								},
+								"body": map[string]any{
+									"fields": []any{
+										map[string]any{
+											"name": "name",
+										},
+										map[string]any{
+											"name": "normalize",
+										},
+										map[string]any{
+											"name": "template",
+										},
+									},
+									"kind": "form",
+									"media": "application/x-www-form-urlencoded",
+								},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},
@@ -6064,73 +6244,7 @@ func MakeConfig() map[string]any {
 				},
 			},
 			"user_rcs_sender_collection": map[string]any{
-				"fields": []any{
-					map[string]any{
-						"name": "deliveredAt",
-						"title": "Delivered At",
-						"type": "`$STRING`",
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "expiredAt",
-						"title": "Expired At",
-						"type": "`$STRING`",
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "id",
-						"title": "Id",
-						"type": "`$STRING`",
-						"short": "Object ID",
-						"format": "oid",
-					},
-					map[string]any{
-						"name": "interface",
-						"title": "Interface",
-						"type": "`$STRING`",
-						"short": "Interface through which the message was sent (www, api, ...).",
-					},
-					map[string]any{
-						"name": "messageType",
-						"title": "Message Type",
-						"type": "`$STRING`",
-						"short": "RCS message type (basic, single, ...).",
-					},
-					map[string]any{
-						"name": "readAt",
-						"title": "Read At",
-						"type": "`$STRING`",
-						"format": "date-time",
-					},
-					map[string]any{
-						"name": "recipient",
-						"title": "Recipient",
-						"type": "`$STRING`",
-						"short": "Recipient phone number (without +).",
-					},
-					map[string]any{
-						"name": "sender",
-						"title": "Sender",
-						"type": "`$STRING`",
-						"short": "Sender name",
-					},
-					map[string]any{
-						"name": "senderId",
-						"title": "Sender Id",
-						"type": "`$STRING`",
-						"short": "Sender id",
-					},
-					map[string]any{
-						"name": "sentAt",
-						"title": "Sent At",
-						"type": "`$STRING`",
-						"format": "date-time",
-					},
-				},
-				"id": map[string]any{
-					"field": "id",
-					"name": "id",
-				},
+				"fields": []any{},
 				"name": "user_rcs_sender_collection",
 				"op": map[string]any{
 					"list": map[string]any{
@@ -6160,6 +6274,10 @@ func MakeConfig() map[string]any {
 								},
 								"args": map[string]any{},
 								"select": map[string]any{},
+								"response": map[string]any{
+									"kind": "json",
+									"media": "application/json",
+								},
 							},
 						},
 					},

@@ -49,6 +49,25 @@ main: kit: entity: template: {
           }
           m: "POST"
           o: "/sms/templates"
+          rb: {
+            fields: [
+              {
+                name: "name"
+              }
+              {
+                name: "normalize"
+              }
+              {
+                name: "template"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "sms"
@@ -75,6 +94,10 @@ main: kit: entity: template: {
           }
           m: "GET"
           o: "/sms/templates"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "sms"
@@ -116,6 +139,10 @@ main: kit: entity: template: {
             exist: [
               "id"
             ]
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -161,6 +188,25 @@ main: kit: entity: template: {
             exist: [
               "id"
             ]
+          }
+          rb: {
+            fields: [
+              {
+                name: "name"
+              }
+              {
+                name: "normalize"
+              }
+              {
+                name: "template"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

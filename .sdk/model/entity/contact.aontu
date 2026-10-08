@@ -21,12 +21,6 @@ main: kit: entity: contact: {
     collection: {
       h: "Collection"
       n: "collection"
-      op: {
-        update: {
-          req: false
-          type: "`$ARRAY`"
-        }
-      }
       r: true
       t: "`$ARRAY`"
     }
@@ -40,12 +34,6 @@ main: kit: entity: contact: {
     contacts_count: {
       h: "Contacts Count"
       n: "contacts_count"
-      op: {
-        list: {
-          req: false
-          type: "`$INTEGER`"
-        }
-      }
       r: true
       t: "`$INTEGER`"
     }
@@ -106,14 +94,6 @@ main: kit: entity: contact: {
       r: true
       t: "`$STRING`"
     }
-    group_id: {
-      fo: "oid"
-      h: "Group Id"
-      n: "group_id"
-      r: false
-      sh: "Object ID"
-      t: "`$STRING`"
-    }
     groups: {
       h: "Groups"
       n: "groups"
@@ -144,12 +124,6 @@ main: kit: entity: contact: {
     name: {
       h: "Name"
       n: "name"
-      op: {
-        list: {
-          req: false
-          type: "`$STRING`"
-        }
-      }
       r: true
       sh: "Group name"
       t: "`$STRING`"
@@ -166,20 +140,6 @@ main: kit: entity: contact: {
       r: false
       t: "`$STRING`"
     }
-    read: {
-      h: "Read"
-      n: "read"
-      r: false
-      sh: "Has read permission"
-      t: "`$BOOLEAN`"
-    }
-    send: {
-      h: "Send"
-      n: "send"
-      r: false
-      sh: "Has send permission"
-      t: "`$BOOLEAN`"
-    }
     size: {
       h: "Size"
       n: "size"
@@ -191,31 +151,6 @@ main: kit: entity: contact: {
       n: "source"
       r: false
       t: "`$STRING`"
-    }
-    type: {
-      h: "Type"
-      n: "type"
-      r: false
-      t: "`$STRING`"
-    }
-    username: {
-      h: "Username"
-      n: "username"
-      r: false
-      t: "`$STRING`"
-    }
-    value: {
-      h: "Value"
-      n: "value"
-      r: false
-      t: "`$STRING`"
-    }
-    write: {
-      h: "Write"
-      n: "write"
-      r: false
-      sh: "Has write permission"
-      t: "`$BOOLEAN`"
     }
   }
 
@@ -260,6 +195,14 @@ main: kit: entity: contact: {
               contactId: "id"
             }
           }
+          rb: {
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -284,6 +227,61 @@ main: kit: entity: contact: {
           }
           m: "POST"
           o: "/contacts"
+          rb: {
+            fields: [
+              {
+                name: "birthday_date"
+              }
+              {
+                name: "browser"
+              }
+              {
+                name: "city"
+              }
+              {
+                name: "country"
+              }
+              {
+                name: "description"
+              }
+              {
+                name: "device"
+              }
+              {
+                name: "email"
+              }
+              {
+                name: "first_name"
+              }
+              {
+                name: "gender"
+              }
+              {
+                name: "idx"
+              }
+              {
+                name: "last_name"
+              }
+              {
+                name: "operating_system"
+              }
+              {
+                name: "phone_number"
+              }
+              {
+                name: "source"
+              }
+              {
+                name: "undelivered_messages"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -299,6 +297,57 @@ main: kit: entity: contact: {
     list: {
       name: "list"
       points: [
+        {
+          co: {
+            id: "GET /contacts/{contactId}/groups"
+            source: "openapi3"
+            version: 2
+          }
+          g: {
+            params: [
+              {
+                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
+                k: "param"
+                n: "id"
+                or: "contactId"
+                r: true
+                t: "`$STRING`"
+              }
+            ]
+          }
+          m: "GET"
+          o: "/contacts/{contactId}/groups"
+          q: {
+            "$action": "group"
+            exist: [
+              "id"
+            ]
+          }
+          r: {
+            param: {
+              contactId: "id"
+            }
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
+          s: [
+            {
+              lit: "contacts"
+            }
+            {
+              var: "id"
+            }
+            {
+              lit: "groups"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body.collection`"
+          }
+        }
         {
           co: {
             id: "GET /contacts"
@@ -391,71 +440,13 @@ main: kit: entity: contact: {
           }
           m: "GET"
           o: "/contacts"
-          q: {
-            exist: [
-              "birthday_date"
-              "email"
-              "first_name"
-              "gender"
-              "group_id"
-              "last_name"
-              "limit"
-              "offset"
-              "order_by"
-              "phone_number"
-              "q"
-            ]
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
               lit: "contacts"
-            }
-          ]
-          t: {
-            req: "`reqdata`"
-            res: "`body.collection`"
-          }
-        }
-        {
-          co: {
-            id: "GET /contacts/{contactId}/groups"
-            source: "openapi3"
-            version: 2
-          }
-          g: {
-            params: [
-              {
-                ex: "0f0f0f0f0f0f0f0f0f0f0f0f"
-                k: "param"
-                n: "id"
-                or: "contactId"
-                r: true
-                t: "`$STRING`"
-              }
-            ]
-          }
-          m: "GET"
-          o: "/contacts/{contactId}/groups"
-          q: {
-            "$action": "group"
-            exist: [
-              "id"
-            ]
-          }
-          r: {
-            param: {
-              contactId: "id"
-            }
-          }
-          s: [
-            {
-              lit: "contacts"
-            }
-            {
-              var: "id"
-            }
-            {
-              lit: "groups"
             }
           ]
           t: {
@@ -507,6 +498,10 @@ main: kit: entity: contact: {
               contactId: "contact_id"
               groupId: "group_id"
             }
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -570,6 +565,10 @@ main: kit: entity: contact: {
               groupId: "group_id"
             }
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -618,6 +617,10 @@ main: kit: entity: contact: {
             param: {
               contactId: "id"
             }
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -802,6 +805,10 @@ main: kit: entity: contact: {
               groupId: "group_id"
             }
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -864,6 +871,10 @@ main: kit: entity: contact: {
               groupId: "group_id"
             }
           }
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "contacts"
@@ -912,6 +923,43 @@ main: kit: entity: contact: {
             param: {
               contactId: "id"
             }
+          }
+          rb: {
+            fields: [
+              {
+                name: "birthday_date"
+              }
+              {
+                name: "city"
+              }
+              {
+                name: "description"
+              }
+              {
+                name: "email"
+              }
+              {
+                name: "first_name"
+              }
+              {
+                name: "gender"
+              }
+              {
+                name: "last_name"
+              }
+              {
+                name: "phone_number"
+              }
+              {
+                name: "source"
+              }
+            ]
+            kind: "form"
+            media: "application/x-www-form-urlencoded"
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {

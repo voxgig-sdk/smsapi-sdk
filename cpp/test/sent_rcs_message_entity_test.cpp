@@ -66,6 +66,27 @@ static void sent_rcs_message_entity_instance() {
 }
 
 
+static bool sent_rcs_message_has_feature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
+
+static void sent_rcs_message_entity_validate() {
+  if (!sent_rcs_message_has_feature("validate")) {
+    std::cerr << "skip: feature not present in this SDK: validate\n";
+    return;
+  }
+  auto vsdk = SmsapiSDK::testSDK(Value::undef(), vmap({{"feature",
+      vmap({{"validate", vmap({{"active", Value(true)}})}})}}));
+  std::string code;
+  try {
+    vsdk->sent_rcs_message()->create(vmap({{"phone_number", Value(1)}, {"sender", Value("x")}}), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    code = err->code;
+  }
+  ASSERT_EQ(code, std::string("validate_failed"), "an invalid request fails with validate_failed");
+}
+
 static void sent_rcs_message_entity_basic() {
   auto setup = sent_rcs_message_basic_setup(Value::undef());
   std::string mode = setup.live ? "live" : "unit";
@@ -89,6 +110,7 @@ static void sent_rcs_message_entity_basic() {
 
 int main() {
   T_RUN(sent_rcs_message_entity_instance);
+  T_RUN(sent_rcs_message_entity_validate);
   T_RUN(sent_rcs_message_entity_basic);
   return sdktest::summary("sent_rcs_message_entity_test");
 }

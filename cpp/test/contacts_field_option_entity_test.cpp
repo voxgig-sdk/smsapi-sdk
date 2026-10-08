@@ -66,26 +66,25 @@ static void contacts_field_option_entity_instance() {
 }
 
 
-static void contacts_field_option_entity_stream() {
-  // stream() runs the list op through the full pipeline and returns the
-  // result items. Seed two entities via test mode; with the streaming feature
-  // active it yields the feature's incremental items, else it falls back to
-  // the materialised items — either way every item is yielded.
-  Value seed = vmap({{"entity", vmap({{"contacts_field_option", vmap({
-      {"strm01", vmap({{"id", Value("strm01")}})},
-      {"strm02", vmap({{"id", Value("strm02")}})}})}})}});
-  Value sdkopts = vmap({{"feature",
-      vmap({{"streaming", vmap({{"active", Value(true)}})}})}});
+static bool contacts_field_option_has_feature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
 
-  auto strsdk = SmsapiSDK::testSDK(seed, sdkopts);
-  auto se = strsdk->contacts_field_option();
-  std::vector<Value> items = se->stream("list", Value::undef(), Value::undef());
-  ASSERT_EQ((int)items.size(), 2, "stream yields both seeded items");
-
-  auto plainsdk = SmsapiSDK::testSDK(seed, Value::undef());
-  auto pe = plainsdk->contacts_field_option();
-  std::vector<Value> pitems = pe->stream("list", Value::undef(), Value::undef());
-  ASSERT_EQ((int)pitems.size(), 2, "fallback stream yields both items");
+static void contacts_field_option_entity_validate() {
+  if (!contacts_field_option_has_feature("validate")) {
+    std::cerr << "skip: feature not present in this SDK: validate\n";
+    return;
+  }
+  auto vsdk = SmsapiSDK::testSDK(Value::undef(), vmap({{"feature",
+      vmap({{"validate", vmap({{"active", Value(true)}})}})}}));
+  std::string code;
+  try {
+    vsdk->contacts_field_option()->list(vmap({{"field_id", Value(1)}}), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    code = err->code;
+  }
+  ASSERT_EQ(code, std::string("validate_failed"), "an invalid request fails with validate_failed");
 }
 
 static void contacts_field_option_entity_basic() {
@@ -122,7 +121,7 @@ static void contacts_field_option_entity_basic() {
 
 int main() {
   T_RUN(contacts_field_option_entity_instance);
-  T_RUN(contacts_field_option_entity_stream);
+  T_RUN(contacts_field_option_entity_validate);
   T_RUN(contacts_field_option_entity_basic);
   return sdktest::summary("contacts_field_option_entity_test");
 }

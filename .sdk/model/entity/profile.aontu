@@ -82,9 +82,10 @@ main: kit: entity: profile: {
           o: "/profile/prices"
           q: {
             "$action": "price"
-            exist: [
-              "type"
-            ]
+          }
+          rs: {
+            kind: "json"
+            media: "application/json"
           }
           s: [
             {
@@ -112,6 +113,10 @@ main: kit: entity: profile: {
           }
           m: "GET"
           o: "/profile"
+          rs: {
+            kind: "json"
+            media: "application/json"
+          }
           s: [
             {
               lit: "profile"

@@ -377,6 +377,7 @@ public static class SdkConfig
                     ["optspec"] = new Dictionary<string, object?>
                     {
                         ["clearTimer"] = "`$FUNCTION`",
+                        ["now"] = "`$FUNCTION`",
                         ["setTimer"] = "`$FUNCTION`",
                     },
                     ["strict"] = false,
@@ -525,6 +526,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -591,6 +597,35 @@ public static class SdkConfig
                                     {
                                         ["$action"] = "phone_number",
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["alternatives"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["fields"] = new List<object?>
+                                                {
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "expire_at",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "phone_number",
+                                                    },
+                                                },
+                                                ["kind"] = "form",
+                                                ["media"] = "application/x-www-form-urlencoded",
+                                            },
+                                        },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -626,6 +661,26 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["alternatives"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["kind"] = "raw",
+                                                ["media"] = "text/csv",
+                                            },
+                                        },
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "import",
+                                            },
+                                        },
+                                        ["kind"] = "multipart",
+                                        ["media"] = "multipart/form-data",
+                                    },
                                 },
                             },
                         },
@@ -714,14 +769,19 @@ public static class SdkConfig
                                     ["select"] = new Dictionary<string, object?>
                                     {
                                         ["$action"] = "phone_number",
-                                        ["exist"] = new List<object?>
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["alternatives"] = new List<object?>
                                         {
-                                            "accept",
-                                            "limit",
-                                            "offset",
-                                            "q",
-                                            "x_async",
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["kind"] = "raw",
+                                                ["media"] = "text/csv",
+                                            },
                                         },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -830,10 +890,6 @@ public static class SdkConfig
                                     ["select"] = new Dictionary<string, object?>
                                     {
                                         ["$action"] = "phone_number",
-                                        ["exist"] = new List<object?>
-                                        {
-                                            "phone_number",
-                                        },
                                     },
                                 },
                             },
@@ -948,6 +1004,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -981,6 +1042,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -1038,6 +1104,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                                 new Dictionary<string, object?>
@@ -1099,6 +1170,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -1215,6 +1291,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                                 new Dictionary<string, object?>
@@ -1370,13 +1451,6 @@ public static class SdkConfig
                             ["title"] = "Collection",
                             ["type"] = "`$ARRAY`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["update"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$ARRAY`",
-                                },
-                            },
                         },
                         new Dictionary<string, object?>
                         {
@@ -1392,13 +1466,6 @@ public static class SdkConfig
                             ["title"] = "Contacts Count",
                             ["type"] = "`$INTEGER`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$INTEGER`",
-                                },
-                            },
                         },
                         new Dictionary<string, object?>
                         {
@@ -1465,14 +1532,6 @@ public static class SdkConfig
                         },
                         new Dictionary<string, object?>
                         {
-                            ["name"] = "group_id",
-                            ["title"] = "Group Id",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Object ID",
-                            ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
                             ["name"] = "groups",
                             ["title"] = "Groups",
                             ["type"] = "`$ARRAY`",
@@ -1506,13 +1565,6 @@ public static class SdkConfig
                             ["title"] = "Name",
                             ["type"] = "`$STRING`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$STRING`",
-                                },
-                            },
                             ["short"] = "Group name",
                         },
                         new Dictionary<string, object?>
@@ -1529,20 +1581,6 @@ public static class SdkConfig
                         },
                         new Dictionary<string, object?>
                         {
-                            ["name"] = "read",
-                            ["title"] = "Read",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has read permission",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "send",
-                            ["title"] = "Send",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has send permission",
-                        },
-                        new Dictionary<string, object?>
-                        {
                             ["name"] = "size",
                             ["title"] = "Size",
                             ["type"] = "`$INTEGER`",
@@ -1553,31 +1591,6 @@ public static class SdkConfig
                             ["name"] = "source",
                             ["title"] = "Source",
                             ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "type",
-                            ["title"] = "Type",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "username",
-                            ["title"] = "Username",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "value",
-                            ["title"] = "Value",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "write",
-                            ["title"] = "Write",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has write permission",
                         },
                     },
                     ["id"] = new Dictionary<string, object?>
@@ -1655,6 +1668,16 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -1680,6 +1703,79 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "birthday_date",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "browser",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "city",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "country",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "description",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "device",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "email",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "first_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "gender",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "idx",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "last_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "operating_system",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "phone_number",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "source",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "undelivered_messages",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -1689,132 +1785,6 @@ public static class SdkConfig
                             ["name"] = "list",
                             ["points"] = new List<object?>
                             {
-                                new Dictionary<string, object?>
-                                {
-                                    ["kind"] = "http",
-                                    ["method"] = "GET",
-                                    ["orig"] = "/contacts",
-                                    ["segments"] = new List<object?>
-                                    {
-                                        new Dictionary<string, object?>
-                                        {
-                                            ["lit"] = "contacts",
-                                        },
-                                    },
-                                    ["parts"] = new List<object?>
-                                    {
-                                        "contacts",
-                                    },
-                                    ["rename"] = new Dictionary<string, object?>(),
-                                    ["transform"] = new Dictionary<string, object?>
-                                    {
-                                        ["req"] = "`reqdata`",
-                                        ["res"] = "`body.collection`",
-                                    },
-                                    ["args"] = new Dictionary<string, object?>
-                                    {
-                                        ["query"] = new List<object?>
-                                        {
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "birthday_date",
-                                                ["orig"] = "birthday_date",
-                                                ["type"] = "`$ARRAY`",
-                                                ["kind"] = "query",
-                                                ["example"] = "2022-06-24",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "email",
-                                                ["orig"] = "email",
-                                                ["type"] = "`$ARRAY`",
-                                                ["kind"] = "query",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "first_name",
-                                                ["orig"] = "first_name",
-                                                ["type"] = "`$ARRAY`",
-                                                ["kind"] = "query",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "gender",
-                                                ["orig"] = "gender",
-                                                ["type"] = "`$STRING`",
-                                                ["kind"] = "query",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "group_id",
-                                                ["orig"] = "group_id",
-                                                ["type"] = "`$ARRAY`",
-                                                ["kind"] = "query",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "last_name",
-                                                ["orig"] = "last_name",
-                                                ["type"] = "`$ARRAY`",
-                                                ["kind"] = "query",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "limit",
-                                                ["orig"] = "limit",
-                                                ["type"] = "`$INTEGER`",
-                                                ["kind"] = "query",
-                                                ["example"] = 5,
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "offset",
-                                                ["orig"] = "offset",
-                                                ["type"] = "`$INTEGER`",
-                                                ["kind"] = "query",
-                                                ["example"] = 0,
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "order_by",
-                                                ["orig"] = "order_by",
-                                                ["type"] = "`$STRING`",
-                                                ["kind"] = "query",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "phone_number",
-                                                ["orig"] = "phone_number",
-                                                ["type"] = "`$ARRAY`",
-                                                ["kind"] = "query",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "q",
-                                                ["orig"] = "q",
-                                                ["type"] = "`$STRING`",
-                                                ["kind"] = "query",
-                                            },
-                                        },
-                                    },
-                                    ["select"] = new Dictionary<string, object?>
-                                    {
-                                        ["exist"] = new List<object?>
-                                        {
-                                            "birthday_date",
-                                            "email",
-                                            "first_name",
-                                            "gender",
-                                            "group_id",
-                                            "last_name",
-                                            "limit",
-                                            "offset",
-                                            "order_by",
-                                            "phone_number",
-                                            "q",
-                                        },
-                                    },
-                                },
                                 new Dictionary<string, object?>
                                 {
                                     ["kind"] = "http",
@@ -1875,6 +1845,132 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
+                                },
+                                new Dictionary<string, object?>
+                                {
+                                    ["kind"] = "http",
+                                    ["method"] = "GET",
+                                    ["orig"] = "/contacts",
+                                    ["segments"] = new List<object?>
+                                    {
+                                        new Dictionary<string, object?>
+                                        {
+                                            ["lit"] = "contacts",
+                                        },
+                                    },
+                                    ["parts"] = new List<object?>
+                                    {
+                                        "contacts",
+                                    },
+                                    ["rename"] = new Dictionary<string, object?>(),
+                                    ["transform"] = new Dictionary<string, object?>
+                                    {
+                                        ["req"] = "`reqdata`",
+                                        ["res"] = "`body.collection`",
+                                    },
+                                    ["args"] = new Dictionary<string, object?>
+                                    {
+                                        ["query"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "birthday_date",
+                                                ["orig"] = "birthday_date",
+                                                ["type"] = "`$ARRAY`",
+                                                ["kind"] = "query",
+                                                ["example"] = "2022-06-24",
+                                                ["field"] = true,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "email",
+                                                ["orig"] = "email",
+                                                ["type"] = "`$ARRAY`",
+                                                ["kind"] = "query",
+                                                ["field"] = true,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "first_name",
+                                                ["orig"] = "first_name",
+                                                ["type"] = "`$ARRAY`",
+                                                ["kind"] = "query",
+                                                ["field"] = true,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "gender",
+                                                ["orig"] = "gender",
+                                                ["type"] = "`$STRING`",
+                                                ["kind"] = "query",
+                                                ["field"] = true,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "group_id",
+                                                ["orig"] = "group_id",
+                                                ["type"] = "`$ARRAY`",
+                                                ["kind"] = "query",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "last_name",
+                                                ["orig"] = "last_name",
+                                                ["type"] = "`$ARRAY`",
+                                                ["kind"] = "query",
+                                                ["field"] = true,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "limit",
+                                                ["orig"] = "limit",
+                                                ["type"] = "`$INTEGER`",
+                                                ["kind"] = "query",
+                                                ["example"] = 5,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "offset",
+                                                ["orig"] = "offset",
+                                                ["type"] = "`$INTEGER`",
+                                                ["kind"] = "query",
+                                                ["example"] = 0,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "order_by",
+                                                ["orig"] = "order_by",
+                                                ["type"] = "`$STRING`",
+                                                ["kind"] = "query",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "phone_number",
+                                                ["orig"] = "phone_number",
+                                                ["type"] = "`$ARRAY`",
+                                                ["kind"] = "query",
+                                                ["field"] = true,
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "q",
+                                                ["orig"] = "q",
+                                                ["type"] = "`$STRING`",
+                                                ["kind"] = "query",
+                                            },
+                                        },
+                                    },
+                                    ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -1966,6 +2062,11 @@ public static class SdkConfig
                                             "group_id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -2043,6 +2144,11 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -2098,6 +2204,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -2355,6 +2466,11 @@ public static class SdkConfig
                                             "group_id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -2432,6 +2548,11 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -2488,6 +2609,55 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "birthday_date",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "city",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "description",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "email",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "first_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "gender",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "last_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "phone_number",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "source",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -2513,167 +2683,16 @@ public static class SdkConfig
                     {
                         new Dictionary<string, object?>
                         {
-                            ["name"] = "birthday_date",
-                            ["title"] = "Birthday Date",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "date",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "city",
-                            ["title"] = "City",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "contact_expire_after",
-                            ["title"] = "Contact Expire After",
-                            ["type"] = "`$INTEGER`",
-                            ["req"] = true,
-                            ["short"] = "Contact expire after days",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "contacts_count",
-                            ["title"] = "Contacts Count",
-                            ["type"] = "`$INTEGER`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "country",
-                            ["title"] = "Country",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "created_by",
-                            ["title"] = "Created By",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "date_created",
-                            ["title"] = "Date Created",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "date_updated",
-                            ["title"] = "Date Updated",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "description",
-                            ["title"] = "Description",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "email",
-                            ["title"] = "Email",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "email",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "first_name",
-                            ["title"] = "First Name",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "gender",
-                            ["title"] = "Gender",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "group_id",
-                            ["title"] = "Group Id",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Object ID",
-                            ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "groups",
-                            ["title"] = "Groups",
-                            ["type"] = "`$ARRAY`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
                             ["name"] = "id",
                             ["title"] = "Id",
                             ["type"] = "`$STRING`",
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["req"] = true,
-                                    ["type"] = "`$STRING`",
-                                },
-                            },
                             ["short"] = "Object ID",
                             ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "idx",
-                            ["title"] = "Idx",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "User provided resource id",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "last_name",
-                            ["title"] = "Last Name",
-                            ["type"] = "`$STRING`",
                         },
                         new Dictionary<string, object?>
                         {
                             ["name"] = "name",
                             ["title"] = "Name",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Group name",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "permissions",
-                            ["title"] = "Permissions",
-                            ["type"] = "`$ARRAY`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "phone_number",
-                            ["title"] = "Phone Number",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "read",
-                            ["title"] = "Read",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has read permission",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "send",
-                            ["title"] = "Send",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has send permission",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "source",
-                            ["title"] = "Source",
                             ["type"] = "`$STRING`",
                         },
                         new Dictionary<string, object?>
@@ -2681,25 +2700,6 @@ public static class SdkConfig
                             ["name"] = "type",
                             ["title"] = "Type",
                             ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "username",
-                            ["title"] = "Username",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "value",
-                            ["title"] = "Value",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "write",
-                            ["title"] = "Write",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has write permission",
                         },
                     },
                     ["id"] = new Dictionary<string, object?>
@@ -2745,6 +2745,27 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "type",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -2783,6 +2804,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -2921,6 +2947,23 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -2932,197 +2975,7 @@ public static class SdkConfig
                 },
                 ["contacts_field_option"] = new Dictionary<string, object?>
                 {
-                    ["fields"] = new List<object?>
-                    {
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "birthday_date",
-                            ["title"] = "Birthday Date",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "date",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "city",
-                            ["title"] = "City",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "contact_expire_after",
-                            ["title"] = "Contact Expire After",
-                            ["type"] = "`$INTEGER`",
-                            ["req"] = true,
-                            ["short"] = "Contact expire after days",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "contacts_count",
-                            ["title"] = "Contacts Count",
-                            ["type"] = "`$INTEGER`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "country",
-                            ["title"] = "Country",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "created_by",
-                            ["title"] = "Created By",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "date_created",
-                            ["title"] = "Date Created",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "date_updated",
-                            ["title"] = "Date Updated",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "description",
-                            ["title"] = "Description",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "email",
-                            ["title"] = "Email",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "email",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "first_name",
-                            ["title"] = "First Name",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "gender",
-                            ["title"] = "Gender",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "group_id",
-                            ["title"] = "Group Id",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Object ID",
-                            ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "groups",
-                            ["title"] = "Groups",
-                            ["type"] = "`$ARRAY`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "id",
-                            ["title"] = "Id",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["short"] = "Object ID",
-                            ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "idx",
-                            ["title"] = "Idx",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "User provided resource id",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "last_name",
-                            ["title"] = "Last Name",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "name",
-                            ["title"] = "Name",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Group name",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "permissions",
-                            ["title"] = "Permissions",
-                            ["type"] = "`$ARRAY`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "phone_number",
-                            ["title"] = "Phone Number",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "read",
-                            ["title"] = "Read",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has read permission",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "send",
-                            ["title"] = "Send",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has send permission",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "source",
-                            ["title"] = "Source",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "type",
-                            ["title"] = "Type",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "username",
-                            ["title"] = "Username",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "value",
-                            ["title"] = "Value",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "write",
-                            ["title"] = "Write",
-                            ["type"] = "`$BOOLEAN`",
-                            ["short"] = "Has write permission",
-                        },
-                    },
-                    ["id"] = new Dictionary<string, object?>
-                    {
-                        ["field"] = "id",
-                        ["name"] = "id",
-                    },
+                    ["fields"] = new List<object?>(),
                     ["name"] = "contacts_field_option",
                     ["op"] = new Dictionary<string, object?>
                     {
@@ -3197,6 +3050,11 @@ public static class SdkConfig
                                             "field_id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -3212,149 +3070,12 @@ public static class SdkConfig
                     {
                         new Dictionary<string, object?>
                         {
-                            ["name"] = "birthday_date",
-                            ["title"] = "Birthday Date",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "date",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "city",
-                            ["title"] = "City",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "contact_expire_after",
-                            ["title"] = "Contact Expire After",
-                            ["type"] = "`$INTEGER`",
-                            ["req"] = true,
-                            ["short"] = "Contact expire after days",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "contacts_count",
-                            ["title"] = "Contacts Count",
-                            ["type"] = "`$INTEGER`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "country",
-                            ["title"] = "Country",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "created_by",
-                            ["title"] = "Created By",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "date_created",
-                            ["title"] = "Date Created",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "date_updated",
-                            ["title"] = "Date Updated",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "description",
-                            ["title"] = "Description",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "email",
-                            ["title"] = "Email",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "email",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "first_name",
-                            ["title"] = "First Name",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "gender",
-                            ["title"] = "Gender",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
                             ["name"] = "group_id",
                             ["title"] = "Group Id",
                             ["type"] = "`$STRING`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$STRING`",
-                                },
-                            },
                             ["short"] = "Object ID",
                             ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "groups",
-                            ["title"] = "Groups",
-                            ["type"] = "`$ARRAY`",
-                            ["req"] = true,
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "id",
-                            ["title"] = "Id",
-                            ["type"] = "`$STRING`",
-                            ["req"] = true,
-                            ["short"] = "Object ID",
-                            ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "idx",
-                            ["title"] = "Idx",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "User provided resource id",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "last_name",
-                            ["title"] = "Last Name",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "name",
-                            ["title"] = "Name",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Group name",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "permissions",
-                            ["title"] = "Permissions",
-                            ["type"] = "`$ARRAY`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "phone_number",
-                            ["title"] = "Phone Number",
-                            ["type"] = "`$STRING`",
                         },
                         new Dictionary<string, object?>
                         {
@@ -3362,13 +3083,6 @@ public static class SdkConfig
                             ["title"] = "Read",
                             ["type"] = "`$BOOLEAN`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$BOOLEAN`",
-                                },
-                            },
                             ["short"] = "Has read permission",
                         },
                         new Dictionary<string, object?>
@@ -3377,26 +3091,7 @@ public static class SdkConfig
                             ["title"] = "Send",
                             ["type"] = "`$BOOLEAN`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$BOOLEAN`",
-                                },
-                            },
                             ["short"] = "Has send permission",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "source",
-                            ["title"] = "Source",
-                            ["type"] = "`$STRING`",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "type",
-                            ["title"] = "Type",
-                            ["type"] = "`$STRING`",
                         },
                         new Dictionary<string, object?>
                         {
@@ -3404,19 +3099,6 @@ public static class SdkConfig
                             ["title"] = "Username",
                             ["type"] = "`$STRING`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$STRING`",
-                                },
-                            },
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "value",
-                            ["title"] = "Value",
-                            ["type"] = "`$STRING`",
                         },
                         new Dictionary<string, object?>
                         {
@@ -3424,20 +3106,8 @@ public static class SdkConfig
                             ["title"] = "Write",
                             ["type"] = "`$BOOLEAN`",
                             ["req"] = true,
-                            ["op"] = new Dictionary<string, object?>
-                            {
-                                ["list"] = new Dictionary<string, object?>
-                                {
-                                    ["type"] = "`$BOOLEAN`",
-                                },
-                            },
                             ["short"] = "Has write permission",
                         },
-                    },
-                    ["id"] = new Dictionary<string, object?>
-                    {
-                        ["field"] = "id",
-                        ["name"] = "id",
                     },
                     ["name"] = "contactsgroup",
                     ["op"] = new Dictionary<string, object?>
@@ -3513,6 +3183,52 @@ public static class SdkConfig
                                             "group_id",
                                         },
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "birthday_date",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "email",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "first_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "gender",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "group_id",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "last_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "phone_number",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "q",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -3543,6 +3259,35 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "contact_expire_after",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "description",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "idx",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -3552,63 +3297,6 @@ public static class SdkConfig
                             ["name"] = "list",
                             ["points"] = new List<object?>
                             {
-                                new Dictionary<string, object?>
-                                {
-                                    ["kind"] = "http",
-                                    ["method"] = "GET",
-                                    ["orig"] = "/contacts/groups",
-                                    ["segments"] = new List<object?>
-                                    {
-                                        new Dictionary<string, object?>
-                                        {
-                                            ["lit"] = "contacts",
-                                        },
-                                        new Dictionary<string, object?>
-                                        {
-                                            ["lit"] = "groups",
-                                        },
-                                    },
-                                    ["parts"] = new List<object?>
-                                    {
-                                        "contacts",
-                                        "groups",
-                                    },
-                                    ["rename"] = new Dictionary<string, object?>(),
-                                    ["transform"] = new Dictionary<string, object?>
-                                    {
-                                        ["req"] = "`reqdata`",
-                                        ["res"] = "`body.collection`",
-                                    },
-                                    ["args"] = new Dictionary<string, object?>
-                                    {
-                                        ["query"] = new List<object?>
-                                        {
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "name",
-                                                ["orig"] = "name",
-                                                ["type"] = "`$OBJECT`",
-                                                ["kind"] = "query",
-                                                ["example"] = "{\"name\" : \"group name\"}",
-                                            },
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "with",
-                                                ["orig"] = "with",
-                                                ["type"] = "`$ARRAY`",
-                                                ["kind"] = "query",
-                                            },
-                                        },
-                                    },
-                                    ["select"] = new Dictionary<string, object?>
-                                    {
-                                        ["exist"] = new List<object?>
-                                        {
-                                            "name",
-                                            "with",
-                                        },
-                                    },
-                                },
                                 new Dictionary<string, object?>
                                 {
                                     ["kind"] = "http",
@@ -3673,6 +3361,66 @@ public static class SdkConfig
                                         {
                                             "group_id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
+                                },
+                                new Dictionary<string, object?>
+                                {
+                                    ["kind"] = "http",
+                                    ["method"] = "GET",
+                                    ["orig"] = "/contacts/groups",
+                                    ["segments"] = new List<object?>
+                                    {
+                                        new Dictionary<string, object?>
+                                        {
+                                            ["lit"] = "contacts",
+                                        },
+                                        new Dictionary<string, object?>
+                                        {
+                                            ["lit"] = "groups",
+                                        },
+                                    },
+                                    ["parts"] = new List<object?>
+                                    {
+                                        "contacts",
+                                        "groups",
+                                    },
+                                    ["rename"] = new Dictionary<string, object?>(),
+                                    ["transform"] = new Dictionary<string, object?>
+                                    {
+                                        ["req"] = "`reqdata`",
+                                        ["res"] = "`body.collection`",
+                                    },
+                                    ["args"] = new Dictionary<string, object?>
+                                    {
+                                        ["query"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                                ["orig"] = "name",
+                                                ["type"] = "`$OBJECT`",
+                                                ["kind"] = "query",
+                                                ["example"] = "{\"name\" : \"group name\"}",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "with",
+                                                ["orig"] = "with",
+                                                ["type"] = "`$ARRAY`",
+                                                ["kind"] = "query",
+                                            },
+                                        },
+                                    },
+                                    ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -3833,17 +3581,6 @@ public static class SdkConfig
                                                 ["type"] = "`$STRING`",
                                                 ["kind"] = "param",
                                                 ["reqd"] = true,
-                                            },
-                                        },
-                                        ["query"] = new List<object?>
-                                        {
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "username",
-                                                ["orig"] = "username",
-                                                ["type"] = "`$STRING`",
-                                                ["kind"] = "query",
-                                                ["reqd"] = true,
                                                 ["example"] = "example_username",
                                             },
                                         },
@@ -3917,6 +3654,18 @@ public static class SdkConfig
                                             "group_id",
                                         },
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "delete_contacts",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -3982,6 +3731,52 @@ public static class SdkConfig
                                         {
                                             "group_id",
                                         },
+                                    },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "birthday_date",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "email",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "first_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "gender",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "group_id",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "last_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "phone_number",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "q",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
                                     },
                                 },
                                 new Dictionary<string, object?>
@@ -4090,17 +3885,6 @@ public static class SdkConfig
                                                 ["type"] = "`$STRING`",
                                                 ["kind"] = "param",
                                                 ["reqd"] = true,
-                                            },
-                                        },
-                                        ["query"] = new List<object?>
-                                        {
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "username",
-                                                ["orig"] = "username",
-                                                ["type"] = "`$STRING`",
-                                                ["kind"] = "query",
-                                                ["reqd"] = true,
                                                 ["example"] = "example_username",
                                             },
                                         },
@@ -4112,6 +3896,31 @@ public static class SdkConfig
                                             "group_id",
                                             "username",
                                         },
+                                    },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "read",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "send",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "write",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                                 new Dictionary<string, object?>
@@ -4178,6 +3987,52 @@ public static class SdkConfig
                                         {
                                             "group_id",
                                         },
+                                    },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "birthday_date",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "email",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "first_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "gender",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "group_id",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "last_name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["list"] = true,
+                                                ["name"] = "phone_number",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "q",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
                                     },
                                 },
                             },
@@ -4381,6 +4236,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -4544,6 +4404,11 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -4612,6 +4477,35 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "contact_expire_after",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "description",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "idx",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -4692,6 +4586,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -4729,6 +4628,22 @@ public static class SdkConfig
                                     ["select"] = new Dictionary<string, object?>
                                     {
                                         ["$action"] = "verification",
+                                    },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "code",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "phone_number",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
                                     },
                                 },
                             },
@@ -4853,16 +4768,19 @@ public static class SdkConfig
                                             },
                                         },
                                     },
-                                    ["select"] = new Dictionary<string, object?>
+                                    ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
                                     {
-                                        ["exist"] = new List<object?>
+                                        ["alternatives"] = new List<object?>
                                         {
-                                            "accept",
-                                            "limit",
-                                            "offset",
-                                            "phone_number",
-                                            "x_async",
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["kind"] = "raw",
+                                                ["media"] = "text/csv",
+                                            },
                                         },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -4985,6 +4903,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5023,6 +4946,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5162,6 +5090,35 @@ public static class SdkConfig
                                             "group_id",
                                         },
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "read",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "send",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "username",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "write",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5240,17 +5197,6 @@ public static class SdkConfig
                                                 ["type"] = "`$STRING`",
                                                 ["kind"] = "param",
                                                 ["reqd"] = true,
-                                            },
-                                        },
-                                        ["query"] = new List<object?>
-                                        {
-                                            new Dictionary<string, object?>
-                                            {
-                                                ["name"] = "username",
-                                                ["orig"] = "username",
-                                                ["type"] = "`$STRING`",
-                                                ["kind"] = "query",
-                                                ["reqd"] = true,
                                                 ["example"] = "example_username",
                                             },
                                         },
@@ -5261,8 +5207,12 @@ public static class SdkConfig
                                         {
                                             "group_id",
                                             "id",
-                                            "username",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -5331,6 +5281,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5447,10 +5402,11 @@ public static class SdkConfig
                                     ["select"] = new Dictionary<string, object?>
                                     {
                                         ["$action"] = "price",
-                                        ["exist"] = new List<object?>
-                                        {
-                                            "type",
-                                        },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -5485,6 +5441,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5537,6 +5498,11 @@ public static class SdkConfig
                                     ["select"] = new Dictionary<string, object?>
                                     {
                                         ["$action"] = "message",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -5627,6 +5593,23 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "sender",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5665,6 +5648,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5732,6 +5720,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -5808,6 +5801,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5840,8 +5838,10 @@ public static class SdkConfig
                         {
                             ["name"] = "sender",
                             ["title"] = "Sender",
-                            ["type"] = "`$ANY`",
+                            ["type"] = "`$STRING`",
                             ["req"] = true,
+                            ["short"] = "RCS sender ID (object ID of the agent/sender the user has access to).",
+                            ["format"] = "oid",
                         },
                         new Dictionary<string, object?>
                         {
@@ -5889,6 +5889,43 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["alternatives"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["fields"] = new List<object?>
+                                                {
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "content",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "phone_number",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "sender",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "text",
+                                                    },
+                                                },
+                                                ["kind"] = "form",
+                                                ["media"] = "application/x-www-form-urlencoded",
+                                            },
+                                        },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -5994,14 +6031,19 @@ public static class SdkConfig
                                             },
                                         },
                                     },
-                                    ["select"] = new Dictionary<string, object?>
+                                    ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
                                     {
-                                        ["exist"] = new List<object?>
+                                        ["alternatives"] = new List<object?>
                                         {
-                                            "accept",
-                                            "month",
-                                            "year",
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["kind"] = "raw",
+                                                ["media"] = "text/csv",
+                                            },
                                         },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -6128,6 +6170,24 @@ public static class SdkConfig
                                     {
                                         ["$action"] = "link",
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["alternatives"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["kind"] = "form",
+                                                ["media"] = "application/x-www-form-urlencoded",
+                                            },
+                                        },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -6168,6 +6228,11 @@ public static class SdkConfig
                                     ["select"] = new Dictionary<string, object?>
                                     {
                                         ["$action"] = "link",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -6231,6 +6296,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -6357,6 +6427,31 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "description",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "url",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -6552,6 +6647,120 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["alternatives"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["fields"] = new List<object?>
+                                                {
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "allow_duplicates",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "check_idx",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "date",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "date_validate",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "details",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "encoding",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "expiration_date",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["list"] = true,
+                                                        ["name"] = "fallback",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "fast",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "flash",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "format",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "from",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "group",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "idx",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "max_parts",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "message",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "normalize",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "notify_url",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "test",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "time_restriction",
+                                                    },
+                                                    new Dictionary<string, object?>
+                                                    {
+                                                        ["name"] = "to",
+                                                    },
+                                                },
+                                                ["kind"] = "form",
+                                                ["media"] = "application/x-www-form-urlencoded",
+                                            },
+                                        },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["alternatives"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["kind"] = "raw",
+                                                ["media"] = "text/plain",
+                                            },
+                                        },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -6590,7 +6799,7 @@ public static class SdkConfig
                                         },
                                         new Dictionary<string, object?>
                                         {
-                                            ["var"] = "sendername_id",
+                                            ["var"] = "sender",
                                         },
                                         new Dictionary<string, object?>
                                         {
@@ -6605,17 +6814,11 @@ public static class SdkConfig
                                     {
                                         "sms",
                                         "sendernames",
-                                        "{sendername_id}",
+                                        "{sender}",
                                         "commands",
                                         "make_default",
                                     },
-                                    ["rename"] = new Dictionary<string, object?>
-                                    {
-                                        ["param"] = new Dictionary<string, object?>
-                                        {
-                                            ["sender"] = "sendername_id",
-                                        },
-                                    },
+                                    ["rename"] = new Dictionary<string, object?>(),
                                     ["transform"] = new Dictionary<string, object?>
                                     {
                                         ["req"] = "`reqdata`",
@@ -6627,7 +6830,7 @@ public static class SdkConfig
                                         {
                                             new Dictionary<string, object?>
                                             {
-                                                ["name"] = "sendername_id",
+                                                ["name"] = "sender",
                                                 ["orig"] = "sender",
                                                 ["type"] = "`$STRING`",
                                                 ["kind"] = "param",
@@ -6639,7 +6842,7 @@ public static class SdkConfig
                                     {
                                         ["exist"] = new List<object?>
                                         {
-                                            "sendername_id",
+                                            "sender",
                                         },
                                     },
                                 },
@@ -6895,6 +7098,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -6964,6 +7172,11 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -7025,6 +7238,11 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                                 new Dictionary<string, object?>
                                 {
@@ -7061,12 +7279,11 @@ public static class SdkConfig
                                             },
                                         },
                                     },
-                                    ["select"] = new Dictionary<string, object?>
+                                    ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
                                     {
-                                        ["exist"] = new List<object?>
-                                        {
-                                            "q",
-                                        },
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -7125,6 +7342,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -7241,6 +7463,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                                 new Dictionary<string, object?>
@@ -7445,6 +7672,31 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "normalize",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "template",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -7483,6 +7735,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -7544,6 +7801,11 @@ public static class SdkConfig
                                         {
                                             "id",
                                         },
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
                                     },
                                 },
                             },
@@ -7607,6 +7869,31 @@ public static class SdkConfig
                                             "id",
                                         },
                                     },
+                                    ["body"] = new Dictionary<string, object?>
+                                    {
+                                        ["fields"] = new List<object?>
+                                        {
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "name",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "normalize",
+                                            },
+                                            new Dictionary<string, object?>
+                                            {
+                                                ["name"] = "template",
+                                            },
+                                        },
+                                        ["kind"] = "form",
+                                        ["media"] = "application/x-www-form-urlencoded",
+                                    },
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },
@@ -7618,85 +7905,7 @@ public static class SdkConfig
                 },
                 ["user_rcs_sender_collection"] = new Dictionary<string, object?>
                 {
-                    ["fields"] = new List<object?>
-                    {
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "deliveredAt",
-                            ["title"] = "Delivered At",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "expiredAt",
-                            ["title"] = "Expired At",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "id",
-                            ["title"] = "Id",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Object ID",
-                            ["format"] = "oid",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "interface",
-                            ["title"] = "Interface",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Interface through which the message was sent (www, api, ...).",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "messageType",
-                            ["title"] = "Message Type",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "RCS message type (basic, single, ...).",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "readAt",
-                            ["title"] = "Read At",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "date-time",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "recipient",
-                            ["title"] = "Recipient",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Recipient phone number (without +).",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "sender",
-                            ["title"] = "Sender",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Sender name",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "senderId",
-                            ["title"] = "Sender Id",
-                            ["type"] = "`$STRING`",
-                            ["short"] = "Sender id",
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "sentAt",
-                            ["title"] = "Sent At",
-                            ["type"] = "`$STRING`",
-                            ["format"] = "date-time",
-                        },
-                    },
-                    ["id"] = new Dictionary<string, object?>
-                    {
-                        ["field"] = "id",
-                        ["name"] = "id",
-                    },
+                    ["fields"] = new List<object?>(),
                     ["name"] = "user_rcs_sender_collection",
                     ["op"] = new Dictionary<string, object?>
                     {
@@ -7735,6 +7944,11 @@ public static class SdkConfig
                                     },
                                     ["args"] = new Dictionary<string, object?>(),
                                     ["select"] = new Dictionary<string, object?>(),
+                                    ["response"] = new Dictionary<string, object?>
+                                    {
+                                        ["kind"] = "json",
+                                        ["media"] = "application/json",
+                                    },
                                 },
                             },
                         },

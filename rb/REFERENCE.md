@@ -210,10 +210,11 @@ available = client.Available
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Available.list
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -262,16 +263,18 @@ blacklist = client.Blacklist
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Blacklist.create({
 })
 ```
 
+Declares a `multipart/form-data` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Blacklist.load()
@@ -279,7 +282,7 @@ result = client.Blacklist.load()
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Blacklist.remove({ "id" => "id" })
@@ -351,7 +354,7 @@ callback = client.Callback
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Callback.create({
@@ -360,15 +363,16 @@ result = client.Callback.create({
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Callback.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Callback.load({ "id" => "callback_id" })
@@ -376,7 +380,7 @@ result = client.Callback.load({ "id" => "callback_id" })
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Callback.remove({ "id" => "callback_id" })
@@ -384,7 +388,7 @@ result = client.Callback.remove({ "id" => "callback_id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.Callback.update({
@@ -446,7 +450,6 @@ contact = client.Contact
 | `email` | `String` | No |  |
 | `first_name` | `String` | No |  |
 | `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
 | `groups` | `Array` | Yes |  |
 | `id` | `String` | Yes | Object ID |
 | `idx` | `String` | No | User provided resource id |
@@ -454,14 +457,8 @@ contact = client.Contact
 | `name` | `String` | Yes | Group name |
 | `permissions` | `Array` | No |  |
 | `phone_number` | `String` | No |  |
-| `read` | `Boolean` | No | Has read permission |
-| `send` | `Boolean` | No | Has send permission |
 | `size` | `Integer` | Yes |  |
 | `source` | `String` | No |  |
-| `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Boolean` | No | Has write permission |
 
 ### Field Usage by Operation
 
@@ -469,9 +466,9 @@ contact = client.Contact
 | --- | --- | --- | --- | --- | --- |
 | `birthday_date` | - | - | - | - | - |
 | `city` | - | - | - | - | - |
-| `collection` | - | - | - | Yes | - |
+| `collection` | - | - | - | - | - |
 | `contact_expire_after` | - | - | - | - | - |
-| `contacts_count` | - | Yes | - | - | - |
+| `contacts_count` | - | - | - | - | - |
 | `country` | - | - | - | - | - |
 | `created_by` | - | - | - | - | - |
 | `date_created` | - | - | - | - | - |
@@ -480,28 +477,21 @@ contact = client.Contact
 | `email` | - | - | - | - | - |
 | `first_name` | - | - | - | - | - |
 | `gender` | - | - | - | - | - |
-| `group_id` | - | - | - | - | - |
 | `groups` | - | - | - | - | - |
 | `id` | - | - | - | - | - |
 | `idx` | - | - | - | - | - |
 | `last_name` | - | - | - | - | - |
-| `name` | - | Yes | - | - | - |
+| `name` | - | - | - | - | - |
 | `permissions` | - | - | - | - | - |
 | `phone_number` | - | - | - | - | - |
-| `read` | - | - | - | - | - |
-| `send` | - | - | - | - | - |
 | `size` | - | - | - | - | - |
 | `source` | - | - | - | - | - |
-| `type` | - | - | - | - | - |
-| `username` | - | - | - | - | - |
-| `value` | - | - | - | - | - |
-| `write` | - | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Contact.create({
@@ -519,17 +509,20 @@ result = client.Contact.create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Contact.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Contact.load({ "id" => "contact_id" })
@@ -537,7 +530,7 @@ result = client.Contact.load({ "id" => "contact_id" })
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Contact.remove({ "id" => "contact_id" })
@@ -545,7 +538,7 @@ result = client.Contact.remove({ "id" => "contact_id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.Contact.update({
@@ -553,6 +546,8 @@ result = client.Contact.update({
   # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -594,94 +589,35 @@ contacts_field = client.ContactsField
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Integer` | Yes | Contact expire after days |
-| `contacts_count` | `Integer` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
-| `groups` | `Array` | Yes |  |
 | `id` | `String` | No | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `Array` | No |  |
-| `phone_number` | `String` | No |  |
-| `read` | `Boolean` | No | Has read permission |
-| `send` | `Boolean` | No | Has send permission |
-| `source` | `String` | No |  |
+| `name` | `String` | No |  |
 | `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Boolean` | No | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | - | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | Yes | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | - | - | - | - |
-| `send` | - | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | - | - | - | - |
-| `value` | - | - | - | - |
-| `write` | - | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.ContactsField.create({
-  "contact_expire_after" => 1, # Integer
-  "created_by" => "example_created_by", # String
-  "date_created" => "example_date_created", # String
-  "date_updated" => "example_date_updated", # String
-  "gender" => "example_gender", # String
-  "groups" => [], # Array
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.ContactsField.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.ContactsField.remove({ "id" => "id" })
@@ -689,7 +625,7 @@ result = client.ContactsField.remove({ "id" => "id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.ContactsField.update({
@@ -697,6 +633,8 @@ result = client.ContactsField.update({
   # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -734,46 +672,15 @@ Return the entity name.
 contacts_field_option = client.ContactsFieldOption
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Integer` | Yes | Contact expire after days |
-| `contacts_count` | `Integer` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
-| `group_id` | `String` | No | Object ID |
-| `groups` | `Array` | Yes |  |
-| `id` | `String` | Yes | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `Array` | No |  |
-| `phone_number` | `String` | No |  |
-| `read` | `Boolean` | No | Has read permission |
-| `send` | `Boolean` | No | Has send permission |
-| `source` | `String` | No |  |
-| `type` | `String` | No |  |
-| `username` | `String` | No |  |
-| `value` | `String` | No |  |
-| `write` | `Boolean` | No | Has write permission |
-
 ### Operations
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
-results = client.ContactsFieldOption.list
+results = client.ContactsFieldOption.list({ "field_id" => "example" })
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -816,82 +723,21 @@ contactsgroup = client.Contactsgroup
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `birthday_date` | `String` | No |  |
-| `city` | `String` | No |  |
-| `contact_expire_after` | `Integer` | Yes | Contact expire after days |
-| `contacts_count` | `Integer` | No |  |
-| `country` | `String` | No |  |
-| `created_by` | `String` | Yes |  |
-| `date_created` | `String` | Yes |  |
-| `date_updated` | `String` | Yes |  |
-| `description` | `String` | No |  |
-| `email` | `String` | No |  |
-| `first_name` | `String` | No |  |
-| `gender` | `String` | Yes |  |
 | `group_id` | `String` | Yes | Object ID |
-| `groups` | `Array` | Yes |  |
-| `id` | `String` | Yes | Object ID |
-| `idx` | `String` | No | User provided resource id |
-| `last_name` | `String` | No |  |
-| `name` | `String` | No | Group name |
-| `permissions` | `Array` | No |  |
-| `phone_number` | `String` | No |  |
 | `read` | `Boolean` | Yes | Has read permission |
 | `send` | `Boolean` | Yes | Has send permission |
-| `source` | `String` | No |  |
-| `type` | `String` | No |  |
 | `username` | `String` | Yes |  |
-| `value` | `String` | No |  |
 | `write` | `Boolean` | Yes | Has write permission |
-
-### Field Usage by Operation
-
-| Field | list | create | update | remove |
-| --- | --- | --- | --- | --- |
-| `birthday_date` | - | - | - | - |
-| `city` | - | - | - | - |
-| `contact_expire_after` | - | - | - | - |
-| `contacts_count` | - | - | - | - |
-| `country` | - | - | - | - |
-| `created_by` | - | - | - | - |
-| `date_created` | - | - | - | - |
-| `date_updated` | - | - | - | - |
-| `description` | - | - | - | - |
-| `email` | - | - | - | - |
-| `first_name` | - | - | - | - |
-| `gender` | - | - | - | - |
-| `group_id` | Yes | - | - | - |
-| `groups` | - | - | - | - |
-| `id` | - | - | - | - |
-| `idx` | - | - | - | - |
-| `last_name` | - | - | - | - |
-| `name` | - | - | - | - |
-| `permissions` | - | - | - | - |
-| `phone_number` | - | - | - | - |
-| `read` | Yes | - | - | - |
-| `send` | Yes | - | - | - |
-| `source` | - | - | - | - |
-| `type` | - | - | - | - |
-| `username` | Yes | - | - | - |
-| `value` | - | - | - | - |
-| `write` | Yes | - | - | - |
 
 ### Operations
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Contactsgroup.create({
-  "contact_expire_after" => 1, # Integer
-  "created_by" => "example_created_by", # String
-  "date_created" => "example_date_created", # String
-  "date_updated" => "example_date_updated", # String
-  "gender" => "example_gender", # String
   "group_id" => "example_group_id", # String
-  "groups" => [], # Array
-  "id" => "example_id", # String
   "read" => true, # Boolean
   "send" => true, # Boolean
   "username" => "example_username", # String
@@ -899,17 +745,20 @@ result = client.Contactsgroup.create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Contactsgroup.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Contactsgroup.remove({ "group_id" => "group_id" })
@@ -917,7 +766,7 @@ result = client.Contactsgroup.remove({ "group_id" => "group_id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.Contactsgroup.update({
@@ -925,6 +774,8 @@ result = client.Contactsgroup.update({
   # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -966,7 +817,7 @@ contactstrash = client.Contactstrash
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Contactstrash.remove()
@@ -974,7 +825,7 @@ result = client.Contactstrash.remove()
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.Contactstrash.update({
@@ -1032,10 +883,11 @@ field_available = client.FieldAvailable
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.FieldAvailable.list
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -1093,7 +945,7 @@ group = client.Group
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Group.load({ "id" => "group_id" })
@@ -1101,7 +953,7 @@ result = client.Group.load({ "id" => "group_id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.Group.update({
@@ -1109,6 +961,8 @@ result = client.Group.update({
   # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1159,13 +1013,15 @@ mfa_code = client.MfaCode
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.MfaCode.create({
   "phone_number" => "example_phone_number", # String
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1216,15 +1072,16 @@ opt_out = client.OptOut
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.OptOut.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.OptOut.remove({ "id" => "id" })
@@ -1276,7 +1133,7 @@ opt_out_setting = client.OptOutSetting
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.OptOutSetting.load()
@@ -1284,7 +1141,7 @@ result = client.OptOutSetting.load()
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.OptOutSetting.update({
@@ -1343,7 +1200,7 @@ permission = client.Permission
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Permission.create({
@@ -1355,12 +1212,14 @@ result = client.Permission.create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
-result = client.Permission.load({ "id" => "permission_id", "group_id" => "group_id", "username" => "username" })
+result = client.Permission.load({ "id" => "permission_id", "group_id" => "group_id" })
 ```
 
 ### Common Methods
@@ -1410,10 +1269,11 @@ ping = client.Ping
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Ping.list
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -1468,15 +1328,16 @@ profile = client.Profile
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Profile.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Profile.load()
@@ -1522,10 +1383,11 @@ rcs = client.Rcs
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Rcs.list
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -1578,24 +1440,27 @@ sendername = client.Sendername
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Sendername.create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Sendername.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Sendername.load({ "id" => "sendername_id" })
@@ -1649,10 +1514,11 @@ sendername_statement = client.SendernameStatement
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.SendernameStatement.list
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -1697,19 +1563,19 @@ sent_rcs_message = client.SentRcsMessage
 | --- | --- | --- | --- |
 | `content` | `Hash` | No | RCS message content in RCS JSON format. |
 | `phone_number` | `String` | Yes | Recipient phone number (e.g. |
-| `sender` | `Object` | Yes |  |
+| `sender` | `String` | Yes | RCS sender ID (object ID of the agent/sender the user has access to). |
 | `text` | `String` | No | Plain text message content. |
 
 ### Operations
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.SentRcsMessage.create({
   "phone_number" => "example_phone_number", # String
-  "sender" => "example_sender", # Object
+  "sender" => "example_sender", # String
 })
 ```
 
@@ -1762,10 +1628,11 @@ shipment_country_volume = client.ShipmentCountryVolume
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.ShipmentCountryVolume.list
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -1823,7 +1690,7 @@ short_url = client.ShortUrl
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.ShortUrl.create({
@@ -1832,15 +1699,16 @@ result = client.ShortUrl.create({
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.ShortUrl.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.ShortUrl.load({ "id" => "short_url_id" })
@@ -1848,7 +1716,7 @@ result = client.ShortUrl.load({ "id" => "short_url_id" })
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.ShortUrl.remove({ "id" => "short_url_id" })
@@ -1856,7 +1724,7 @@ result = client.ShortUrl.remove({ "id" => "short_url_id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.ShortUrl.update({
@@ -1864,6 +1732,8 @@ result = client.ShortUrl.update({
   # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -1931,7 +1801,7 @@ smsdo = client.Smsdo
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Smsdo.create({
@@ -1978,17 +1848,17 @@ smssendername = client.Smssendername
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Smssendername.create({
-  "sendername_id" => "example_sendername_id", # String
+  "sender" => "example_sender", # String
 })
 ```
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Smssendername.remove({ "sender" => "sender" })
@@ -2040,7 +1910,7 @@ smstemplate = client.Smstemplate
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Smstemplate.remove({ "id" => "id" })
@@ -2108,7 +1978,7 @@ subuser = client.Subuser
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Subuser.create({
@@ -2118,15 +1988,16 @@ result = client.Subuser.create({
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Subuser.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Subuser.load({ "id" => "subuser_id" })
@@ -2134,7 +2005,7 @@ result = client.Subuser.load({ "id" => "subuser_id" })
 
 #### `remove(reqmatch, ctrl = nil) -> result`
 
-Remove the entity matching the given criteria. Raises on error.
+Remove the entity matching the given criteria. Returns the entity, marked as deleted, and raises on error.
 
 ```ruby
 result = client.Subuser.remove({ "id" => "subuser_id" })
@@ -2142,7 +2013,7 @@ result = client.Subuser.remove({ "id" => "subuser_id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.Subuser.update({
@@ -2200,24 +2071,27 @@ template = client.Template
 
 #### `create(reqdata, ctrl = nil) -> result`
 
-Create a new entity with the given data. Raises on error.
+Create a new entity with the given data. Returns the created entity and raises on error.
 
 ```ruby
 result = client.Template.create({
 })
 ```
 
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
+
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.Template.list
+results.each { |item| puts item.data_get }
 ```
 
 #### `load(reqmatch, ctrl = nil) -> result`
 
-Load a single entity matching the given criteria. Raises on error.
+Load a single entity matching the given criteria. Returns the entity, whose record `data_get` reads, and raises on error.
 
 ```ruby
 result = client.Template.load({ "id" => "template_id" })
@@ -2225,7 +2099,7 @@ result = client.Template.load({ "id" => "template_id" })
 
 #### `update(reqdata, ctrl = nil) -> result`
 
-Update an existing entity. The data must include the entity `id`. Raises on error.
+Update an existing entity. The data must include the entity `id`. Returns the updated entity and raises on error.
 
 ```ruby
 result = client.Template.update({
@@ -2233,6 +2107,8 @@ result = client.Template.update({
   # Fields to update
 })
 ```
+
+Declares a `application/x-www-form-urlencoded` body, which this SDK does not encode yet: it sends the data as JSON.
 
 ### Common Methods
 
@@ -2270,29 +2146,15 @@ Return the entity name.
 user_rcs_sender_collection = client.UserRcsSenderCollection
 ```
 
-### Fields
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `deliveredAt` | `String` | No |  |
-| `expiredAt` | `String` | No |  |
-| `id` | `String` | No | Object ID |
-| `interface` | `String` | No | Interface through which the message was sent (www, api, ...). |
-| `messageType` | `String` | No | RCS message type (basic, single, ...). |
-| `readAt` | `String` | No |  |
-| `recipient` | `String` | No | Recipient phone number (without +). |
-| `sender` | `String` | No | Sender name |
-| `senderId` | `String` | No | Sender id |
-| `sentAt` | `String` | No |  |
-
 ### Operations
 
 #### `list(reqmatch = nil, ctrl = nil) -> Array`
 
-List entities matching the given criteria (call with no argument to list all). Returns an array. Raises on error.
+List entities matching the given criteria (call with no argument to list all). Returns an array of entities, one per record; `data_get` reads each record. Raises on error.
 
 ```ruby
 results = client.UserRcsSenderCollection.list
+results.each { |item| puts item.data_get }
 ```
 
 ### Common Methods
@@ -2980,6 +2842,7 @@ Timeout.
 | Option | Type |
 |---|---|
 | `clearTimer` | function |
+| `now` | function |
 | `setTimer` | function |
 
 These take no default: the feature behaves one way when you supply them and

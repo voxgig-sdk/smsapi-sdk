@@ -2,17 +2,14 @@
   "existing": {
     "smssendername": {
       "SMSSENDERNAME00": {
-        "sendername_id": "SENDERNAME01",
         "sender": "SENDER01",
         "id": "SMSSENDERNAME00"
       },
       "SMSSENDERNAME01": {
-        "sendername_id": "SENDERNAME01",
         "sender": "SENDER01",
         "id": "SMSSENDERNAME01"
       },
       "SMSSENDERNAME02": {
-        "sendername_id": "SENDERNAME01",
         "sender": "SENDER01",
         "id": "SMSSENDERNAME02"
       }

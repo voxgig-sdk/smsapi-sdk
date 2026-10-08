@@ -11,35 +11,18 @@ final class ContactsFieldOptionEntityTest: XCTestCase {
     XCTAssertEqual(ent.getName(), "contacts_field_option")
   }
 
-  func testStream() async throws {
-    // Seed two records (under the test feature's entity key) and activate
-    // the streaming feature.
-    let fixtures = vm(("entity", .map(vm(("contacts_field_option", .map(vm(
-      ("s1", .map(vm(("id", .string("s1"))))),
-      ("s2", .map(vm(("id", .string("s2"))))))))))))
-    let sdkopts = vm(
-      ("feature", .map(vm(("streaming", .map(vm(("active", .bool(true)))))))))
-    let sdk = SmsapiSDK.testSDK(fixtures, sdkopts)
-    let ent = sdk.ContactsFieldOption()
+  // An invalid request fails with validate's own error, before it is sent.
+  func testValidate() throws {
+    try XCTSkipUnless(ContactsFieldOptionEntityTest.hasFeature("validate"), "feature not present in this SDK: validate")
+    let client = SmsapiSDK.testSDK(nil, vm(("feature", .map(vm(("validate", .map(vm(("active", .bool(true))))))))))
+    var err: Error? = nil
+    do { _ = try client.ContactsFieldOption().list(vm(("field_id", .int(1))), nil) } catch { err = error }
+    XCTAssertEqual((err as? SmsapiError)?.code, "validate_failed",
+      "expected validate_failed, got \(String(describing: err))")
+  }
 
-    // Materialised list result for the same op.
-    let listed = try ent.list(VMap(), nil)
-    let listedN = listed.asList?.items.count ?? 0
-
-    // stream("list") yields items via the streaming feature's iterator.
-    var streamed: [Value] = []
-    let seq = try ent.stream("list", VMap(), nil)
-    for await item in seq { streamed.append(item) }
-    XCTAssertGreaterThan(streamed.count, 0, "expected stream to yield items")
-    XCTAssertEqual(streamed.count, listedN)
-
-    // Fallback: with streaming inactive, stream still yields the materialised
-    // items.
-    let sdk2 = SmsapiSDK.testSDK(fixtures, nil)
-    let ent2 = sdk2.ContactsFieldOption()
-    var streamed2: [Value] = []
-    let seq2 = try ent2.stream("list", VMap(), nil)
-    for await item in seq2 { streamed2.append(item) }
-    XCTAssertEqual(streamed2.count, listedN)
+  // True when this SDK was generated with the named feature.
+  static func hasFeature(_ name: String) -> Bool {
+    gp(SdkConfig.makeConfig(), "feature").asMap?.entries[name] != nil
   }
 }

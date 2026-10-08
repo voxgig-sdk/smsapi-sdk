@@ -44,39 +44,39 @@ public final class SmsapiTypes {
 
   public record CallbackRemoveMatch(String id) {}
 
-  public record Contact(String birthday_date, String city, List<Object> collection, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, Long size, String source, String type, String username, String value, Boolean write) {}
+  public record Contact(String birthday_date, String city, List<Object> collection, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Long size, String source) {}
 
   public record ContactLoadMatch(String id) {}
 
   public record ContactListMatch(List<Object> birthday_date, List<Object> email, List<Object> first_name, String gender, List<Object> group_id, List<Object> last_name, Long limit, Long offset, String order_by, List<Object> phone_number, String q) {}
 
-  public record ContactCreateData(String birthday_date, String city, List<Object> collection, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, Long size, String source, String type, String username, String value, Boolean write) {}
+  public record ContactCreateData(String birthday_date, String city, List<Object> collection, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Long size, String source) {}
 
-  public record ContactUpdateData(String id, String birthday_date, String city, List<Object> collection, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, Long size, String source, String type, String username, String value, Boolean write) {}
+  public record ContactUpdateData(String id, String birthday_date, String city, List<Object> collection, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, List<Object> groups, String idx, String last_name, String name, List<Object> permissions, String phone_number, Long size, String source) {}
 
   public record ContactRemoveMatch(String id) {}
 
-  public record ContactsField(String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String username, String value, Boolean write) {}
+  public record ContactsField(String id, String name, String type) {}
 
-  public record ContactsFieldListMatch(String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String username, String value, Boolean write) {}
+  public record ContactsFieldListMatch(String id, String name, String type) {}
 
-  public record ContactsFieldCreateData(String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String username, String value, Boolean write) {}
+  public record ContactsFieldCreateData(String id, String name, String type) {}
 
-  public record ContactsFieldUpdateData(String id, String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String username, String value, Boolean write) {}
+  public record ContactsFieldUpdateData(String id, String name, String type) {}
 
   public record ContactsFieldRemoveMatch(String id) {}
 
-  public record ContactsFieldOption(String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String username, String value, Boolean write) {}
+  public record ContactsFieldOption() {}
 
   public record ContactsFieldOptionListMatch(String field_id) {}
 
-  public record Contactsgroup(String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String username, String value, Boolean write) {}
+  public record Contactsgroup(String group_id, Boolean read, Boolean send, String username, Boolean write) {}
 
   public record ContactsgroupListMatch(Map<String, Object> name, List<Object> with) {}
 
-  public record ContactsgroupCreateData(String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, String group_id, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String username, String value, Boolean write) {}
+  public record ContactsgroupCreateData(String group_id, Boolean read, Boolean send, String username, Boolean write) {}
 
-  public record ContactsgroupUpdateData(String group_id, String username, String birthday_date, String city, Long contact_expire_after, Long contacts_count, String country, String created_by, String date_created, String date_updated, String description, String email, String first_name, String gender, List<Object> groups, String id, String idx, String last_name, String name, List<Object> permissions, String phone_number, Boolean read, Boolean send, String source, String type, String value, Boolean write) {}
+  public record ContactsgroupUpdateData(String group_id, String username, Boolean read, Boolean send, Boolean write) {}
 
   public record ContactsgroupRemoveMatch(String group_id) {}
 
@@ -114,7 +114,7 @@ public final class SmsapiTypes {
 
   public record Permission(String group_id, String id, Boolean read, Boolean send, String username, Boolean write) {}
 
-  public record PermissionLoadMatch(String group_id, String id, String username) {}
+  public record PermissionLoadMatch(String group_id, String id) {}
 
   public record PermissionCreateData(String group_id, String id, Boolean read, Boolean send, String username, Boolean write) {}
 
@@ -144,9 +144,9 @@ public final class SmsapiTypes {
 
   public record SendernameStatementListMatch(String content, List<Object> statements, String title) {}
 
-  public record SentRcsMessage(Map<String, Object> content, String phone_number, Object sender, String text) {}
+  public record SentRcsMessage(Map<String, Object> content, String phone_number, String sender, String text) {}
 
-  public record SentRcsMessageCreateData(Map<String, Object> content, String phone_number, Object sender, String text) {}
+  public record SentRcsMessageCreateData(Map<String, Object> content, String phone_number, String sender, String text) {}
 
   public record ShipmentCountryVolume(String country_code, Long country_limit, String country_name, Long usage) {}
 
@@ -170,7 +170,7 @@ public final class SmsapiTypes {
 
   public record Smssendername() {}
 
-  public record SmssendernameCreateData(String sendername_id) {}
+  public record SmssendernameCreateData(String sender) {}
 
   public record SmssendernameRemoveMatch(String sender) {}
 
@@ -200,8 +200,8 @@ public final class SmsapiTypes {
 
   public record TemplateUpdateData(String id, String name, Boolean normalize, String template) {}
 
-  public record UserRcsSenderCollection(String deliveredAt, String expiredAt, String id, String messageType, String readAt, String recipient, String sender, String senderId, String sentAt) {}
+  public record UserRcsSenderCollection() {}
 
-  public record UserRcsSenderCollectionListMatch(String deliveredAt, String expiredAt, String id, String messageType, String readAt, String recipient, String sender, String senderId, String sentAt) {}
+  public record UserRcsSenderCollectionListMatch() {}
 
 }

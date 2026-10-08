@@ -1,7 +1,7 @@
 # Smsapi SDK Profile entity
 #
 # Per-entity module. Generic construction/data/match operations delegate to
-# EntityBase; each active op (load/list/create/update/remove) builds a ctx
+# EntityBase; each active op (load/list/create/update/patch/remove) builds a ctx
 # and drives it through Smsapi.Pipeline.run_op.
 
 defmodule Smsapi.Entity.Profile do
@@ -26,9 +26,10 @@ defmodule Smsapi.Entity.Profile do
     do: EntityBase.stream(ent, action, args, callopts)
 
   
-  # Returns the profile entity map (Smsapi.Types.profile/0) on
-  # success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns the profile entity, whose data_get/1 reads its record
+  # (Smsapi.Types.profile/0), on success; pipeline errors surface as
+  # the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec load(map(), Smsapi.Types.profile_load_match() | nil, map() | nil) :: term()
   def load(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -63,9 +64,10 @@ defmodule Smsapi.Entity.Profile do
 
 
   
-  # Returns a list of profile entity maps (Smsapi.Types.profile/0)
-  # on success; pipeline errors surface as the error value built by
-  # Utility.make_error (shape is utility-configurable), hence term().
+  # Returns a list of profile entities, one per record, whose data_get/1
+  # reads each record (Smsapi.Types.profile/0), on success; pipeline
+  # errors surface as the error value built by Utility.make_error (shape is
+  # utility-configurable), hence term().
   @spec list(map(), Smsapi.Types.profile_list_match() | nil, map() | nil) :: term()
   def list(ent, reqmatch \\ nil, ctrl \\ nil) do
     reqmatch = if reqmatch == nil, do: S.jm([]), else: reqmatch
@@ -96,6 +98,8 @@ defmodule Smsapi.Entity.Profile do
   end
 
 
+
+  
 
   
 

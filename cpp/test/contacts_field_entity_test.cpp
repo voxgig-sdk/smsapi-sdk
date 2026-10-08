@@ -88,6 +88,100 @@ static void contacts_field_entity_stream() {
   ASSERT_EQ((int)pitems.size(), 2, "fallback stream yields both items");
 }
 
+static bool contacts_field_has_feature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
+
+class ContactsFieldFailHook : public BaseFeature {
+public:
+  int unexpected = 0;
+  ContactsFieldFailHook() : BaseFeature("failhook", "0.0.1", true) {}
+  void preSpec(CtxPtr ctx) override {
+    throw std::runtime_error("contacts_field hook failed");
+  }
+  void preUnexpected(CtxPtr ctx) override {
+    unexpected++;
+  }
+};
+
+static void contacts_field_entity_stream_error() {
+  Value offline = vmap({{"net", vmap({{"offline", Value(true)}})}});
+  std::string msg;
+  try {
+    SmsapiSDK::testSDK(offline, Value::undef())->contacts_field()
+        ->stream("list", Value::undef(), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    msg = err->getMessage();
+  }
+  ASSERT_TRUE(msg.find("offline") != std::string::npos,
+      "stream: a failed operation fails the stream");
+
+  bool raised = false;
+  try {
+    SmsapiSDK::testSDK(offline, Value::undef())->contacts_field()
+        ->stream("list", Value::undef(), vmap({{"ctrl", vmap({{"throw", Value(false)}})}}));
+  } catch (const SdkErrorPtr&) {
+    raised = true;
+  }
+  ASSERT_FALSE(raised, "stream: under throw false a failed stream ends");
+
+  if (contacts_field_has_feature("rbac")) {
+    std::string code;
+    try {
+      SmsapiSDK::testSDK(Value::undef(), vmap({{"feature", vmap({{"rbac",
+          vmap({{"active", Value(true)}, {"deny", Value(true)}})}})}}))->contacts_field()
+          ->stream("list", Value::undef(), Value::undef());
+    } catch (const SdkErrorPtr& err) {
+      code = err->code;
+    }
+    ASSERT_EQ(code, std::string("rbac_denied"), "stream: a denied operation fails the stream");
+  }
+}
+
+static void contacts_field_entity_stream_ctrl() {
+  Value explain = vmap();
+  Value ctrl = vmap({{"explain", explain}});
+  SmsapiSDK::testSDK()->contacts_field()->stream("list", Value::undef(), vmap({{"ctrl", ctrl}}));
+  ASSERT_TRUE(getp(ctrl, "stream").is_undef(), "stream: the caller's ctrl gains no key");
+  ASSERT_TRUE(!explain.as_map()->empty(), "stream: the caller's explain record is filled");
+}
+
+static void contacts_field_entity_unexpected() {
+  auto hook = std::make_shared<ContactsFieldFailHook>();
+  auto client = SmsapiSDK::testSDK();
+  client->getRootCtx()->utility->featureAdd(client->getRootCtx(), hook);
+
+  std::string msg;
+  try {
+    client->contacts_field()->list(Value::undef(), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    msg = err->getMessage();
+  }
+  ASSERT_TRUE(msg.find("hook failed") != std::string::npos, "a throwing hook fails the operation");
+  ASSERT_TRUE(0 < hook->unexpected, "a throwing hook fires PreUnexpected");
+
+  int fired = hook->unexpected;
+  client->contacts_field()->list(Value::undef(), vmap({{"throw", Value(false)}}));
+  ASSERT_TRUE(fired < hook->unexpected, "under throw false PreUnexpected fires too");
+}
+
+static void contacts_field_entity_validate() {
+  if (!contacts_field_has_feature("validate")) {
+    std::cerr << "skip: feature not present in this SDK: validate\n";
+    return;
+  }
+  auto vsdk = SmsapiSDK::testSDK(Value::undef(), vmap({{"feature",
+      vmap({{"validate", vmap({{"active", Value(true)}})}})}}));
+  std::string code;
+  try {
+    vsdk->contacts_field()->list(vmap({{"id", Value(1)}}), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    code = err->code;
+  }
+  ASSERT_EQ(code, std::string("validate_failed"), "an invalid request fails with validate_failed");
+}
+
 static void contacts_field_entity_basic() {
   auto setup = contacts_field_basic_setup(Value::undef());
   std::string mode = setup.live ? "live" : "unit";
@@ -124,13 +218,13 @@ static void contacts_field_entity_basic() {
   Value contacts_field_ref01_data_up0_up = vmap();
   setp(contacts_field_ref01_data_up0_up, "id", getp(contacts_field_ref01_data, "id"));
   std::string contacts_field_ref01_data_up0_markval = std::string("Mark01-contacts_field_ref01_") + std::to_string(setup.now);
-  setp(contacts_field_ref01_data_up0_up, "birthday_date", Value(contacts_field_ref01_data_up0_markval));
+  setp(contacts_field_ref01_data_up0_up, "name", Value(contacts_field_ref01_data_up0_markval));
   Value contacts_field_ref01_resdata_up0_result = contacts_field_ref01_ent->update(Struct::clone(contacts_field_ref01_data_up0_up), Value::undef())->data();
   Value contacts_field_ref01_resdata_up0 = Helpers::toMapAny(contacts_field_ref01_resdata_up0_result);
   if (!contacts_field_ref01_resdata_up0.is_map()) contacts_field_ref01_resdata_up0 = vmap();
   ASSERT_TRUE(contacts_field_ref01_resdata_up0.is_map(), "expected update result to be a map");
   ASSERT_EQ_VAL(getp(contacts_field_ref01_resdata_up0, "id"), getp(contacts_field_ref01_data_up0_up, "id"), "expected update result id to match");
-  ASSERT_EQ_VAL(getp(contacts_field_ref01_resdata_up0, "birthday_date"), Value(contacts_field_ref01_data_up0_markval), "expected birthday_date to be updated");
+  ASSERT_EQ_VAL(getp(contacts_field_ref01_resdata_up0, "name"), Value(contacts_field_ref01_data_up0_markval), "expected name to be updated");
 
   // REMOVE
   {
@@ -155,6 +249,10 @@ static void contacts_field_entity_basic() {
 int main() {
   T_RUN(contacts_field_entity_instance);
   T_RUN(contacts_field_entity_stream);
+  T_RUN(contacts_field_entity_stream_error);
+  T_RUN(contacts_field_entity_stream_ctrl);
+  T_RUN(contacts_field_entity_unexpected);
+  T_RUN(contacts_field_entity_validate);
   T_RUN(contacts_field_entity_basic);
   return sdktest::summary("contacts_field_entity_test");
 }

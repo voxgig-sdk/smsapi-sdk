@@ -117,7 +117,6 @@ struct Contact {
   std::string email;  // optional
   std::string first_name;  // optional
   std::string gender;
-  std::string group_id;  // optional
   std::vector<Value> groups;
   std::string id;
   std::string idx;  // optional
@@ -125,14 +124,8 @@ struct Contact {
   std::string name;
   std::vector<Value> permissions;  // optional
   std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
   int64_t size;
   std::string source;  // optional
-  std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
 };
 
 struct ContactLoadMatch {
@@ -167,7 +160,6 @@ struct ContactCreateData {
   std::string email;  // optional
   std::string first_name;  // optional
   std::string gender;
-  std::string group_id;  // optional
   std::vector<Value> groups;
   std::string id;
   std::string idx;  // optional
@@ -175,14 +167,8 @@ struct ContactCreateData {
   std::string name;
   std::vector<Value> permissions;  // optional
   std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
   int64_t size;
   std::string source;  // optional
-  std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
 };
 
 struct ContactUpdateData {
@@ -200,21 +186,14 @@ struct ContactUpdateData {
   std::string email;  // optional
   std::string first_name;  // optional
   std::string gender;  // optional
-  std::string group_id;  // optional
   std::vector<Value> groups;  // optional
   std::string idx;  // optional
   std::string last_name;  // optional
   std::string name;  // optional
   std::vector<Value> permissions;  // optional
   std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
   int64_t size;  // optional
   std::string source;  // optional
-  std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
 };
 
 struct ContactRemoveMatch {
@@ -222,190 +201,44 @@ struct ContactRemoveMatch {
 };
 
 struct ContactsField {
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;
-  std::string date_created;
-  std::string date_updated;
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;
-  std::string group_id;  // optional
-  std::vector<Value> groups;
   std::string id;  // optional
-  std::string idx;  // optional
-  std::string last_name;  // optional
   std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
-  std::string source;  // optional
   std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
 };
 
 struct ContactsFieldListMatch {
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;  // optional
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;  // optional
-  std::string date_created;  // optional
-  std::string date_updated;  // optional
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;  // optional
-  std::string group_id;  // optional
-  std::vector<Value> groups;  // optional
   std::string id;  // optional
-  std::string idx;  // optional
-  std::string last_name;  // optional
   std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
-  std::string source;  // optional
   std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
 };
 
 struct ContactsFieldCreateData {
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;
-  std::string date_created;
-  std::string date_updated;
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;
-  std::string group_id;  // optional
-  std::vector<Value> groups;
   std::string id;  // optional
-  std::string idx;  // optional
-  std::string last_name;  // optional
   std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
-  std::string source;  // optional
   std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
 };
 
 struct ContactsFieldUpdateData {
   std::string id;
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;  // optional
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;  // optional
-  std::string date_created;  // optional
-  std::string date_updated;  // optional
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;  // optional
-  std::string group_id;  // optional
-  std::vector<Value> groups;  // optional
-  std::string idx;  // optional
-  std::string last_name;  // optional
   std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
-  std::string source;  // optional
   std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
 };
 
 struct ContactsFieldRemoveMatch {
   std::string id;
 };
 
-struct ContactsFieldOption {
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;
-  std::string date_created;
-  std::string date_updated;
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;
-  std::string group_id;  // optional
-  std::vector<Value> groups;
-  std::string id;
-  std::string idx;  // optional
-  std::string last_name;  // optional
-  std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
-  bool read;  // optional
-  bool send;  // optional
-  std::string source;  // optional
-  std::string type;  // optional
-  std::string username;  // optional
-  std::string value;  // optional
-  bool write;  // optional
-};
+struct ContactsFieldOption {};
 
 struct ContactsFieldOptionListMatch {
   std::string field_id;
 };
 
 struct Contactsgroup {
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;
-  std::string date_created;
-  std::string date_updated;
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;
   std::string group_id;
-  std::vector<Value> groups;
-  std::string id;
-  std::string idx;  // optional
-  std::string last_name;  // optional
-  std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
   bool read;
   bool send;
-  std::string source;  // optional
-  std::string type;  // optional
   std::string username;
-  std::string value;  // optional
   bool write;
 };
 
@@ -415,62 +248,18 @@ struct ContactsgroupListMatch {
 };
 
 struct ContactsgroupCreateData {
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;
-  std::string date_created;
-  std::string date_updated;
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;
   std::string group_id;
-  std::vector<Value> groups;
-  std::string id;
-  std::string idx;  // optional
-  std::string last_name;  // optional
-  std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
   bool read;
   bool send;
-  std::string source;  // optional
-  std::string type;  // optional
   std::string username;
-  std::string value;  // optional
   bool write;
 };
 
 struct ContactsgroupUpdateData {
   std::string group_id;
   std::string username;  // optional
-  std::string birthday_date;  // optional
-  std::string city;  // optional
-  int64_t contact_expire_after;  // optional
-  int64_t contacts_count;  // optional
-  std::string country;  // optional
-  std::string created_by;  // optional
-  std::string date_created;  // optional
-  std::string date_updated;  // optional
-  std::string description;  // optional
-  std::string email;  // optional
-  std::string first_name;  // optional
-  std::string gender;  // optional
-  std::vector<Value> groups;  // optional
-  std::string id;  // optional
-  std::string idx;  // optional
-  std::string last_name;  // optional
-  std::string name;  // optional
-  std::vector<Value> permissions;  // optional
-  std::string phone_number;  // optional
   bool read;  // optional
   bool send;  // optional
-  std::string source;  // optional
-  std::string type;  // optional
-  std::string value;  // optional
   bool write;  // optional
 };
 
@@ -585,7 +374,6 @@ struct Permission {
 struct PermissionLoadMatch {
   std::string group_id;
   std::string id;
-  std::string username;
 };
 
 struct PermissionCreateData {
@@ -678,14 +466,14 @@ struct SendernameStatementListMatch {
 struct SentRcsMessage {
   std::map<std::string, Value> content;  // optional
   std::string phone_number;
-  Value sender;
+  std::string sender;
   std::string text;  // optional
 };
 
 struct SentRcsMessageCreateData {
   std::map<std::string, Value> content;  // optional
   std::string phone_number;
-  Value sender;
+  std::string sender;
   std::string text;  // optional
 };
 
@@ -812,7 +600,7 @@ struct SmsdoCreateData {
 struct Smssendername {};
 
 struct SmssendernameCreateData {
-  std::string sendername_id;
+  std::string sender;
 };
 
 struct SmssendernameRemoveMatch {
@@ -898,31 +686,9 @@ struct TemplateUpdateData {
   std::string template;  // optional
 };
 
-struct UserRcsSenderCollection {
-  std::string deliveredAt;  // optional
-  std::string expiredAt;  // optional
-  std::string id;  // optional
-  std::string interface;  // optional
-  std::string messageType;  // optional
-  std::string readAt;  // optional
-  std::string recipient;  // optional
-  std::string sender;  // optional
-  std::string senderId;  // optional
-  std::string sentAt;  // optional
-};
+struct UserRcsSenderCollection {};
 
-struct UserRcsSenderCollectionListMatch {
-  std::string deliveredAt;  // optional
-  std::string expiredAt;  // optional
-  std::string id;  // optional
-  std::string interface;  // optional
-  std::string messageType;  // optional
-  std::string readAt;  // optional
-  std::string recipient;  // optional
-  std::string sender;  // optional
-  std::string senderId;  // optional
-  std::string sentAt;  // optional
-};
+struct UserRcsSenderCollectionListMatch {};
 
 } // namespace types
 } // namespace sdk

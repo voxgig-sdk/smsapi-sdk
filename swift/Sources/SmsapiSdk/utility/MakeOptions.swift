@@ -139,6 +139,16 @@ func makeOptionsUtil(_ ctx: Context) -> VMap {
     }
   }
 
+  if let base = result.entries["base"]?.asString, base.contains("{") {
+    do {
+      let resolved = try resolveServerBase(base, result, config, ctx)
+      result.entries["base"] = .string(resolved)
+    } catch {
+      // The initializer cannot throw, so a construction error traps, as zig's panics.
+      fatalError(errMessage(error))
+    }
+  }
+
   // Resolve the feature add-order: an explicit list order (above) wins;
   // otherwise order the map test-first, then the remaining names sorted, so
   // the outcome is deterministic and `test` is always the base transport.
@@ -176,25 +186,81 @@ func makeOptionsUtil(_ ctx: Context) -> VMap {
   return result
 }
 
+// A templated base URL takes each {name} from options.server. An empty value
+// cannot make a working URL, so it is an error, except in test mode, where it
+// becomes test-<name>.
+func resolveServerBase(_ base: String, _ opts: VMap, _ config: VMap, _ ctx: Context?) throws -> String {
+  let testmode = gpath(opts, "test", "active") == .bool(true)
+    || gpath(opts, "feature", "test", "active") == .bool(true)
+  let server = gp(opts, "server").asMap ?? VMap()
+  var sdkname = gpath(config, "main", "name").asString ?? ""
+  if sdkname.isEmpty { sdkname = "SDK" }
+
+  let chars = Array(base)
+  var out = ""
+  var i = 0
+  while i < chars.count {
+    var j = i + 1
+    if "{" == chars[i] {
+      while j < chars.count, "_" == chars[j] || (chars[j].isASCII && (chars[j].isLetter || chars[j].isNumber)) {
+        j += 1
+      }
+    }
+    // A placeholder only when it closes and the name is [A-Za-z0-9_]+.
+    if "{" != chars[i] || j == i + 1 || j >= chars.count || "}" != chars[j] {
+      out.append(chars[i])
+      i += 1
+      continue
+    }
+    let name = String(chars[(i + 1)..<j])
+    let value = gp(server, name).asString ?? ""
+    if !value.isEmpty {
+      out += value
+    } else if testmode {
+      out += "test-" + name
+    } else {
+      let hint = "options.entries[\"server\"] = .map(server) with server.entries[\"\(name)\"]"
+        + " = .string(\"...\")"
+      throw SmsapiError("server_var_required",
+        "\(sdkname): the server variable '\(name)' is required: the API base URL is '\(base)'"
+          + " - pass \(hint) in the SDK options", ctx)
+    }
+    i = j + 1
+  }
+  return out
+}
+
 // A feature's name is not a field name: only the sensitive names inside its
 // settings count, so `secrets` does not make every setting a secret. Entity
-// blocks hold entity settings and seeded records, never a credential.
+// blocks hold entity settings and seeded records, never a credential, and
+// rbac's rules are keyed by entity and operation names.
 private func cleanAddOptions(_ ctx: Context, _ opts: VMap) {
   let top = cleanOmit(opts, ["feature", "entity"])
   if let test = top.entries["test"] {
-    top.entries["test"] = cleanWithoutEntity(test)
+    top.entries["test"] = cleanPlain(test, nil)
   }
   cleanAddSensitiveUtil(ctx, .map(top))
   let feature = opts.entries["feature"] ?? .noval
-  let settings: [Value] = feature.asMap?.entries.values ?? feature.asList?.items ?? [feature]
-  for fopts in settings {
-    cleanAddSensitiveUtil(ctx, cleanWithoutEntity(fopts))
+  var settings: [(String?, Value)] = []
+  if let fmap = feature.asMap {
+    for (name, fopts) in fmap.entries {
+      settings.append((name, fopts))
+    }
+  } else if let flist = feature.asList {
+    for fopts in flist.items {
+      settings.append((fopts.asMap?.entries["name"]?.asString, fopts))
+    }
+  } else {
+    settings.append((nil, feature))
+  }
+  for (name, fopts) in settings {
+    cleanAddSensitiveUtil(ctx, cleanPlain(fopts, name))
   }
 }
 
-private func cleanWithoutEntity(_ block: Value) -> Value {
+private func cleanPlain(_ block: Value, _ name: String?) -> Value {
   guard let m = block.asMap else { return block }
-  return .map(cleanOmit(m, ["entity"]))
+  return .map(cleanOmit(m, "rbac" == name ? ["entity", "rules"] : ["entity"]))
 }
 
 private func cleanOmit(_ src: VMap, _ names: [String]) -> VMap {

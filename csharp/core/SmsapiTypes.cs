@@ -122,7 +122,6 @@ public record Contact
     public string? email { get; init; }
     public string? first_name { get; init; }
     public string gender { get; init; }
-    public string? group_id { get; init; }
     public List<object?> groups { get; init; }
     public string id { get; init; }
     public string? idx { get; init; }
@@ -130,14 +129,8 @@ public record Contact
     public string name { get; init; }
     public List<object?>? permissions { get; init; }
     public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
     public long size { get; init; }
     public string? source { get; init; }
-    public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
 }
 
 public record ContactLoadMatch
@@ -175,7 +168,6 @@ public record ContactCreateData
     public string? email { get; init; }
     public string? first_name { get; init; }
     public string gender { get; init; }
-    public string? group_id { get; init; }
     public List<object?> groups { get; init; }
     public string id { get; init; }
     public string? idx { get; init; }
@@ -183,14 +175,8 @@ public record ContactCreateData
     public string name { get; init; }
     public List<object?>? permissions { get; init; }
     public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
     public long size { get; init; }
     public string? source { get; init; }
-    public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
 }
 
 public record ContactUpdateData
@@ -209,21 +195,14 @@ public record ContactUpdateData
     public string? email { get; init; }
     public string? first_name { get; init; }
     public string? gender { get; init; }
-    public string? group_id { get; init; }
     public List<object?>? groups { get; init; }
     public string? idx { get; init; }
     public string? last_name { get; init; }
     public string? name { get; init; }
     public List<object?>? permissions { get; init; }
     public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
     public long? size { get; init; }
     public string? source { get; init; }
-    public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
 }
 
 public record ContactRemoveMatch
@@ -233,126 +212,30 @@ public record ContactRemoveMatch
 
 public record ContactsField
 {
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string created_by { get; init; }
-    public string date_created { get; init; }
-    public string date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string gender { get; init; }
-    public string? group_id { get; init; }
-    public List<object?> groups { get; init; }
     public string? id { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
     public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
-    public string? source { get; init; }
     public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
 }
 
 public record ContactsFieldListMatch
 {
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long? contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string? created_by { get; init; }
-    public string? date_created { get; init; }
-    public string? date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string? gender { get; init; }
-    public string? group_id { get; init; }
-    public List<object?>? groups { get; init; }
     public string? id { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
     public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
-    public string? source { get; init; }
     public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
 }
 
 public record ContactsFieldCreateData
 {
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string created_by { get; init; }
-    public string date_created { get; init; }
-    public string date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string gender { get; init; }
-    public string? group_id { get; init; }
-    public List<object?> groups { get; init; }
     public string? id { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
     public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
-    public string? source { get; init; }
     public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
 }
 
 public record ContactsFieldUpdateData
 {
     public string id { get; init; }
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long? contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string? created_by { get; init; }
-    public string? date_created { get; init; }
-    public string? date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string? gender { get; init; }
-    public string? group_id { get; init; }
-    public List<object?>? groups { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
     public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
-    public string? source { get; init; }
     public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
 }
 
 public record ContactsFieldRemoveMatch
@@ -360,36 +243,7 @@ public record ContactsFieldRemoveMatch
     public string id { get; init; }
 }
 
-public record ContactsFieldOption
-{
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string created_by { get; init; }
-    public string date_created { get; init; }
-    public string date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string gender { get; init; }
-    public string? group_id { get; init; }
-    public List<object?> groups { get; init; }
-    public string id { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
-    public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
-    public bool? read { get; init; }
-    public bool? send { get; init; }
-    public string? source { get; init; }
-    public string? type { get; init; }
-    public string? username { get; init; }
-    public string? value { get; init; }
-    public bool? write { get; init; }
-}
+public record ContactsFieldOption();
 
 public record ContactsFieldOptionListMatch
 {
@@ -398,32 +252,10 @@ public record ContactsFieldOptionListMatch
 
 public record Contactsgroup
 {
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string created_by { get; init; }
-    public string date_created { get; init; }
-    public string date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string gender { get; init; }
     public string group_id { get; init; }
-    public List<object?> groups { get; init; }
-    public string id { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
-    public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
     public bool read { get; init; }
     public bool send { get; init; }
-    public string? source { get; init; }
-    public string? type { get; init; }
     public string username { get; init; }
-    public string? value { get; init; }
     public bool write { get; init; }
 }
 
@@ -435,32 +267,10 @@ public record ContactsgroupListMatch
 
 public record ContactsgroupCreateData
 {
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string created_by { get; init; }
-    public string date_created { get; init; }
-    public string date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string gender { get; init; }
     public string group_id { get; init; }
-    public List<object?> groups { get; init; }
-    public string id { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
-    public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
     public bool read { get; init; }
     public bool send { get; init; }
-    public string? source { get; init; }
-    public string? type { get; init; }
     public string username { get; init; }
-    public string? value { get; init; }
     public bool write { get; init; }
 }
 
@@ -468,30 +278,8 @@ public record ContactsgroupUpdateData
 {
     public string group_id { get; init; }
     public string? username { get; init; }
-    public string? birthday_date { get; init; }
-    public string? city { get; init; }
-    public long? contact_expire_after { get; init; }
-    public long? contacts_count { get; init; }
-    public string? country { get; init; }
-    public string? created_by { get; init; }
-    public string? date_created { get; init; }
-    public string? date_updated { get; init; }
-    public string? description { get; init; }
-    public string? email { get; init; }
-    public string? first_name { get; init; }
-    public string? gender { get; init; }
-    public List<object?>? groups { get; init; }
-    public string? id { get; init; }
-    public string? idx { get; init; }
-    public string? last_name { get; init; }
-    public string? name { get; init; }
-    public List<object?>? permissions { get; init; }
-    public string? phone_number { get; init; }
     public bool? read { get; init; }
     public bool? send { get; init; }
-    public string? source { get; init; }
-    public string? type { get; init; }
-    public string? value { get; init; }
     public bool? write { get; init; }
 }
 
@@ -622,7 +410,6 @@ public record PermissionLoadMatch
 {
     public string group_id { get; init; }
     public string id { get; init; }
-    public string username { get; init; }
 }
 
 public record PermissionCreateData
@@ -728,7 +515,7 @@ public record SentRcsMessage
 {
     public Dictionary<string, object?>? content { get; init; }
     public string phone_number { get; init; }
-    public object? sender { get; init; }
+    public string sender { get; init; }
     public string? text { get; init; }
 }
 
@@ -736,7 +523,7 @@ public record SentRcsMessageCreateData
 {
     public Dictionary<string, object?>? content { get; init; }
     public string phone_number { get; init; }
-    public object? sender { get; init; }
+    public string sender { get; init; }
     public string? text { get; init; }
 }
 
@@ -874,7 +661,7 @@ public record Smssendername();
 
 public record SmssendernameCreateData
 {
-    public string sendername_id { get; init; }
+    public string sender { get; init; }
 }
 
 public record SmssendernameRemoveMatch
@@ -974,31 +761,7 @@ public record TemplateUpdateData
     public string? template { get; init; }
 }
 
-public record UserRcsSenderCollection
-{
-    public string? deliveredAt { get; init; }
-    public string? expiredAt { get; init; }
-    public string? id { get; init; }
-    public string? @interface { get; init; }
-    public string? messageType { get; init; }
-    public string? readAt { get; init; }
-    public string? recipient { get; init; }
-    public string? sender { get; init; }
-    public string? senderId { get; init; }
-    public string? sentAt { get; init; }
-}
+public record UserRcsSenderCollection();
 
-public record UserRcsSenderCollectionListMatch
-{
-    public string? deliveredAt { get; init; }
-    public string? expiredAt { get; init; }
-    public string? id { get; init; }
-    public string? @interface { get; init; }
-    public string? messageType { get; init; }
-    public string? readAt { get; init; }
-    public string? recipient { get; init; }
-    public string? sender { get; init; }
-    public string? senderId { get; init; }
-    public string? sentAt { get; init; }
-}
+public record UserRcsSenderCollectionListMatch();
 

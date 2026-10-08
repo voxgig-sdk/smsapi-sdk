@@ -9,6 +9,12 @@ namespace SmsapiSdk.Test;
 
 public class PermissionDirectTest
 {
+    // main.kit.test.live.strict is true (the default is true): a live
+    // request that fails, or a live test missing an input it needs,
+    // fails the test.
+    // An account with no record for a test to read skips it either way.
+    private const bool LIVE_STRICT = true;
+
     [Fact]
     public void DirectLoad()
     {
@@ -21,23 +27,14 @@ public class PermissionDirectTest
         {
             return; // skipped via sdk-test-control.json
         }
-        if (setup.Live)
-        {
-            foreach (var _liveKey in new[] { "group_id01", "id01" })
-            {
-                if (StructUtils.GetProp(setup.Idmap, _liveKey) == null)
-                {
-                    return; // live test needs *_ENTID env var (synthetic IDs only)
-                }
-            }
-        }
         var client = setup.Client;
 
         var pathParams = new Dictionary<string, object?>();
         var query = new Dictionary<string, object?>();
         if (setup.Live)
         {
-            query["username"] = "example_username";
+            pathParams["group_id"] = "0f0f0f0f0f0f0f0f0f0f0f0f";
+            pathParams["id"] = "example_username";
         }
         else
         {
@@ -54,18 +51,16 @@ public class PermissionDirectTest
         });
         if (setup.Live)
         {
-            // Live mode is lenient: synthetic IDs frequently 4xx. Bail
-            // rather than fail when the load endpoint isn't reachable.
-            if (!Equals(result["ok"], true))
+            if (!TestRunner.LiveOk(result))
             {
+                TestRunner.LiveMiss(LIVE_STRICT, "Live load failed: " + TestRunner.LiveDescribe(result));
                 return;
             }
-            var status = Helpers.ToInt(result["status"]);
-            if (status < 200 || status >= 300)
+            if (result["data"] == null)
             {
+                TestRunner.LiveMiss(LIVE_STRICT, "Live load returned no data: " + TestRunner.LiveDescribe(result));
                 return;
             }
-            Assert.NotNull(result["data"]);
         }
         else
         {

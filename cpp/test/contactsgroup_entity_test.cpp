@@ -88,6 +88,100 @@ static void contactsgroup_entity_stream() {
   ASSERT_EQ((int)pitems.size(), 2, "fallback stream yields both items");
 }
 
+static bool contactsgroup_has_feature(const std::string& name) {
+  Value fm = Helpers::toMapAny(getp(sharedConfig(), "feature"));
+  return fm.is_map() && !getp(fm, name).is_undef();
+}
+
+class ContactsgroupFailHook : public BaseFeature {
+public:
+  int unexpected = 0;
+  ContactsgroupFailHook() : BaseFeature("failhook", "0.0.1", true) {}
+  void preSpec(CtxPtr ctx) override {
+    throw std::runtime_error("contactsgroup hook failed");
+  }
+  void preUnexpected(CtxPtr ctx) override {
+    unexpected++;
+  }
+};
+
+static void contactsgroup_entity_stream_error() {
+  Value offline = vmap({{"net", vmap({{"offline", Value(true)}})}});
+  std::string msg;
+  try {
+    SmsapiSDK::testSDK(offline, Value::undef())->contactsgroup()
+        ->stream("list", Value::undef(), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    msg = err->getMessage();
+  }
+  ASSERT_TRUE(msg.find("offline") != std::string::npos,
+      "stream: a failed operation fails the stream");
+
+  bool raised = false;
+  try {
+    SmsapiSDK::testSDK(offline, Value::undef())->contactsgroup()
+        ->stream("list", Value::undef(), vmap({{"ctrl", vmap({{"throw", Value(false)}})}}));
+  } catch (const SdkErrorPtr&) {
+    raised = true;
+  }
+  ASSERT_FALSE(raised, "stream: under throw false a failed stream ends");
+
+  if (contactsgroup_has_feature("rbac")) {
+    std::string code;
+    try {
+      SmsapiSDK::testSDK(Value::undef(), vmap({{"feature", vmap({{"rbac",
+          vmap({{"active", Value(true)}, {"deny", Value(true)}})}})}}))->contactsgroup()
+          ->stream("list", Value::undef(), Value::undef());
+    } catch (const SdkErrorPtr& err) {
+      code = err->code;
+    }
+    ASSERT_EQ(code, std::string("rbac_denied"), "stream: a denied operation fails the stream");
+  }
+}
+
+static void contactsgroup_entity_stream_ctrl() {
+  Value explain = vmap();
+  Value ctrl = vmap({{"explain", explain}});
+  SmsapiSDK::testSDK()->contactsgroup()->stream("list", Value::undef(), vmap({{"ctrl", ctrl}}));
+  ASSERT_TRUE(getp(ctrl, "stream").is_undef(), "stream: the caller's ctrl gains no key");
+  ASSERT_TRUE(!explain.as_map()->empty(), "stream: the caller's explain record is filled");
+}
+
+static void contactsgroup_entity_unexpected() {
+  auto hook = std::make_shared<ContactsgroupFailHook>();
+  auto client = SmsapiSDK::testSDK();
+  client->getRootCtx()->utility->featureAdd(client->getRootCtx(), hook);
+
+  std::string msg;
+  try {
+    client->contactsgroup()->list(Value::undef(), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    msg = err->getMessage();
+  }
+  ASSERT_TRUE(msg.find("hook failed") != std::string::npos, "a throwing hook fails the operation");
+  ASSERT_TRUE(0 < hook->unexpected, "a throwing hook fires PreUnexpected");
+
+  int fired = hook->unexpected;
+  client->contactsgroup()->list(Value::undef(), vmap({{"throw", Value(false)}}));
+  ASSERT_TRUE(fired < hook->unexpected, "under throw false PreUnexpected fires too");
+}
+
+static void contactsgroup_entity_validate() {
+  if (!contactsgroup_has_feature("validate")) {
+    std::cerr << "skip: feature not present in this SDK: validate\n";
+    return;
+  }
+  auto vsdk = SmsapiSDK::testSDK(Value::undef(), vmap({{"feature",
+      vmap({{"validate", vmap({{"active", Value(true)}})}})}}));
+  std::string code;
+  try {
+    vsdk->contactsgroup()->create(vmap({{"group_id", Value(1)}, {"read", Value(true)}, {"send", Value(true)}, {"username", Value("x")}, {"write", Value(true)}}), Value::undef());
+  } catch (const SdkErrorPtr& err) {
+    code = err->code;
+  }
+  ASSERT_EQ(code, std::string("validate_failed"), "an invalid request fails with validate_failed");
+}
+
 static void contactsgroup_entity_basic() {
   auto setup = contactsgroup_basic_setup(Value::undef());
   std::string mode = setup.live ? "live" : "unit";
@@ -106,12 +200,10 @@ static void contactsgroup_entity_basic() {
     contactsgroup_ref01_data = Helpers::toMapAny(contactsgroup_ref01_data_result);
     if (!contactsgroup_ref01_data.is_map()) contactsgroup_ref01_data = vmap();
     ASSERT_TRUE(contactsgroup_ref01_data.is_map(), "expected create result to be a map");
-    ASSERT_TRUE(!getp(contactsgroup_ref01_data, "id").is_undef(), "expected created entity to have an id");
   }
 
   // LIST
   Value contactsgroup_ref01_match = vmap();
-  setp(contactsgroup_ref01_match, "group_id", getp(setup.idmap, "group01"));
   auto contactsgroup_ref01_list_ents = contactsgroup_ref01_ent->list(Struct::clone(contactsgroup_ref01_match), Value::undef());
   // list resolves to one ENTITY per record; the flow asserts on the records.
   Value contactsgroup_ref01_list = vlist();
@@ -124,15 +216,10 @@ static void contactsgroup_entity_basic() {
 
   // UPDATE
   Value contactsgroup_ref01_data_up0_up = vmap();
-  setp(contactsgroup_ref01_data_up0_up, "id", getp(contactsgroup_ref01_data, "id"));
-  std::string contactsgroup_ref01_data_up0_markval = std::string("Mark01-contactsgroup_ref01_") + std::to_string(setup.now);
-  setp(contactsgroup_ref01_data_up0_up, "birthday_date", Value(contactsgroup_ref01_data_up0_markval));
   Value contactsgroup_ref01_resdata_up0_result = contactsgroup_ref01_ent->update(Struct::clone(contactsgroup_ref01_data_up0_up), Value::undef())->data();
   Value contactsgroup_ref01_resdata_up0 = Helpers::toMapAny(contactsgroup_ref01_resdata_up0_result);
   if (!contactsgroup_ref01_resdata_up0.is_map()) contactsgroup_ref01_resdata_up0 = vmap();
   ASSERT_TRUE(contactsgroup_ref01_resdata_up0.is_map(), "expected update result to be a map");
-  ASSERT_EQ_VAL(getp(contactsgroup_ref01_resdata_up0, "id"), getp(contactsgroup_ref01_data_up0_up, "id"), "expected update result id to match");
-  ASSERT_EQ_VAL(getp(contactsgroup_ref01_resdata_up0, "birthday_date"), Value(contactsgroup_ref01_data_up0_markval), "expected birthday_date to be updated");
 
   // REMOVE
   {
@@ -142,7 +229,6 @@ static void contactsgroup_entity_basic() {
 
   // LIST
   Value contactsgroup_ref01_match_rt0 = vmap();
-  setp(contactsgroup_ref01_match_rt0, "group_id", getp(setup.idmap, "group01"));
   auto contactsgroup_ref01_list_rt0_ents = contactsgroup_ref01_ent->list(Struct::clone(contactsgroup_ref01_match_rt0), Value::undef());
   // list resolves to one ENTITY per record; the flow asserts on the records.
   Value contactsgroup_ref01_list_rt0 = vlist();
@@ -158,6 +244,10 @@ static void contactsgroup_entity_basic() {
 int main() {
   T_RUN(contactsgroup_entity_instance);
   T_RUN(contactsgroup_entity_stream);
+  T_RUN(contactsgroup_entity_stream_error);
+  T_RUN(contactsgroup_entity_stream_ctrl);
+  T_RUN(contactsgroup_entity_unexpected);
+  T_RUN(contactsgroup_entity_validate);
   T_RUN(contactsgroup_entity_basic);
   return sdktest::summary("contactsgroup_entity_test");
 }
