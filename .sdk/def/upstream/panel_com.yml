@@ -4293,6 +4293,18 @@ components:
         avatar:
           type: string
           nullable: true
+    CountryServicesAvailability:
+      type: object
+      properties:
+        country_code:
+          type: string
+          example: FI
+        receiving_numbers:
+          type: boolean
+        alphanumeric_sendernames:
+          type: boolean
+        details:
+          type: string
     AccountSecuritySettings:
       properties:
         apply_api_filters_to_subusers:
@@ -5141,14 +5153,7 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              receiving_numbers:
-                type: boolean
-              alphanumeric_sendernames:
-                type: boolean
-              details:
-                type: string
+            $ref: '#/components/schemas/CountryServicesAvailability'
     ShipmentRestrictionsSettings:
       description: Shipment Restrictions Settings
       content:

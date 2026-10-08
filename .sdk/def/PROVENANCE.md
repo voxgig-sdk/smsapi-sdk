@@ -9,19 +9,20 @@
   - `Panel` — https://www.smsapi.com/rest/specifications/panel_com.yml
   - `Contacts` — https://www.smsapi.com/rest/specifications/contacts_com.yml
 - **Publisher:** SMSAPI (LINK Mobility Poland Sp. z o.o.)
-- **Retrieved:** 2026-10-01 (both files served with
-  `last-modified: Thu, 01 Oct 2026 14:11:18 GMT`)
+- **Retrieved:** 2026-10-08 (both files served with
+  `last-modified: Thu, 08 Oct 2026 14:57:04 GMT`; `contacts_com.yml` is
+  byte-identical to the copy retrieved on 2026-10-01)
 - **Format:** OpenAPI 3.0.0 (both documents)
 - **Upstream files**, kept byte for byte in `upstream/`:
 
   | file | bytes | SHA-256 | paths | operations | schemas |
   |---|---|---|---|---|---|
-  | `panel_com.yml` | 170814 | `e8fcb97f3e887e16be476024937c26ef3f024c1550149e746633912692a8faa0` | 33 | 55 | 361 |
+  | `panel_com.yml` | 170935 | `5eb23366a7d1112a28504aec60d4bc734f3dbb3cc70d131d266d692e5bfe344e` | 33 | 55 | 362 |
   | `contacts_com.yml` | 41824 | `eb35aa93908f923cc87c4faa795550d14835e4518cd462e746922f95564b463d` | 16 | 37 | 50 |
 
-- **Merged file:** `smsapi-openapi.json`, 307155 bytes, SHA-256
-  `eab53e5bd458cc4b61d16b40d58233bdce94119236276d3f095eae69b8df58f8`.
-  49 paths, 92 operations, 403 component schemas: every operation the
+- **Merged file:** `smsapi-openapi.json`, 307303 bytes, SHA-256
+  `1399d10d04bcc97fd121b4586fc25a2241d30f64a8d5edc57673ea3771ae97f8`.
+  49 paths, 92 operations, 404 component schemas: every operation the
   reference lists.
 - **Licence:** neither document declares one (`info.license` is absent), and
   SMSAPI's Terms of use (https://www.smsapi.com/en/terms, version of
