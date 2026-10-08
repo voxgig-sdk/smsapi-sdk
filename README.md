@@ -193,8 +193,8 @@ switch (client.permission(h.vnull()).load(h.jo(&.{.{ "id", h.vstr("test01") }, .
 | Python Data | `voxgig-sdk-smsapi-sdk-data` | publish pending — [install from source](py-data/README.md#install) |
 | Swift | `voxgig-sdk-smsapi-sdk` | publish pending — [install from source](swift/README.md#install) |
 | Zig | `voxgig-sdk-smsapi-sdk` | publish pending — [install from source](zig/README.md#install) |
-| Go CLI | `github.com/voxgig-sdk/smsapi-sdk/go-cli` | `go install github.com/voxgig-sdk/smsapi-sdk/go-cli/cmd/smsapi@latest` |
-| Go MCP server | `github.com/voxgig-sdk/smsapi-sdk/go-mcp` | `go get github.com/voxgig-sdk/smsapi-sdk/go-mcp@latest` |
+| Go CLI | `github.com/voxgig-sdk/smsapi-sdk/go-cli` | build from source — [go-cli/README.md](go-cli/README.md) |
+| Go MCP server | `github.com/voxgig-sdk/smsapi-sdk/go-mcp` | build from source — [go-mcp/README.md](go-mcp/README.md) |
 
 ## Quickstart
 
